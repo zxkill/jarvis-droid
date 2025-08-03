@@ -1,5 +1,6 @@
 package org.stypox.dicio.io.wake
 
+import android.Manifest.permission.FOREGROUND_SERVICE_MICROPHONE
 import android.Manifest.permission.RECORD_AUDIO
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -14,6 +15,7 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.util.Log
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
@@ -77,6 +79,13 @@ class WakeService : Service() {
 
         if (ContextCompat.checkSelfPermission(this, RECORD_AUDIO) != PERMISSION_GRANTED) {
             stopWithMessage("Could not start WakeService: microphone permission not granted")
+            return START_NOT_STICKY
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE &&
+            ContextCompat.checkSelfPermission(this, FOREGROUND_SERVICE_MICROPHONE) !=
+            PERMISSION_GRANTED
+        ) {
+            stopWithMessage("Could not start WakeService: microphone foreground permission not granted")
             return START_NOT_STICKY
         }
 
@@ -226,7 +235,12 @@ class WakeService : Service() {
             )
             .build()
 
-        startForeground(FOREGROUND_NOTIFICATION_ID, notification)
+        try {
+            startForeground(FOREGROUND_NOTIFICATION_ID, notification)
+        } catch (e: SecurityException) {
+            Log.e(TAG, "Missing permission to start foreground service", e)
+            stopSelf()
+        }
     }
 
     companion object {
@@ -268,6 +282,21 @@ class WakeService : Service() {
         }
 
         fun start(context: Context) {
+            val permissions = mutableListOf(RECORD_AUDIO)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                permissions += FOREGROUND_SERVICE_MICROPHONE
+            }
+            for (permission in permissions) {
+                if (ContextCompat.checkSelfPermission(context, permission) != PERMISSION_GRANTED) {
+                    Toast.makeText(
+                        context,
+                        R.string.grant_microphone_permission,
+                        Toast.LENGTH_LONG,
+                    ).show()
+                    return
+                }
+            }
+
             val intent = Intent(context, WakeService::class.java)
             ContextCompat.startForegroundService(context, intent)
         }
