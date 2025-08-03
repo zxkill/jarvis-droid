@@ -28,10 +28,8 @@ import org.stypox.dicio.R
 import org.stypox.dicio.di.SttInputDeviceWrapper
 import org.stypox.dicio.eval.SkillEvaluator
 import org.stypox.dicio.io.input.InputEvent
-import java.time.Instant
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 
 /**
@@ -63,7 +61,7 @@ class WakeService : Service() {
     override fun onCreate() {
         super.onCreate()
         notificationManager = getSystemService(this, NotificationManager::class.java)!!
-        //createForegroundNotification()
+        serviceStarted.set(true)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -108,7 +106,6 @@ class WakeService : Service() {
     }
 
     private fun onInputEvent(event: InputEvent) {
-        lastHeard.set(Instant.now())
         when (event) {
             is InputEvent.Partial -> {}
             is InputEvent.Error -> {
@@ -190,6 +187,7 @@ class WakeService : Service() {
     override fun onDestroy() {
         listening.set(false)
         sttInputDevice.reinitializeToReleaseResources()
+        serviceStarted.set(false)
         super.onDestroy()
     }
 
@@ -299,7 +297,11 @@ class WakeService : Service() {
             }
 
             val intent = Intent(context, WakeService::class.java)
-            ContextCompat.startForegroundService(context, intent)
+            if (serviceStarted.get()) {
+                context.startService(intent)
+            } else {
+                ContextCompat.startForegroundService(context, intent)
+            }
         }
 
         fun stop(context: Context) {
@@ -312,7 +314,7 @@ class WakeService : Service() {
             }
         }
 
-        fun isRunning(): Boolean = lastHeard.get()?.isAfter(Instant.now().minusMillis(500)) == true
+        fun isRunning(): Boolean = serviceStarted.get()
 
         fun cancelTriggeredNotification(context: Context) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -321,7 +323,7 @@ class WakeService : Service() {
             }
         }
 
-        private val lastHeard = AtomicReference<Instant>()
+        private val serviceStarted = AtomicBoolean(false)
 
         private val TAG = WakeService::class.simpleName
         private const val FOREGROUND_NOTIFICATION_CHANNEL_ID =
