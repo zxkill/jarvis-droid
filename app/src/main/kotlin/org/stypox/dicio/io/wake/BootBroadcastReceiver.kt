@@ -20,12 +20,16 @@ class BootBroadcastReceiver : BroadcastReceiver() {
             return
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            Log.d(TAG, "Creating notification")
-            WakeService.createNotificationToStartLater(context)
-        } else {
-            Log.d(TAG, "Starting service")
-            WakeService.start(context)
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                Log.d(TAG, "Creating notification")
+                WakeService.createNotificationToStartLater(context)
+            } else {
+                Log.d(TAG, "Starting service")
+                WakeService.start(context)
+            }
+        } catch (e: Throwable) {
+            Log.e(TAG, "Failed to initialise wake service", e)
         }
     }
 

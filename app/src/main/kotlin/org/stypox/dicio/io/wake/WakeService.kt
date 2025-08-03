@@ -85,7 +85,16 @@ class WakeService : Service() {
     }
 
     private fun startListening() {
-        sttInputDevice.tryLoad(::onInputEvent)
+        try {
+            val loaded = sttInputDevice.tryLoad(::onInputEvent)
+            if (!loaded) {
+                listening.set(false)
+                stopWithMessage("Could not start WakeService: STT device not ready")
+            }
+        } catch (e: Throwable) {
+            listening.set(false)
+            stopWithMessage("Could not start WakeService", e)
+        }
     }
 
     private fun onInputEvent(event: InputEvent) {
