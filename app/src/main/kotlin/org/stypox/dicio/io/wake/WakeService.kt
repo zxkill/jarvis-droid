@@ -63,7 +63,6 @@ class WakeService : Service() {
     override fun onCreate() {
         super.onCreate()
         notificationManager = getSystemService(this, NotificationManager::class.java)!!
-        createForegroundNotification()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -89,6 +88,7 @@ class WakeService : Service() {
             return START_NOT_STICKY
         }
 
+        createForegroundNotification()
         startListening()
         return START_STICKY
     }
