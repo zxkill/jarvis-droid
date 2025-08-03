@@ -196,6 +196,7 @@
     <string name="wake_service_foreground_notification_summary">This notification allows the Dicio
         wake word service to listen to the microphone in the background</string>
     <string name="wake_service_foreground_notification">Listening for the \"Hey Dicio\" wake-up word</string>
+    <string name="jarvis_service_foreground_notification">Listening for the \"Jarvis\" command word</string>
     <string name="wake_custom_service_foreground_notification">Listening for custom wake-up word</string>
     <string name="wake_service_start_notification">Tap to start Dicio wake word service</string>
     <string name="wake_service_triggered_notification">Dicio wake word triggered, tap to open</string>
