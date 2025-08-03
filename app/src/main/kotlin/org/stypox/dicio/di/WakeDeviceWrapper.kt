@@ -27,13 +27,21 @@ import org.stypox.dicio.settings.datastore.WakeDevice.WAKE_DEVICE_UNSET
 import org.stypox.dicio.util.distinctUntilChangedBlockingFirst
 import javax.inject.Singleton
 
+// Обёртка над реализациями устройств прослушивания ключевого слова (wake word).
+// Управляет выбором устройства и предоставляет общее API.
 interface WakeDeviceWrapper {
+    // Состояние текущего устройства (загружено, не загружено и т.д.).
     val state: StateFlow<WakeState?>
+    // True, если текущая модель слушает фразу «Hey Dicio».
     val isHeyDicio: StateFlow<Boolean>
 
+    // Скачивает необходимые файлы модели.
     fun download()
+    // Передаёт очередной аудиофрейм и возвращает, найдено ли ключевое слово.
     fun processFrame(audio16bitPcm: ShortArray): Boolean
+    // Возвращает размер аудиофрейма, который ожидает устройство.
     fun frameSize(): Int
+    // Переинициализация для освобождения ресурсов.
     fun reinitializeToReleaseResources()
 }
 
@@ -49,7 +57,7 @@ class WakeDeviceWrapperImpl(
     private var currentSetting: DataStoreWakeDevice
     private var lastFrameHadWrongSize = false
 
-    // null means that the user has not enabled any STT input device
+    // null означает, что пользователь не выбрал устройство пробуждения
     private val _state: MutableStateFlow<WakeState?> = MutableStateFlow(null)
     override val state: StateFlow<WakeState?> = _state
     private val _isHeyDicio: MutableStateFlow<Boolean>
@@ -57,8 +65,7 @@ class WakeDeviceWrapperImpl(
     private val currentDevice: MutableStateFlow<WakeDevice?>
 
     init {
-        // Run blocking, because the data store is always available right away since LocaleManager
-        // also initializes in a blocking way from the same data store.
+        // Блокирующее чтение настроек: DataStore доступен сразу, как и другие компоненты.
         val (firstWakeDeviceSetting, nextWakeDeviceFlow) = dataStore.data
             .map { it.wakeDevice }
             .distinctUntilChangedBlockingFirst()
@@ -85,6 +92,7 @@ class WakeDeviceWrapperImpl(
         }
     }
 
+    // Переключает устройство на новое значение из настроек.
     private fun changeWakeDeviceTo(setting: DataStoreWakeDevice) {
         currentSetting = setting
         val newWakeDevice = buildInputDevice(setting)
@@ -95,6 +103,7 @@ class WakeDeviceWrapperImpl(
         }
     }
 
+    // Создаёт реализацию устройства пробуждения в зависимости от настроек.
     private fun buildInputDevice(setting: DataStoreWakeDevice): WakeDevice? {
         return when (setting) {
             UNRECOGNIZED,
@@ -104,18 +113,21 @@ class WakeDeviceWrapperImpl(
         }
     }
 
+    // Запускает процесс скачивания модели (если она поддерживается).
     override fun download() {
         currentDevice.value?.download()
     }
 
+    // Передаёт очередной аудиофрейм устройству. Проверяет, совпадает ли размер
+    // с ожидаемым, чтобы избежать ошибок при переключении устройств.
     override fun processFrame(audio16bitPcm: ShortArray): Boolean {
         val device = currentDevice.value
             ?: throw IllegalArgumentException("No wake word device is enabled")
 
         if (audio16bitPcm.size != device.frameSize()) {
             if (lastFrameHadWrongSize) {
-                // a single badly-sized frame may happen when switching wake device, so we can
-                // tolerate it, but otherwise it is a programming error and should be reported
+                // Одно неверное по размеру сообщение может появиться при смене устройства,
+                // поэтому второе подряд считаем ошибкой и выбрасываем исключение.
                 throw IllegalArgumentException("Wrong audio frame size: expected ${
                     device.frameSize()} samples but got ${audio16bitPcm.size}")
             }
@@ -123,16 +135,18 @@ class WakeDeviceWrapperImpl(
             return false
 
         } else {
-            // process the frame only if it has the correct size
+            // Обрабатываем фрейм, только если размер корректный.
             lastFrameHadWrongSize = false
             return device.processFrame(audio16bitPcm)
         }
     }
 
+    // Возвращает ожидаемый размер аудиофрейма для текущего устройства.
     override fun frameSize(): Int {
         return currentDevice.value?.frameSize() ?: 0
     }
 
+    // Переинициализация, чтобы освободить ресурсы, когда сервис работает в фоне.
     override fun reinitializeToReleaseResources() {
         changeWakeDeviceTo(currentSetting)
     }

@@ -22,30 +22,30 @@ package org.stypox.dicio.io.input
 import org.stypox.dicio.ui.util.Progress
 
 /**
- * This is almost symmetrical to [org.stypox.dicio.io.input.vosk.VoskState], except that there are
- * no implementation-defined fields. For this reason, if in the future another STT engine will be
- * used, this class and the whole UI layer could be kept the same.
+ * Почти зеркальное отображение [org.stypox.dicio.io.input.vosk.VoskState],
+ * но без полей, зависящих от конкретной реализации движка распознавания.
+ * Благодаря этому UI-слой можно оставить без изменений при замене движка.
  */
 sealed interface SttState {
     /**
-     * Does not have a counterpart in [org.stypox.dicio.io.input.vosk.VoskState] and should never be
-     * generated directly by a [org.stypox.dicio.io.input.SttInputDevice]. In fact, this is used
-     * directly in the UI layer, since permission checks can only be done there.
+     * У [org.stypox.dicio.io.input.vosk.VoskState] нет аналога.
+     * Это состояние используется только на уровне UI,
+     * когда у приложения нет разрешения на использование микрофона.
      */
     data object NoMicrophonePermission : SttState
 
     /**
-     * The STT engine has not been initialized yet (waiting for a locale to be available)
+     * Движок распознавания ещё не инициализирован (ожидается локаль)
      */
     data object NotInitialized : SttState
 
     /**
-     * The STT engine cannot be made available, e.g. because the current language is not supported
+     * Движок не может быть использован, например, из-за отсутствия модели для текущего языка
      */
     data object NotAvailable : SttState
 
     /**
-     * The model is not present on disk, neither in unzipped and in zipped form.
+     * Модель отсутствует на устройстве
      */
     data object NotDownloaded : SttState
 
@@ -60,7 +60,7 @@ sealed interface SttState {
     data object Downloaded : SttState
 
     /**
-     * Vosk models are distributed in Zip files that need unzipping to be ready.
+     * Модель скачана и распаковывается
      */
     data class Unzipping(
         val progress: Progress,
@@ -71,13 +71,13 @@ sealed interface SttState {
     ) : SttState
 
     /**
-     * The model is present on disk, but was not loaded in RAM yet.
+     * Модель есть на диске, но ещё не загружена в память
      */
     data object NotLoaded : SttState
 
     /**
-     * The model is being loaded, and [thenStartListening] indicates whether, once loading is
-     * finished, the STT should start listening right away.
+     * Модель загружается в память.
+     * Флаг [thenStartListening] показывает, нужно ли сразу начать прослушивание после загрузки.
      */
     data class Loading(
         val thenStartListening: Boolean
@@ -88,20 +88,19 @@ sealed interface SttState {
     ) : SttState
 
     /**
-     * The model is ready in RAM, and can start listening at any time.
+     * Модель загружена и готова начать прослушивание
      */
     data object Loaded : SttState
 
     /**
-     * The model is listening.
+     * Активное прослушивание
      */
     data object Listening : SttState
 
     /**
-     * An external Android app has been asked to listen (e.g. through
-     * `RecognizerIntent.ACTION_RECOGNIZE_SPEECH`), and may be listening but we don't know for
-     * sure (maybe it's still loading). Therefore in the UI a "Waiting..." message should be shown
-     * instead of "Listening..." to not confuse the user.
+     * Прослушивание выполняет внешнее приложение (например, через
+     * `RecognizerIntent.ACTION_RECOGNIZE_SPEECH`). Мы не знаем, слушает оно или ещё загружается,
+     * поэтому в интерфейсе стоит показывать сообщение "Ожидание...".
      */
     data object WaitingForResult : SttState
 }

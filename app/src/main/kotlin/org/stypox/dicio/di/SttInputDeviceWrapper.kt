@@ -35,15 +35,22 @@ import org.stypox.dicio.util.distinctUntilChangedBlockingFirst
 import javax.inject.Singleton
 
 
+// Обёртка вокруг конкретной реализации устройства ввода речи (STT).
+// Позволяет переключать реализацию на лету и управлять общими задачами.
 interface SttInputDeviceWrapper {
+    // Текущее состояние устройства распознавания речи.
     val uiState: StateFlow<SttState?>
 
+    // Пытается загрузить устройство. Если передан обработчик, то сразу начинает слушать.
     fun tryLoad(thenStartListeningEventListener: ((InputEvent) -> Unit)?): Boolean
 
+    // Останавливает прослушивание.
     fun stopListening()
 
+    // Вызывается при клике на кнопку микрофона в интерфейсе.
     fun onClick(eventListener: (InputEvent) -> Unit)
 
+    // Переинициализирует устройство, чтобы освободить ресурсы.
     fun reinitializeToReleaseResources()
 }
 
@@ -60,15 +67,15 @@ class SttInputDeviceWrapperImpl(
     private var sttPlaySoundSetting: SttPlaySound
     private var sttInputDevice: SttInputDevice?
 
-    // null means that the user has not enabled any STT input device
+    // null означает, что пользователь не выбрал устройство распознавания речи
     private val _uiState: MutableStateFlow<SttState?> = MutableStateFlow(null)
     override val uiState: StateFlow<SttState?> = _uiState
     private var uiStateJob: Job? = null
 
 
     init {
-        // Run blocking, because the data store is always available right away since LocaleManager
-        // also initializes in a blocking way from the same data store.
+        // Выполняем блокирующее чтение, потому что DataStore доступен сразу.
+        // LocaleManager тоже инициализируется синхронно из того же хранилища.
         val (firstSettings, nextSettingsFlow) = dataStore.data
             .map { Pair(it.inputDevice, it.sttPlaySound) }
             .distinctUntilChangedBlockingFirst()
@@ -81,6 +88,7 @@ class SttInputDeviceWrapperImpl(
         }
 
         scope.launch {
+            // Реагируем на изменения настроек: смену устройства или звуков.
             nextSettingsFlow.collect { (inputDevice, sttPlaySound) ->
                 sttPlaySoundSetting = sttPlaySound
                 if (inputDeviceSetting != inputDevice) {
@@ -90,6 +98,7 @@ class SttInputDeviceWrapperImpl(
         }
     }
 
+    // Смена реализации устройства ввода согласно новой настройке.
     private suspend fun changeInputDeviceTo(setting: InputDevice) {
         val prevSttInputDevice = sttInputDevice
         inputDeviceSetting = setting
@@ -98,6 +107,7 @@ class SttInputDeviceWrapperImpl(
         restartUiStateJob()
     }
 
+    // Создаёт конкретную реализацию STT на основе настройки пользователя.
     private fun buildInputDevice(setting: InputDevice): SttInputDevice? {
         return when (setting) {
             UNRECOGNIZED,
@@ -109,6 +119,7 @@ class SttInputDeviceWrapperImpl(
         }
     }
 
+    // Перезапускает корутину, наблюдающую за состоянием STT устройства.
     private suspend fun restartUiStateJob() {
         uiStateJob?.cancel()
         val newSttInputDevice = sttInputDevice
@@ -127,6 +138,7 @@ class SttInputDeviceWrapperImpl(
         }
     }
 
+    // Воспроизводит звуковой сигнал в соответствии с настройками пользователя.
     private fun playSound(resid: Int) {
         val attributes = AudioAttributes.Builder()
             .setUsage(
@@ -136,7 +148,7 @@ class SttInputDeviceWrapperImpl(
                     SttPlaySound.STT_PLAY_SOUND_NOTIFICATION -> AudioAttributes.USAGE_NOTIFICATION
                     SttPlaySound.STT_PLAY_SOUND_ALARM -> AudioAttributes.USAGE_ALARM
                     SttPlaySound.STT_PLAY_SOUND_MEDIA -> AudioAttributes.USAGE_MEDIA
-                    SttPlaySound.STT_PLAY_SOUND_NONE -> return // do not play any sound
+                    SttPlaySound.STT_PLAY_SOUND_NONE -> return // звук отключён
                 }
             )
             .build()
@@ -145,6 +157,7 @@ class SttInputDeviceWrapperImpl(
         mediaPlayer.start()
     }
 
+    // Добавляет к слушателю событие проигрывания звука при отсутствии распознанной речи.
     private fun wrapEventListener(eventListener: (InputEvent) -> Unit): (InputEvent) -> Unit = {
         if (it is InputEvent.None) {
             scope.launch {
@@ -154,20 +167,24 @@ class SttInputDeviceWrapperImpl(
         eventListener(it)
     }
 
+    // Загружает устройство и при необходимости начинает слушать пользователя.
     override fun tryLoad(thenStartListeningEventListener: ((InputEvent) -> Unit)?): Boolean {
         return sttInputDevice?.tryLoad(if (thenStartListeningEventListener != null) {
             wrapEventListener(thenStartListeningEventListener)
         } else { null }) ?: false
     }
 
+    // Останавливает прослушивание.
     override fun stopListening() {
         sttInputDevice?.stopListening()
     }
 
+    // Вызывается при ручном нажатии на кнопку микрофона.
     override fun onClick(eventListener: (InputEvent) -> Unit) {
         sttInputDevice?.onClick(wrapEventListener(eventListener))
     }
 
+    // Переинициализация нужна, когда сервисы работают в фоне и требуют очистки.
     override fun reinitializeToReleaseResources() {
         scope.launch { changeInputDeviceTo(inputDeviceSetting) }
     }

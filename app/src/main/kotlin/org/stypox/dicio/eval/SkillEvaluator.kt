@@ -25,11 +25,15 @@ import org.stypox.dicio.ui.home.PendingQuestion
 import org.stypox.dicio.ui.home.QuestionAnswer
 import javax.inject.Singleton
 
+// Интерфейс, описывающий обработчик пользовательских запросов (skills).
 interface SkillEvaluator {
+    // Поток с журналом взаимодействий для отображения на экране.
     val state: StateFlow<InteractionLog>
 
+    // Функция, которую активити задаёт для запроса разрешений у пользователя.
     var permissionRequester: suspend (List<Permission>) -> Boolean
 
+    // Обрабатывает входящие события от устройства ввода речи.
     fun processInputEvent(event: InputEvent)
 }
 
@@ -41,9 +45,11 @@ class SkillEvaluatorImpl(
 
     private val scope = CoroutineScope(Dispatchers.Default)
 
+    // Получаем текущий ранжировщик навыков из обработчика.
     private val skillRanker: SkillRanker
         get() = skillHandler.skillRanker.value
 
+    // Журнал взаимодействий и ожидаемый вопрос от пользователя.
     private val _state = MutableStateFlow(
         InteractionLog(
             interactions = listOf(),
@@ -52,21 +58,24 @@ class SkillEvaluatorImpl(
     )
     override val state: StateFlow<InteractionLog> = _state
 
-    // must be kept up to date even when the activity is recreated, for this reason it is `var`
+    // Должна обновляться даже при пересоздании активити, поэтому `var`.
     override var permissionRequester: suspend (List<Permission>) -> Boolean = { false }
 
+    // Обработка событий происходит в отдельной корутине.
     override fun processInputEvent(event: InputEvent) {
         scope.launch {
             suspendProcessInputEvent(event)
         }
     }
 
+    // Основной метод, реагирующий на новое событие от микрофона.
     private suspend fun suspendProcessInputEvent(event: InputEvent) {
         when (event) {
             is InputEvent.Error -> {
                 addErrorInteractionFromPending(event.throwable)
             }
             is InputEvent.Final -> {
+                // Пользователь завершил фразу: сохраняем её и запускаем обработку.
                 _state.value = _state.value.copy(
                     pendingQuestion = PendingQuestion(
                         userInput = event.utterances[0].first,
@@ -77,15 +86,16 @@ class SkillEvaluatorImpl(
                 evaluateMatchingSkill(event.utterances.map { it.first })
             }
             InputEvent.None -> {
+                // Пользователь молчит — очищаем ожидаемый вопрос.
                 _state.value = _state.value.copy(pendingQuestion = null)
             }
             is InputEvent.Partial -> {
+                // Частичное распознавание: обновляем текст на экране.
                 _state.value = _state.value.copy(
                     pendingQuestion = PendingQuestion(
                         userInput = event.utterance,
-                        // the next input can be a continuation of the last interaction only if the
-                        // last skill invocation provided some skill batches (which are the only way
-                        // to continue an interaction/conversation)
+                        // Следующий ввод может продолжать предыдущее взаимодействие
+                        // только если стек навык‑батчей не пуст.
                         continuesLastInteraction = skillRanker.hasAnyBatches(),
                         skillBeingEvaluated = null,
                     )
@@ -94,6 +104,7 @@ class SkillEvaluatorImpl(
         }
     }
 
+    // Пытается подобрать и выполнить подходящий навык для пользовательского ввода.
     private suspend fun evaluateMatchingSkill(utterances: List<String>) {
         val (chosenInput, chosenSkill) = try {
             utterances.firstNotNullOfOrNull { input: String ->
@@ -110,9 +121,7 @@ class SkillEvaluatorImpl(
         _state.value = _state.value.copy(
             pendingQuestion = PendingQuestion(
                 userInput = chosenInput,
-                // the skill ranker would have discarded all batches, if the chosen skill was not
-                // the continuation of the last interaction (since continuing an
-                // interaction/conversation is done through the stack of batches)
+                // Если навык продолжает прошлый диалог, ранжировщик не очищает стек батчей.
                 continuesLastInteraction = skillRanker.hasAnyBatches(),
                 skillBeingEvaluated = skillInfo,
             )
@@ -121,7 +130,7 @@ class SkillEvaluatorImpl(
         try {
             val permissions = skillInfo.neededPermissions
             if (permissions.isNotEmpty() && !permissionRequester(permissions)) {
-                // permissions were not granted, show message
+                // Пользователь не выдал необходимые разрешения.
                 addInteractionFromPending(MissingPermissionsSkillOutput(skillInfo))
                 return
             }
@@ -142,14 +151,14 @@ class SkillEvaluatorImpl(
 
             when (interactionPlan) {
                 InteractionPlan.FinishInteraction -> {
-                    // current conversation has ended, reset to the default batch of skills
+                    // Диалог завершён — сбрасываем стек навыков.
                     skillRanker.removeAllBatches()
                 }
                 is InteractionPlan.FinishSubInteraction -> {
                     skillRanker.removeTopBatch()
                 }
                 is InteractionPlan.Continue -> {
-                    // nothing to do, just continue with current batches
+                    // Продолжаем текущий набор навыков без изменений.
                 }
                 is InteractionPlan.StartSubInteraction -> {
                     skillRanker.addBatchToTop(interactionPlan.nextSkills)
@@ -172,11 +181,13 @@ class SkillEvaluatorImpl(
         }
     }
 
+    // Добавляет в журнал ошибку, возникшую при обработке навыков.
     private fun addErrorInteractionFromPending(throwable: Throwable) {
         Log.e(TAG, "Error while evaluating skills", throwable)
         addInteractionFromPending(ErrorSkillOutput(throwable, true))
     }
 
+    // Переносит подготовленный ответ из pending‑состояния в журнал взаимодействий.
     private fun addInteractionFromPending(skillOutput: SkillOutput) {
         val log = _state.value
         val pendingUserInput = log.pendingQuestion?.userInput
