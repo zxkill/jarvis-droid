@@ -1,5 +1,6 @@
 package org.stypox.dicio.io.wake
 
+import android.Manifest.permission.FOREGROUND_SERVICE_MICROPHONE
 import android.Manifest.permission.RECORD_AUDIO
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -7,8 +8,10 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import dagger.hilt.android.AndroidEntryPoint
+import org.stypox.dicio.R
 import org.stypox.dicio.di.WakeDeviceWrapper
 import javax.inject.Inject
 
@@ -19,9 +22,18 @@ class BootBroadcastReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         Log.d(TAG, "Got intent ${intent.action}")
 
-        if (ContextCompat.checkSelfPermission(context, RECORD_AUDIO) !=
-            PackageManager.PERMISSION_GRANTED) {
+        val missingPermission =
+            ContextCompat.checkSelfPermission(context, RECORD_AUDIO) !=
+                PackageManager.PERMISSION_GRANTED ||
+                (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE &&
+                    ContextCompat.checkSelfPermission(
+                        context,
+                        FOREGROUND_SERVICE_MICROPHONE
+                    ) != PackageManager.PERMISSION_GRANTED)
+
+        if (missingPermission) {
             Log.d(TAG, "Audio permission not granted")
+            Toast.makeText(context, R.string.permission_denied, Toast.LENGTH_LONG).show()
             return
         }
 

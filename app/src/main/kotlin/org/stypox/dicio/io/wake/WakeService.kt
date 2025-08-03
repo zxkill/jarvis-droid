@@ -1,5 +1,6 @@
 package org.stypox.dicio.io.wake
 
+import android.Manifest.permission.FOREGROUND_SERVICE_MICROPHONE
 import android.Manifest.permission.RECORD_AUDIO
 import android.annotation.SuppressLint
 import android.app.NotificationChannel
@@ -18,6 +19,7 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.util.Log
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
@@ -91,7 +93,9 @@ class WakeService : Service() {
         }
 
         try {
-            createForegroundNotification(wakeDevice.isHeyDicio.value)
+            if (!createForegroundNotification(wakeDevice.isHeyDicio.value)) {
+                return START_NOT_STICKY
+            }
         } catch (t: Throwable) {
             stopWithMessage("could not create WakeService foreground notification", t)
             return START_NOT_STICKY
@@ -101,7 +105,13 @@ class WakeService : Service() {
             return START_STICKY // if we were already listening, do nothing more
         }
 
-        if (ContextCompat.checkSelfPermission(this, RECORD_AUDIO) != PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this, RECORD_AUDIO) != PERMISSION_GRANTED ||
+            (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE &&
+                ContextCompat.checkSelfPermission(
+                    this,
+                    FOREGROUND_SERVICE_MICROPHONE
+                ) != PERMISSION_GRANTED)
+        ) {
             stopWithMessage("Could not start WakeService: microphone permission not granted")
             return START_NOT_STICKY
         }
@@ -146,7 +156,7 @@ class WakeService : Service() {
         }
     }
 
-    private fun createForegroundNotification(isHeyDicio: Boolean) {
+    private fun createForegroundNotification(isHeyDicio: Boolean): Boolean {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 FOREGROUND_NOTIFICATION_CHANNEL_ID,
@@ -182,7 +192,13 @@ class WakeService : Service() {
             ))
             .build()
 
-        startForeground(FOREGROUND_NOTIFICATION_ID, notification)
+        return try {
+            startForeground(FOREGROUND_NOTIFICATION_ID, notification)
+            true
+        } catch (e: SecurityException) {
+            stopWithMessage("Could not start WakeService foreground service", e)
+            false
+        }
     }
 
     private fun listenForWakeWord() {
@@ -323,6 +339,19 @@ class WakeService : Service() {
          * 11+ use [createNotificationToStartLater] instead.
          */
         fun start(context: Context) {
+            val missingPermission =
+                ContextCompat.checkSelfPermission(context, RECORD_AUDIO) != PERMISSION_GRANTED ||
+                    (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE &&
+                        ContextCompat.checkSelfPermission(
+                            context,
+                            FOREGROUND_SERVICE_MICROPHONE
+                        ) != PERMISSION_GRANTED)
+
+            if (missingPermission) {
+                Toast.makeText(context, R.string.permission_denied, Toast.LENGTH_LONG).show()
+                return
+            }
+
             val intent = Intent(context, WakeService::class.java)
             ContextCompat.startForegroundService(context, intent)
         }
