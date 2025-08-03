@@ -63,7 +63,7 @@ class WakeService : Service() {
     override fun onCreate() {
         super.onCreate()
         notificationManager = getSystemService(this, NotificationManager::class.java)!!
-        createForegroundNotification()
+        //createForegroundNotification()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -335,7 +335,7 @@ class WakeService : Service() {
         private const val ACTION_STOP_WAKE_SERVICE =
             "org.stypox.dicio.io.wake.WakeService.ACTION_STOP"
         private const val RELEASE_STT_RESOURCES_MILLIS = 1000L * 60 * 5 // 5 minutes
-        private const val TRIGGER_WORD = "jarvis"
+        private const val TRIGGER_WORD = "Джарвис"
     }
 }
 
