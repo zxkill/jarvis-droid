@@ -89,6 +89,7 @@ class WakeService : Service() {
             return START_NOT_STICKY
         }
 
+        createForegroundNotification()
         startListening()
         return START_STICKY
     }
