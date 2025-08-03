@@ -65,6 +65,13 @@ import java.io.File
 import java.io.IOException
 import java.util.Locale
 
+/**
+ * Реализация устройства распознавания речи на базе библиотеки Vosk.
+ * Класс отвечает за скачивание и распаковку языковых моделей,
+ * их загрузку в память и управление состояниями распознавания.
+ * Все взаимодействие с остальной частью приложения происходит через
+ * интерфейс [SttInputDevice].
+ */
 class VoskInputDevice(
     @ApplicationContext appContext: Context,
     private val okHttpClient: OkHttpClient,
@@ -87,9 +94,9 @@ class VoskInputDevice(
 
 
     init {
-        // Run blocking, because the locale is always available right away since LocaleManager also
-        // initializes in a blocking way. Moreover, if VoskInputDevice were not initialized straight
-        // away, the tryLoad() call when MainActivity starts may do nothing.
+        // Инициализируемся синхронно: LocaleManager сразу предоставляет локаль,
+        // поэтому можно безопасно блокировать поток. Если отложить запуск,
+        // первый вызов tryLoad() из MainActivity может пройти впустую.
         val (firstLocale, nextLocaleFlow) = localeManager.locale
             .distinctUntilChangedBlockingFirst()
 
@@ -103,13 +110,13 @@ class VoskInputDevice(
         }
 
         scope.launch {
-            // perform initialization again every time the locale changes
+            // При каждой смене языка приложения переинициализируем устройство
             nextLocaleFlow.collect { reinit(it) }
         }
     }
 
     private fun init(locale: Locale): VoskState {
-        // choose the model url based on the locale
+        // Выбираем ссылку на языковую модель Vosk в зависимости от локали
         val modelUrl = try {
             val localeResolutionResult = LocaleUtils.resolveSupportedLocale(
                 LocaleListCompat.create(locale),
@@ -120,38 +127,36 @@ class VoskInputDevice(
             null
         }
 
-        // the model url may change if the user changes app language, or in case of model updates
+        // URL модели может измениться при смене языка приложения
+        // или если выйдет обновление списка моделей
         val modelUrlChanged = try {
             sameModelUrlCheck.readText() != modelUrl
         } catch (e: IOException) {
-            // modelUrlCheck file does not exist
+            // Файл с предыдущим URL отсутствует — значит модель ещё не скачивалась
             true
         }
 
         return when {
-            // if the modelUrl is null, then the current locale is not supported by any Vosk model
+            // modelUrl == null означает, что для текущей локали нет модели Vosk
             modelUrl == null -> NotAvailable
-            // if the model url changed, the model needs to be re-downloaded
+            // если адрес модели изменился, её нужно скачать заново
             modelUrlChanged -> NotDownloaded(modelUrl)
-            // if the model zip file exists, it means that the app was interrupted after the
-            // download finished (because the file is downloaded in the cache, and is moved to its
-            // actual position only after it finishes downloading), but before the unzip process
-            // completed (because after that the zip is deleted), so the next step is to unzip
+            // zip‑файл существует — скачивание завершилось, но распаковка прервалась
+            // (zip удаляется после успешной распаковки), значит следующий шаг — распаковка
             modelZipFile.exists() -> Downloaded
-            // if the model zip file does not exist, but the model directory exists, then the model
-            // has been completely downloaded and unzipped, and should be ready to be loaded
+            // zip отсутствует, но каталог модели есть — модель скачана и распакована,
+            // можно переходить к загрузке в память
             modelExistFileCheck.isDirectory -> NotLoaded
-            // if the both the model zip file and the model directory do not exist, then the model
-            // has not been downloaded yet
+            // если нет ни zip, ни каталога — модель ещё не скачивалась
             else -> NotDownloaded(modelUrl)
         }
     }
 
     private suspend fun reinit(locale: Locale) {
-        // interrupt whatever was happening before
+        // Останавливаем возможные фоновые процессы
         deinit()
 
-        // reinitialize and emit the new state
+        // Инициализируем заново и публикуем новое состояние
         val initialState = init(locale)
         _state.emit(initialState)
     }
@@ -159,19 +164,21 @@ class VoskInputDevice(
     private suspend fun deinit() {
         val prevState = _state.getAndUpdate { NotInitialized }
         when (prevState) {
-            // either interrupt the current
+            // Прерываем операции скачивания
             is Downloading -> {
                 operationsJob?.cancel()
                 operationsJob?.join()
             }
+            // Прерываем распаковку
             is Unzipping -> {
                 operationsJob?.cancel()
                 operationsJob?.join()
             }
+            // Ждём окончания загрузки модели
             is Loading -> {
                 operationsJob?.join()
                 when (val s = _state.getAndUpdate { NotInitialized }) {
-                    NotInitialized -> {} // everything is ok
+                    NotInitialized -> {}
                     is Loaded -> {
                         s.speechService.stop()
                         s.speechService.shutdown()
@@ -181,20 +188,22 @@ class VoskInputDevice(
                         s.speechService.shutdown()
                     }
                     else -> {
-                        Log.w(TAG, "Unexpected state after loading: $s")
+                        Log.w(TAG, "Неожиданное состояние после загрузки: $s")
                     }
                 }
             }
+            // Остановка сервиса, если он уже загружен
             is Loaded -> {
                 prevState.speechService.stop()
                 prevState.speechService.shutdown()
             }
+            // Завершение прослушивания, если модель активна
             is Listening -> {
                 stopListening(prevState.speechService, prevState.eventListener, true)
                 prevState.speechService.shutdown()
             }
 
-            // these states are all resting states, so there is nothing to interrupt
+            // Пассивные состояния — ничего делать не нужно
             is NotInitialized,
             is NotAvailable,
             is NotDownloaded,
@@ -207,16 +216,15 @@ class VoskInputDevice(
     }
 
     /**
-     * Loads the model with [thenStartListeningEventListener] if the model is already downloaded
-     * but not loaded in RAM (which will then start listening if [thenStartListeningEventListener]
-     * is not `null` and pass events there), or starts listening if the model is already ready
-     * and [thenStartListeningEventListener] is not `null` and passes events there.
+     * Загружает модель, если она скачана, но ещё не в памяти.
+     * При переданном [thenStartListeningEventListener] сразу запускает прослушивание
+     * и направляет события в этот обработчик.
+     * Если модель уже загружена, просто начинает слушать.
      *
-     * @param thenStartListeningEventListener if not `null`, causes the [VoskInputDevice] to start
-     * listening after it has finished loading, and the received input events are sent there
-     * @return `true` if the input device will start listening (or be ready to do so in case
-     * `thenStartListeningEventListener == null`) at some point,
-     * `false` if manual user intervention is required to start listening
+     * @param thenStartListeningEventListener обработчик событий распознавания;
+     *   если `null`, устройство лишь подготовится к работе
+     * @return `true`, если устройство начнёт слушать (или будет готово к этому),
+     *   `false` — если требуется дополнительное действие пользователя
      */
     override fun tryLoad(thenStartListeningEventListener: ((InputEvent) -> Unit)?): Boolean {
         val s = _state.value
@@ -232,38 +240,36 @@ class VoskInputDevice(
     }
 
     /**
-     * If the model is not being downloaded/unzipped/loaded, or if there was an error in any of
-     * those steps, downloads/unzips/loads the model. If the model is already loaded (or is being
-     * loaded) toggles listening state.
+     * Обрабатывает нажатие на кнопку микрофона.
+     * В зависимости от текущего состояния запускает загрузку, распаковку,
+     * загрузку модели в память или переключает режим прослушивания.
      *
-     * @param eventListener only used if this click causes Vosk to start listening, will receive all
-     * updates for this run
+     * @param eventListener используется только если по клику
+     *   начинается прослушивание — тогда сюда приходят все события
      */
     override fun onClick(eventListener: (InputEvent) -> Unit) {
-        // the state can only be changed in the background by the jobs corresponding to Downloading,
-        // Unzipping and Loading, but as can be seen below we don't do anything in case of
-        // Downloading and Unzipping. For Loading however, special measures are taken in
-        // toggleThenStartListening() and in load() to ensure the button click is not lost nor has
-        // any unwanted behavior if the state changes right after checking its value in this switch.
+        // Состояние меняется только внутри фоновых задач Downloading/Unzipping/Loading.
+        // Для случаев загрузки предусмотрены специальные меры (toggleThenStartListening и load),
+        // чтобы не потерять клик пользователя при резкой смене состояния.
         when (val s = _state.value) {
-            is NotInitialized -> {} // wait for initialization to happen
-            is NotAvailable -> {} // nothing to do
+            is NotInitialized -> {} // ждём завершения инициализации
+            is NotAvailable -> {} // для языка нет модели
             is NotDownloaded -> download(s.modelUrl)
-            is Downloading -> {} // wait for download to finish
-            is ErrorDownloading -> download(s.modelUrl) // retry
+            is Downloading -> {} // ждём окончания скачивания
+            is ErrorDownloading -> download(s.modelUrl) // повторяем попытку
             is Downloaded -> unzip()
-            is Unzipping -> {} // wait for unzipping to finish
-            is ErrorUnzipping -> unzip() // retry
+            is Unzipping -> {} // ждём распаковки
+            is ErrorUnzipping -> unzip() // повторяем попытку
             is NotLoaded -> load(eventListener)
-            is Loading -> toggleThenStartListening(eventListener) // wait for loading to finish
-            is ErrorLoading -> load(eventListener) // retry
+            is Loading -> toggleThenStartListening(eventListener) // дождаться загрузки
+            is ErrorLoading -> load(eventListener) // повторяем попытку
             is Loaded -> startListening(s.speechService, eventListener)
             is Listening -> stopListening(s.speechService, s.eventListener, true)
         }
     }
 
     /**
-     * If the recognizer is currently listening, stops listening. Otherwise does nothing.
+     * Останавливает прослушивание, если оно активно.
      */
     override fun stopListening() {
         when (val s = _state.value) {
@@ -273,8 +279,9 @@ class VoskInputDevice(
     }
 
     /**
-     * Downloads the model zip file. Sets the state to [Downloading], and periodically updates it
-     * with downloading progress, until either [ErrorDownloading] or [Downloaded] are set as state.
+     * Скачивает zip-файл с моделью.
+     * Состояние переводится в [Downloading] и регулярно обновляется прогрессом.
+     * В конце переходит в [Downloaded] или [ErrorDownloading].
      */
     private fun download(modelUrl: String) {
         _state.value = Downloading(Progress.UNKNOWN)
@@ -289,11 +296,9 @@ class VoskInputDevice(
                     _state.value = Downloading(progress)
                 }
 
-                // downloadBinaryFilesWithPartial will update the sameModelUrlCheck file contents
-                // with the correct model url. We can do this safely now that the zip file with the
-                // correct model url is in place, since even if the app were closed after this
-                // step, the correct .zip will be extracted afterwards, even if modelExistFileCheck
-                // already exists.
+                // downloadBinaryFilesWithPartial переписывает файл проверки URL.
+                // Это безопасно, потому что zip уже скачан и при повторном запуске
+                // будет распакован корректный архив.
 
             } catch (e: IOException) {
                 Log.e(TAG, "Can't download Vosk model", e)
@@ -302,12 +307,12 @@ class VoskInputDevice(
             }
 
             _state.value = Unzipping(Progress.UNKNOWN)
-            unzipImpl() // reuse same job
+            unzipImpl() // используем ту же задачу для распаковки
         }
     }
 
     /**
-     * Sets the state to [Unzipping] and calls [unzipImpl] in the background.
+     * Переводит состояние в [Unzipping] и запускает распаковку в фоне.
      */
     private fun unzip() {
         _state.value = Unzipping(Progress.UNKNOWN)
@@ -318,14 +323,14 @@ class VoskInputDevice(
     }
 
     /**
-     * Unzips the downloaded model zip file. Assumes the state has already ben set to an
-     * indeterminate [Unzipping]`(0, 0)`, but periodically publishes states with unzipping progress.
-     * Will set the state to [ErrorUnzipping] or [NotLoaded] in the end. Also deletes the zip
-     * file once downloading is successfully complete, to save disk space.
+     * Распаковывает скачанный архив модели.
+     * Прогресс распаковки публикуется через состояние [Unzipping].
+     * После завершения zip удаляется, чтобы не занимать память.
+     * В случае ошибки устанавливается [ErrorUnzipping].
      */
     private suspend fun unzipImpl() {
         try {
-            // delete the model directory in case there are leftover files from other models
+            // На всякий случай удаляем предыдущую модель, если она есть
             modelDirectory.deleteRecursively()
             extractZip(
                 sourceZip = modelZipFile,
@@ -339,20 +344,19 @@ class VoskInputDevice(
             return
         }
 
-        // delete zip file after extraction to save memory
+        // После успешной распаковки удаляем архив
         if (!modelZipFile.delete()) {
-            Log.w(TAG, "Can't delete Vosk model zip: $modelZipFile")
+            Log.w(TAG, "Не удалось удалить zip модели: $modelZipFile")
         }
 
         _state.value = NotLoaded
     }
 
     /**
-     * Loads the model, and initially sets the state to [Loading] with [Loading.thenStartListening]
-     * = ([thenStartListeningEventListener] != `null`), and later either sets the state to [Loaded]
-     * or calls [startListening] by checking the current state's [Loading.thenStartListening]
-     * (which might have changed from ([thenStartListeningEventListener] != `null`) in the meantime,
-     * if the user clicked on the button while loading).
+     * Загружает модель в память и переводит состояние в [Loading].
+     * Если передан обработчик — после загрузки сразу начинает слушать.
+     * В процессе может произойти смена состояния по нажатию пользователя,
+     * поэтому проверяем актуальное значение [Loading.thenStartListening].
      */
     private fun load(thenStartListeningEventListener: ((InputEvent) -> Unit)?) {
         _state.value = Loading(thenStartListeningEventListener)
@@ -374,55 +378,48 @@ class VoskInputDevice(
             if (!_state.compareAndSet(Loading(null), Loaded(speechService))) {
                 val state = _state.value
                 if (state is Loading && state.thenStartListening != null) {
-                    // "state is Loading" will always be true except when the load() is begin
-                    // joined by init().
-                    // "state.thenStartListening" might be "null" if, in the brief moment between
-                    // the compareAndSet() and reading _state.value, the state was changed by
-                    // toggleThenStartListening().
+                    // В момент между compareAndSet и чтением состояния мог произойти клик,
+                    // поэтому проверяем актуальный обработчик и сразу запускаем прослушивание
                     startListening(speechService, state.thenStartListening)
 
                 } else if (!_state.compareAndSet(Loading(null, true), Loaded(speechService))) {
-                    // The current state is not the Loading state, which is unexpected. This means
-                    // that load() is begin joined by init(), which is reinitializing everything,
-                    // so we should drop the speechService.
+                    // Если состояние уже поменялось (например, из-за переинициализации),
+                    // просто освобождаем ресурсы без запуска сервиса
                     speechService.stop()
                     speechService.shutdown()
                 }
 
-            } // else, the state was set to Loaded, so no need to do anything
+            } // иначе состояние уже стало Loaded и дополнительных действий не требуется
         }
     }
 
     /**
-     * Atomically handles toggling the [Loading.thenStartListening] state, making sure that if in
-     * the meantime the value is changed by [load], the user click is not wasted, and the state
-     * machine does not end up in an inconsistent state.
+     * Атомарно меняет флаг [Loading.thenStartListening].
+     * Это нужно, чтобы клик пользователя не потерялся, если состояние
+     * изменится прямо во время загрузки модели.
      *
-     * @param eventListener used only if the model has finished loading in the brief moment between
-     * when the state is first checked, but if the state was switched to [Loaded] (and not
-     * [Listening]), which means that this click should start listening.
+     * @param eventListener используется, если загрузка уже завершена
+     *   и нужно сразу начать слушать
      */
     private fun toggleThenStartListening(eventListener: (InputEvent) -> Unit) {
         if (
             !_state.compareAndSet(Loading(null), Loading(eventListener)) &&
             !_state.compareAndSet(Loading(eventListener), Loading(null))
         ) {
-            // may happen if load() changes the state in the brief moment between when the state is
-            // first checked before calling this function, and when the checks above are performed
-            Log.w(TAG, "Cannot toggle thenStartListening")
+            // Такое возможно, если load() сменил состояние между проверками
+            Log.w(TAG, "Не удалось переключить thenStartListening")
             when (val newValue = _state.value) {
                 is Loaded -> startListening(newValue.speechService, eventListener)
                 is Listening -> stopListening(newValue.speechService, newValue.eventListener, true)
-                is ErrorLoading -> {} // ignore the user's click
-                // the else should never happen, since load() only transitions from Loading(...) to
-                // one of Loaded, Listening or ErrorLoading
-                else -> Log.e(TAG, "State was none of Loading, Loaded or Listening")
+                is ErrorLoading -> {} // игнорируем клик при ошибке загрузки
+                // В остальных состояниях оказаться не должны, это ошибка логики
+                else -> Log.e(TAG, "Состояние не Loading/Loaded/Listening")
             }
         }
     }
 
     /**
-     * Starts the speech service listening, and changes the state to [Listening].
+     * Запускает прослушивание и переводит состояние в [Listening].
      */
     private fun startListening(
         speechService: SpeechService,
@@ -433,8 +430,8 @@ class VoskInputDevice(
     }
 
     /**
-     * Stops the speech service from listening, and changes the state to [Loaded]. This is
-     * `internal` because it is used by [VoskListener].
+     * Останавливает прослушивание и возвращает состояние [Loaded].
+     * `internal`, чтобы [VoskListener] мог завершать работу.
      */
     internal fun stopListening(
         speechService: SpeechService,
@@ -450,7 +447,7 @@ class VoskInputDevice(
 
     override suspend fun destroy() {
         deinit()
-        // cancel everything
+        // Отменяем все запущенные корутины
         scope.cancel()
     }
 
@@ -460,7 +457,7 @@ class VoskInputDevice(
         private val TAG = VoskInputDevice::class.simpleName
 
         /**
-         * All small models from [Vosk](https://alphacephei.com/vosk/models)
+         * Ссылки на компактные модели [Vosk](https://alphacephei.com/vosk/models)
          */
         val MODEL_URLS = mapOf(
             "en" to "https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip",
