@@ -14,7 +14,7 @@ import kotlinx.coroutines.delay
 import org.dicio.skill.skill.SkillOutput
 import org.stypox.dicio.io.input.InputEvent
 import org.stypox.dicio.io.input.SttState
-import org.stypox.dicio.io.wake.WakeService.TRIGGER_WORD
+import org.stypox.dicio.io.wake.WakeService.Companion.TRIGGER_WORD
 import org.stypox.dicio.ui.home.HomeScreenViewModel
 import org.stypox.dicio.settings.datastore.UserSettings
 import java.util.Locale
