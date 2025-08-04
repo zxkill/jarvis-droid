@@ -10,6 +10,8 @@ object UserSettingsSerializer : Serializer<UserSettings> {
     override val defaultValue: UserSettings = UserSettings.getDefaultInstance()
         .toBuilder()
         .setAutoFinishSttPopup(true)
+        // По умолчанию показываем результат скилла 10 секунд
+        .setSkillOutputDisplaySeconds(10)
         .build()
 
     override suspend fun readFrom(input: InputStream): UserSettings {
