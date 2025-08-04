@@ -38,6 +38,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class MainActivity : BaseActivity() {
 
+    // Объекты внедряются через Hilt и позволяют взаимодействовать с системой.
     @Inject
     lateinit var skillEvaluator: SkillEvaluator
     @Inject
@@ -45,38 +46,43 @@ class MainActivity : BaseActivity() {
     @Inject
     lateinit var wakeDevice: WakeDeviceWrapper
 
+    // Отслеживаем запущенные корутины, чтобы вовремя отменять их.
     private var sttPermissionJob: Job? = null
     private var wakeServiceJob: Job? = null
 
+    // Время, после которого разрешено снова реагировать на интент помощника.
     private var nextAssistAllowed = Instant.MIN
 
     /**
-     * Automatically loads the LLM and the STT when the [ACTION_ASSIST] intent is received. Applies
-     * a backoff of [INTENT_BACKOFF_MILLIS], since during testing Android would send the assist
-     * intent to the app twice in a row.
+     * Метод вызывается при получении интента помощника ([ACTION_ASSIST]).
+     * Он загружает модель и модуль распознавания речи, но не чаще
+     * чем раз в [INTENT_BACKOFF_MILLIS], так как система иногда
+     * отправляет несколько одинаковых интентов подряд.
      */
     private fun onAssistIntentReceived() {
         val now = Instant.now()
         if (nextAssistAllowed < now) {
             nextAssistAllowed = now.plusMillis(INTENT_BACKOFF_MILLIS)
-            Log.d(TAG, "Received assist intent")
+            Log.d(TAG, "Получен интент ассистента")
             sttInputDevice.tryLoad(skillEvaluator::processInputEvent)
         } else {
-            Log.w(TAG, "Ignoring duplicate assist intent")
+            Log.w(TAG, "Повторный интент ассистента проигнорирован")
         }
     }
 
+    // Обработка интента, который пришёл от распознавания ключевой фразы.
+    // Если приложение запущено благодаря ключевой фразе, необходимо
+    // включить экран и показать активити поверх блокировки.
     private fun handleWakeWordTurnOnScreen(intent: Intent?) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1 &&
             intent?.action == ACTION_WAKE_WORD
         ) {
-            // Dicio was started anew based on a wake word,
-            // turn on the screen to let the user see what is happening
+            // Приложение было запущено по ключевой фразе, показываем экран.
             setShowWhenLocked(true)
             setTurnScreenOn(true)
         }
 
-        // the wake word triggered notification is not needed anymore
+        // Уведомление о срабатывании ключевой фразы больше не нужно.
         WakeService.cancelTriggeredNotification(this)
     }
 
@@ -98,8 +104,8 @@ class MainActivity : BaseActivity() {
         super.onStop()
         isInForeground -= 1
 
-        // once the activity is swiped away from the lock screen (or put in the background in any
-        // other way), we don't want to show it on the lock screen anymore
+        // Как только активити сворачивается или скрывается,
+        // убираем её с экрана блокировки.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
             setShowWhenLocked(false)
             setTurnScreenOn(false)
@@ -114,10 +120,11 @@ class MainActivity : BaseActivity() {
         if (isAssistIntent(intent)) {
             onAssistIntentReceived()
         } else if (intent.action != ACTION_WAKE_WORD) {
-            // load the input device, without starting to listen
+            // Загружаем устройство ввода, но не запускаем прослушивание.
             sttInputDevice.tryLoad(null)
         }
 
+        // Запускаем сервис, который слушает ключевое слово.
         WakeService.start(this)
         wakeServiceJob?.cancel()
         wakeServiceJob = lifecycleScope.launch {
@@ -128,18 +135,16 @@ class MainActivity : BaseActivity() {
                 ) { wakeState, permGranted ->
                     wakeState && permGranted.allGranted
                 }
-                // avoid restarting the service if the state changes but the resulting value
-                // in the flow remains true (which happens when the user stops the WakeService from
-                // the notification, which releases resources and makes the WakeDevice go from
-                // Loaded to NotLoaded)
+                // Перезапускаем сервис только когда итоговое значение меняется.
                 .distinctUntilChanged()
                 .filter { it }
                 .collect { WakeService.start(this@MainActivity) }
         }
 
+        // Если загрузка STT не удалась из-за отсутствия разрешения,
+        // после получения разрешения пробуем ещё раз.
         sttPermissionJob?.cancel()
         sttPermissionJob = lifecycleScope.launch {
-            // if the STT failed to load because of the missing permission, this will try again
             PermissionFlow.getInstance().getPermissionState(Manifest.permission.RECORD_AUDIO)
                 .drop(1)
                 .filter { it.isGranted }
@@ -161,8 +166,8 @@ class MainActivity : BaseActivity() {
     }
 
     override fun onDestroy() {
-        // the wake word service remains active in the background,
-        // so we need to release resources that it does not need manually
+        // Сервис ключевого слова продолжает работать в фоне,
+        // поэтому освобождаем ресурсы, которые ему не нужны.
         sttInputDevice.reinitializeToReleaseResources()
         isCreated -= 1
         super.onDestroy()
@@ -173,11 +178,13 @@ class MainActivity : BaseActivity() {
         private val TAG = MainActivity::class.simpleName
         const val ACTION_WAKE_WORD = "org.stypox.dicio.MainActivity.ACTION_WAKE_WORD"
 
+        // Счётчики нужны для отслеживания жизненного цикла активити из других частей приложения.
         var isInForeground: Int = 0
             private set
         var isCreated: Int = 0
             private set
 
+        // Проверяет, относится ли интент к ассистенту.
         private fun isAssistIntent(intent: Intent?): Boolean {
             return when (intent?.action) {
                 ACTION_ASSIST, ACTION_VOICE_COMMAND -> true

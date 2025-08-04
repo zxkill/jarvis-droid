@@ -25,25 +25,26 @@ import org.stypox.dicio.ui.util.Progress
 import org.vosk.android.SpeechService
 
 /**
- * The internal state for [VoskInputDevice]. This is an enum with different fields depending on the
- * current state, to avoid having nullable objects all over the place in [VoskInputDevice].
- * [SttState] is symmetrical to this enum, except that it does not expose implementation-defined
- * fields to the UI, such as [SpeechService].
+ * Описание внутренних состояний [VoskInputDevice].
+ * Для каждого шага работы используется отдельный вариант, что позволяет
+ * избегать множества `null`‑полей и чётко отслеживать прогресс.
+ * Класс [SttState] зеркалирует эти состояния, но не содержит
+ * специфичных для реализации объектов вроде [SpeechService].
  */
 sealed interface VoskState {
 
     /**
-     * The VoskInputDevice has not been initialized yet, or has just been deinitialized
+     * Устройство ещё не инициализировано или только что деинициализировалось
      */
     data object NotInitialized : VoskState
 
     /**
-     * The model is not available for the current locale
+     * Для текущей локали нет подходящей модели Vosk
      */
     data object NotAvailable : VoskState
 
     /**
-     * The model is not present on disk, neither in unzipped and in zipped form.
+     * Модель отсутствует на устройстве — её ещё не скачивали
      */
     data class NotDownloaded(
         val modelUrl: String
@@ -61,7 +62,7 @@ sealed interface VoskState {
     data object Downloaded : VoskState
 
     /**
-     * Vosk models are distributed in Zip files that need unzipping to be ready.
+     * Модель скачана, но находится в zip‑архиве и требует распаковки
      */
     data class Unzipping(
         val progress: Progress
@@ -72,16 +73,14 @@ sealed interface VoskState {
     ) : VoskState
 
     /**
-     * The model is present on disk, but was not loaded in RAM yet.
+     * Модель распакована, но ещё не загружена в память
      */
     data object NotLoaded : VoskState
 
     /**
-     * The model is being loaded, and the nullity of [thenStartListening] indicates whether once
-     * loading is finished, the STT should start listening right away.
-     * [shouldEqualAnyLoading] is used just to create a [Loading] object with compares equal to any
-     * other [Loading], but [Loading] with [shouldEqualAnyLoading]` = true` will never appear as a
-     * state.
+     * Модель загружается в память.
+     * Если [thenStartListening] не `null`, после загрузки сразу начнётся прослушивание.
+     * Поле [shouldEqualAnyLoading] помогает атомарно сравнивать объекты состояния.
      */
     data class Loading(
         val thenStartListening: ((InputEvent) -> Unit)?,
@@ -105,14 +104,14 @@ sealed interface VoskState {
     ) : VoskState
 
     /**
-     * The model, stored in [SpeechService], is ready in RAM, and can start listening at any time.
+     * Модель загружена в память ([SpeechService]) и готова к использованию
      */
     data class Loaded(
         internal val speechService: SpeechService
     ) : VoskState
 
     /**
-     * The model, stored in [SpeechService], is listening.
+     * Модель активна и слушает входящий звук
      */
     data class Listening(
         internal val speechService: SpeechService,
@@ -120,8 +119,7 @@ sealed interface VoskState {
     ) : VoskState
 
     /**
-     * Converts this [VoskState] to a [SttState], which is basically the same, except that
-     * implementation-defined fields (e.g. [SpeechService]) are stripped away.
+     * Преобразует [VoskState] в [SttState], удаляя поля, зависящие от реализации
      */
     fun toUiState(): SttState {
         return when (this) {
