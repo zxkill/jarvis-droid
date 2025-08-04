@@ -169,9 +169,18 @@ class SttInputDeviceWrapperImpl(
 
     // Загружает устройство и при необходимости начинает слушать пользователя.
     override fun tryLoad(thenStartListeningEventListener: ((InputEvent) -> Unit)?): Boolean {
-        return sttInputDevice?.tryLoad(if (thenStartListeningEventListener != null) {
+        val listener = if (thenStartListeningEventListener != null) {
             wrapEventListener(thenStartListeningEventListener)
-        } else { null }) ?: false
+        } else null
+
+        val device = sttInputDevice ?: return false
+        val loaded = device.tryLoad(listener)
+        if (!loaded && listener != null) {
+            // Automatically trigger download and loading of the model if it is not ready yet.
+            device.onClick(listener)
+            return true
+        }
+        return loaded
     }
 
     // Останавливает прослушивание.
