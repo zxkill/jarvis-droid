@@ -49,8 +49,8 @@ android {
     buildTypes {
         debug {
             var normalizedGitBranch = gitBranch().replaceFirst("^[^A-Za-z]+", "").replace(Regex("[^0-9A-Za-z]+"), "")
-            applicationIdSuffix = ".$normalizedGitBranch"
-            versionNameSuffix = "-$normalizedGitBranch"
+            //applicationIdSuffix = ".$normalizedGitBranch"
+            //versionNameSuffix = "-$normalizedGitBranch"
 
             resValue("string", "app_name", "Dicio-${gitBranch()}")
         }

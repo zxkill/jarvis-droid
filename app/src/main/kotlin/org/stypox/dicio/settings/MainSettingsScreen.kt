@@ -200,7 +200,7 @@ private fun MainSettingsScreen(
     }
 }
 
-@Preview
+@Preview(locale = "ru")
 @Composable
 private fun MainSettingsScreenPreview() {
     AppTheme {
@@ -219,7 +219,7 @@ private fun MainSettingsScreenPreview() {
     }
 }
 
-@Preview
+@Preview(locale = "ru")
 @Composable
 private fun MainSettingsScreenWithTopBarPreview() {
     AppTheme {

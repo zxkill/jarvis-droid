@@ -264,7 +264,7 @@ private fun SkillSettingsItemHeader(
     }
 }
 
-@Preview
+@Preview(locale = "ru")
 @Composable
 fun SkillSettingsItemPermissionLine(
     @PreviewParameter(SkillInfoPreviews::class) skill: SkillInfo,
@@ -313,7 +313,7 @@ fun SkillSettingsItemPermissionLine(
     }
 }
 
-@Preview
+@Preview(locale = "ru")
 @Composable
 private fun SkillSettingsItemPreview(@PreviewParameter(SkillInfoPreviews::class) skill: SkillInfo) {
     var expanded by rememberSaveable { mutableStateOf(true) }
@@ -328,7 +328,7 @@ private fun SkillSettingsItemPreview(@PreviewParameter(SkillInfoPreviews::class)
 }
 
 // this preview is useful to take screenshots
-@Preview
+@Preview(locale = "ru")
 @Composable
 private fun ThreeSkillSettingsItemsPreview() {
     AppTheme {
@@ -369,7 +369,7 @@ private fun ThreeSkillSettingsItemsPreview() {
     }
 }
 
-@Preview
+@Preview(locale = "ru")
 @Composable
 private fun SkillSettingsScreenPreview() {
     AppTheme {
@@ -388,7 +388,7 @@ private fun SkillSettingsScreenPreview() {
     }
 }
 
-@Preview
+@Preview(locale = "ru")
 @Composable
 private fun SkillSettingsScreenWithTopBarPreview() {
     AppTheme {

@@ -85,7 +85,7 @@ data class ErrorSkillOutput(
     }
 }
 
-@Preview
+@Preview(locale = "ru")
 @Composable
 private fun NetworkErrorNotSkillPreview() {
     ErrorSkillOutput(
@@ -94,7 +94,7 @@ private fun NetworkErrorNotSkillPreview() {
     ).GraphicalOutput(ctx = SkillContextImpl.newForPreviews(LocalContext.current))
 }
 
-@Preview
+@Preview(locale = "ru")
 @Composable
 private fun NetworkErrorFromSkillPreview() {
     ErrorSkillOutput(
@@ -103,7 +103,7 @@ private fun NetworkErrorFromSkillPreview() {
     ).GraphicalOutput(ctx = SkillContextImpl.newForPreviews(LocalContext.current))
 }
 
-@Preview
+@Preview(locale = "ru")
 @Composable
 private fun OtherErrorNotSkillPreview() {
     ErrorSkillOutput(
@@ -112,7 +112,7 @@ private fun OtherErrorNotSkillPreview() {
     ).GraphicalOutput(ctx = SkillContextImpl.newForPreviews(LocalContext.current))
 }
 
-@Preview
+@Preview(locale = "ru")
 @Composable
 private fun OtherErrorFromSkillPreview() {
     ErrorSkillOutput(
