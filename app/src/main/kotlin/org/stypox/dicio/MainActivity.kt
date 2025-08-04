@@ -131,7 +131,7 @@ class MainActivity : BaseActivity() {
             wakeDevice.state
                 .map { it == NotLoaded || it == Loading || it == Loaded }
                 .combine(
-                    PermissionFlow.getInstance().getMultiplePermissionState()
+                    PermissionFlow.getInstance().getMultiplePermissionState(Manifest.permission.RECORD_AUDIO)
                 ) { wakeState, permGranted ->
                     wakeState && permGranted.allGranted
                 }
