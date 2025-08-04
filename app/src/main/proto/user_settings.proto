@@ -20,4 +20,6 @@ message UserSettings {
     map<string, bool> enabled_skills = 7;
     WakeDevice wake_device = 8;
     SttPlaySound stt_play_sound = 9;
+    // Время отображения результата скилла на экране в секундах
+    int32 skill_output_display_seconds = 10;
 }

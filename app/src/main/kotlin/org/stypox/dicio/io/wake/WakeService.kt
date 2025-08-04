@@ -341,7 +341,8 @@ class WakeService : Service() {
         private const val ACTION_STOP_WAKE_SERVICE =
             "org.stypox.dicio.io.wake.WakeService.ACTION_STOP"
         private const val RELEASE_STT_RESOURCES_MILLIS = 1000L * 60 * 5 // 5 minutes
-        private const val TRIGGER_WORD = "Джарвис"
+        // Ключевое слово, с которого должны начинаться все голосовые команды
+        const val TRIGGER_WORD = "Джарвис"
     }
 }
 
