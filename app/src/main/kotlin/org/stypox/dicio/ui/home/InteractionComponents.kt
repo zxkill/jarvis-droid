@@ -92,13 +92,13 @@ fun InteractionList(
         state = listState,
     ) {
         countedItem(canBeAnchor = false) {
-            if (wakeState != null) {
+            /*if (wakeState != null) {
                 WakeWordWidget(
                     wakeState = wakeState,
                     onWakeDownload = onWakeDownload,
                     onWakeDisable = onWakeDisable,
                 )
-            }
+            }*/
         }
 
         countedItem(canBeAnchor = false) {
@@ -249,7 +249,7 @@ fun ConfirmedQuestionCard(
     }
 }
 
-@Preview
+@Preview(locale = "ru")
 @Composable
 fun LoadingAnswerCard(@PreviewParameter(SkillInfoPreviews::class) skill: SkillInfo) {
     MessageCard(containerColor = MaterialTheme.colorScheme.secondaryContainer) {
@@ -285,7 +285,7 @@ fun SkillAnswerCard(content: @Composable BoxScope.() -> Unit) {
     }
 }
 
-@Preview
+@Preview(locale = "ru")
 @Composable
 fun SkillAnswerCardPreview(@PreviewParameter(SkillOutputPreviews::class) skillOutput: SkillOutput) {
     SkillAnswerCard {
