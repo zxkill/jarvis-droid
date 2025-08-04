@@ -71,6 +71,9 @@ class MainSettingsViewModel @Inject constructor(
         updateData { it.setSpeechOutputDevice(value) }
     fun setSttPlaySound(value: SttPlaySound) =
         updateData { it.setSttPlaySound(value) }
+    // Устанавливаем время отображения результата скилла
+    fun setSkillOutputDisplaySeconds(value: Int) =
+        updateData { it.setSkillOutputDisplaySeconds(value) }
     fun setAutoFinishSttPopup(value: Boolean) =
         updateData { it.setAutoFinishSttPopup(value) }
 }

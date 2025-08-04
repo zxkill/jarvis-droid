@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Intent
 import android.content.Intent.ACTION_ASSIST
 import android.content.Intent.ACTION_VOICE_COMMAND
+import android.content.pm.ActivityInfo
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -114,6 +115,8 @@ class MainActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Переводим приложение в альбомную ориентацию при запуске
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
         isCreated += 1
 
         handleWakeWordTurnOnScreen(intent)
