@@ -49,6 +49,8 @@ import org.dicio.skill.skill.SkillOutput
 import org.stypox.dicio.di.SkillContextImpl
 import org.stypox.dicio.io.wake.WakeState
 import org.stypox.dicio.ui.theme.AppTheme
+import org.stypox.dicio.ui.eyes.AnimatedEyes
+import org.stypox.dicio.ui.eyes.rememberEyesState
 import org.stypox.dicio.ui.util.InteractionLogPreviews
 import org.stypox.dicio.ui.util.SkillInfoPreviews
 import org.stypox.dicio.ui.util.SkillOutputPreviews
@@ -68,6 +70,9 @@ fun InteractionList(
     onWakeDisable: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // состояние для анимированных глаз, отображающихся в верхней части списка
+    val eyesState = rememberEyesState()
+
     var totalItemCount = 0
     var lastAnchorIndex = 0
     fun LazyListScope.countedItem(
@@ -91,6 +96,11 @@ fun InteractionList(
         verticalArrangement = Arrangement.spacedBy(8.dp),
         state = listState,
     ) {
+        // сначала отображаем пару анимированных глаз
+        countedItem(canBeAnchor = false) {
+            AnimatedEyes(state = eyesState)
+        }
+
         countedItem(canBeAnchor = false) {
             /*if (wakeState != null) {
                 WakeWordWidget(
