@@ -1,6 +1,5 @@
 package org.stypox.dicio.ui.face
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
@@ -16,6 +15,8 @@ import org.stypox.dicio.io.input.InputEvent
 import org.stypox.dicio.io.input.SttState
 import org.stypox.dicio.io.wake.WakeService.Companion.TRIGGER_WORD
 import org.stypox.dicio.ui.home.HomeScreenViewModel
+import org.stypox.dicio.ui.eyes.AnimatedEyes
+import org.stypox.dicio.ui.eyes.rememberEyesState
 import org.stypox.dicio.settings.datastore.UserSettings
 import java.util.Locale
 
@@ -160,20 +161,17 @@ fun RobotFaceScreen(
 }
 
 /**
- * Простейшее отображение глаз — два белых круга на чёрном фоне.
+ * Отображение пары анимированных глаз. Благодаря [rememberEyesState]
+ * анимации и выбранная эмоция сохраняются между перерисовками.
  */
 @Composable
 fun RobotEyes(modifier: Modifier = Modifier) {
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.SpaceEvenly,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Canvas(modifier = Modifier.size(80.dp)) {
-            drawCircle(Color.White)
-        }
-        Canvas(modifier = Modifier.size(80.dp)) {
-            drawCircle(Color.White)
-        }
-    }
+    val eyesState = rememberEyesState()
+
+    AnimatedEyes(
+        state = eyesState,
+        modifier = modifier
+            .fillMaxWidth()
+            .height(160.dp),
+    )
 }
