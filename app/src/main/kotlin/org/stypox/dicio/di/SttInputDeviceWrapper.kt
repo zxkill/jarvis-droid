@@ -76,6 +76,7 @@ class SttInputDeviceWrapperImpl(
     override val uiState: StateFlow<SttState?> = _uiState
     private var uiStateJob: Job? = null
     private var playListeningSoundNextTime = true
+    private var playNoInputSoundNextTime = true
 
     init {
         // Выполняем блокирующее чтение, потому что DataStore доступен сразу.
@@ -166,7 +167,7 @@ class SttInputDeviceWrapperImpl(
 
     // Добавляет к слушателю событие проигрывания звука при отсутствии распознанной речи.
     private fun wrapEventListener(eventListener: (InputEvent) -> Unit): (InputEvent) -> Unit = {
-        if (it is InputEvent.None) {
+        if (it is InputEvent.None && playNoInputSoundNextTime) {
             scope.launch {
                 playSound(R.raw.listening_no_input_sound)
             }
@@ -185,6 +186,7 @@ class SttInputDeviceWrapperImpl(
 
         val device = sttInputDevice ?: return false
         playListeningSoundNextTime = playSound
+        playNoInputSoundNextTime = playSound
         val loaded = device.tryLoad(listener)
         if (!loaded && listener != null) {
             // Automatically trigger download and loading of the model if it is not ready yet.

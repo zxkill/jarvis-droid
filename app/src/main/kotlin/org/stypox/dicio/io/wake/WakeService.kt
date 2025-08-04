@@ -110,9 +110,9 @@ class WakeService : Service() {
             is InputEvent.Partial -> {}
             is InputEvent.Error -> {
                 Log.e(TAG, "Error during STT", event.throwable)
-                restartListening()
+                restartListening(playSound = false)
             }
-            InputEvent.None -> restartListening()
+            InputEvent.None -> restartListening(playSound = false)
             is InputEvent.Final -> {
                 val triggered = handleFinalEvent(event)
                 restartListening(playSound = triggered)
