@@ -46,9 +46,12 @@ enum class EyeExpression {
  * извне через удобные методы [setExpression] и [lookAt].
  */
 class EyesState {
-    // Текущая эмоция
-    var expression by mutableStateOf(EyeExpression.NEUTRAL)
-        private set
+    // Текущая эмоция хранится во внутреннем стейте
+    private var _expression by mutableStateOf(EyeExpression.NEUTRAL)
+
+    /** Текущая эмоция глаз – доступна только для чтения */
+    val expression: EyeExpression
+        get() = _expression
 
     // Куда "смотрят" зрачки. Диапазон -1..1 по каждой оси.
     var lookX by mutableStateOf(0f)
@@ -58,7 +61,7 @@ class EyesState {
 
     /** Установить новую эмоцию глаз */
     fun setExpression(newExpression: EyeExpression) {
-        expression = newExpression
+        _expression = newExpression
     }
 
     /** Повернуть взгляд в указанную сторону. Значения ограничиваются диапазоном -1..1 */
