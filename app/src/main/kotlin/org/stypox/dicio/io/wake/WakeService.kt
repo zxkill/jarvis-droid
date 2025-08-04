@@ -125,8 +125,9 @@ class WakeService : Service() {
         val text = utterance.first
         val confidence = utterance.second
         val lower = text.lowercase(Locale.getDefault())
-        if (lower.startsWith(TRIGGER_WORD)) {
-            val command = text.substring(TRIGGER_WORD.length).trim()
+        val triggerWord = TRIGGER_WORD.lowercase(Locale.getDefault())
+        if (lower.startsWith(triggerWord)) {
+            val command = text.substring(triggerWord.length).trim()
             if (command.isNotEmpty()) {
                 skillEvaluator.processInputEvent(
                     InputEvent.Final(listOf(Pair(command, confidence)))
