@@ -12,9 +12,12 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.delay
 import org.dicio.skill.skill.SkillOutput
+import org.stypox.dicio.io.input.InputEvent
 import org.stypox.dicio.io.input.SttState
+import org.stypox.dicio.io.wake.WakeService.TRIGGER_WORD
 import org.stypox.dicio.ui.home.HomeScreenViewModel
 import org.stypox.dicio.settings.datastore.UserSettings
+import java.util.Locale
 
 /**
  * Экран с лицом робота. Показывает два глаза и выводит ответы скиллов.
@@ -55,7 +58,62 @@ fun RobotFaceScreen(
     // непрерывную работу без дополнительных нажатий.
     LaunchedEffect(sttState) {
         if (sttState == SttState.Loaded) {
-            viewModel.sttInputDevice.onClick(viewModel.skillEvaluator::processInputEvent)
+            // После завершения предыдущего распознавания устройство снова готово
+            // слушать. Здесь назначаем обработчик, который пропускает дальше
+            // только те команды, которые начинаются с ключевого слова.
+            viewModel.sttInputDevice.onClick { event ->
+                when (event) {
+                    is InputEvent.Partial -> {
+                        // Промежуточный текст показываем только если пользователь
+                        // уже произнёс ключевое слово.
+                        val lower = event.utterance.lowercase(Locale.getDefault())
+                        val trigger = TRIGGER_WORD.lowercase(Locale.getDefault())
+                        if (lower.startsWith(trigger)) {
+                            val trimmed = event.utterance.substring(trigger.length).trim()
+                            if (trimmed.isNotEmpty()) {
+                                viewModel.skillEvaluator.processInputEvent(
+                                    InputEvent.Partial(trimmed)
+                                )
+                            }
+                        }
+                    }
+                    is InputEvent.Final -> {
+                        // Итоговое распознавание. Проверяем наличие ключевого слова
+                        // в начале фразы и передаём дальше только команду без него.
+                        val utterance = event.utterances.firstOrNull()
+                        val trigger = TRIGGER_WORD.lowercase(Locale.getDefault())
+                        if (utterance != null) {
+                            val text = utterance.first
+                            val confidence = utterance.second
+                            val lower = text.lowercase(Locale.getDefault())
+                            if (lower.startsWith(trigger)) {
+                                val command = text.substring(trigger.length).trim()
+                                if (command.isNotEmpty()) {
+                                    viewModel.skillEvaluator.processInputEvent(
+                                        InputEvent.Final(listOf(Pair(command, confidence)))
+                                    )
+                                } else {
+                                    // Было сказано только ключевое слово — очищаем ввод
+                                    viewModel.skillEvaluator.processInputEvent(InputEvent.None)
+                                }
+                            } else {
+                                // Фраза не содержит ключевое слово, игнорируем её
+                                viewModel.skillEvaluator.processInputEvent(InputEvent.None)
+                            }
+                        } else {
+                            viewModel.skillEvaluator.processInputEvent(InputEvent.None)
+                        }
+                    }
+                    InputEvent.None -> {
+                        // Пользователь молчал — передаём событие далее без изменений
+                        viewModel.skillEvaluator.processInputEvent(InputEvent.None)
+                    }
+                    is InputEvent.Error -> {
+                        // Ошибки передаём напрямую обработчику
+                        viewModel.skillEvaluator.processInputEvent(event)
+                    }
+                }
+            }
         }
     }
 
