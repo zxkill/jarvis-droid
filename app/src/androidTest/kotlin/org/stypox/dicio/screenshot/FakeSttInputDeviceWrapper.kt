@@ -8,7 +8,10 @@ import org.stypox.dicio.io.input.SttState
 class FakeSttInputDeviceWrapper : SttInputDeviceWrapper {
     override val uiState: MutableStateFlow<SttState> = MutableStateFlow(SttState.NotInitialized)
 
-    override fun tryLoad(thenStartListeningEventListener: ((InputEvent) -> Unit)?): Boolean {
+    override fun tryLoad(
+        thenStartListeningEventListener: ((InputEvent) -> Unit)?,
+        playSound: Boolean,
+    ): Boolean {
         return true
     }
 

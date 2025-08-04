@@ -42,7 +42,11 @@ interface SttInputDeviceWrapper {
     val uiState: StateFlow<SttState?>
 
     // Пытается загрузить устройство. Если передан обработчик, то сразу начинает слушать.
-    fun tryLoad(thenStartListeningEventListener: ((InputEvent) -> Unit)?): Boolean
+    // playSound указывает, воспроизводить ли звук начала прослушивания.
+    fun tryLoad(
+        thenStartListeningEventListener: ((InputEvent) -> Unit)?,
+        playSound: Boolean = true,
+    ): Boolean
 
     // Останавливает прослушивание.
     fun stopListening()
@@ -71,7 +75,7 @@ class SttInputDeviceWrapperImpl(
     private val _uiState: MutableStateFlow<SttState?> = MutableStateFlow(null)
     override val uiState: StateFlow<SttState?> = _uiState
     private var uiStateJob: Job? = null
-
+    private var playListeningSoundNextTime = true
 
     init {
         // Выполняем блокирующее чтение, потому что DataStore доступен сразу.
@@ -131,7 +135,10 @@ class SttInputDeviceWrapperImpl(
                 newSttInputDevice.uiState.collect {
                     _uiState.emit(it)
                     if (it == SttState.Listening) {
-                        playSound(R.raw.listening_sound)
+                        if (playListeningSoundNextTime) {
+                            playSound(R.raw.listening_sound)
+                        }
+                        playListeningSoundNextTime = true
                     }
                 }
             }
@@ -168,12 +175,16 @@ class SttInputDeviceWrapperImpl(
     }
 
     // Загружает устройство и при необходимости начинает слушать пользователя.
-    override fun tryLoad(thenStartListeningEventListener: ((InputEvent) -> Unit)?): Boolean {
+    override fun tryLoad(
+        thenStartListeningEventListener: ((InputEvent) -> Unit)?,
+        playSound: Boolean,
+    ): Boolean {
         val listener = if (thenStartListeningEventListener != null) {
             wrapEventListener(thenStartListeningEventListener)
         } else null
 
         val device = sttInputDevice ?: return false
+        playListeningSoundNextTime = playSound
         val loaded = device.tryLoad(listener)
         if (!loaded && listener != null) {
             // Automatically trigger download and loading of the model if it is not ready yet.
