@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.delay
 import org.dicio.skill.skill.SkillOutput
+import org.stypox.dicio.io.input.SttState
 import org.stypox.dicio.ui.home.HomeScreenViewModel
 import org.stypox.dicio.settings.datastore.UserSettings
 
@@ -36,6 +37,9 @@ fun RobotFaceScreen(
     // Состояние видимого вывода
     var visibleOutput by remember { mutableStateOf<SkillOutput?>(null) }
 
+    // Текущее состояние устройства распознавания речи
+    val sttState by viewModel.sttInputDevice.uiState.collectAsState()
+
     // При появлении нового вывода показываем его на экране ограниченное время
     LaunchedEffect(latestOutput) {
         if (latestOutput != null) {
@@ -45,9 +49,14 @@ fun RobotFaceScreen(
         }
     }
 
-    // При входе на экран сразу запускаем прослушивание
-    LaunchedEffect(Unit) {
-        viewModel.sttInputDevice.onClick(viewModel.skillEvaluator::processInputEvent)
+    // Автоматически запускаем прослушивание, как только устройство готово.
+    // После обработки команды состояние возвращается в Loaded,
+    // и эта корутина снова активирует прослушивание, обеспечивая
+    // непрерывную работу без дополнительных нажатий.
+    LaunchedEffect(sttState) {
+        if (sttState == SttState.Loaded) {
+            viewModel.sttInputDevice.onClick(viewModel.skillEvaluator::processInputEvent)
+        }
     }
 
     Box(
