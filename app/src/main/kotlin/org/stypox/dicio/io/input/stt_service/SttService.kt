@@ -53,53 +53,55 @@ class SttService : RecognitionService() {
         }
 
         var beginningOfSpeech = true
-        val willStartListening = sttInputDevice.tryLoad { inputEvent ->
-            when (inputEvent) {
-                is InputEvent.Error -> {
-                    logRemoteExceptions { listener.error(SpeechRecognizer.ERROR_SERVER) }
-                }
-
-                is InputEvent.Final -> {
-                    if (beginningOfSpeech) {
-                        logRemoteExceptions { listener.beginningOfSpeech() }
-                        beginningOfSpeech = false
+        val willStartListening = sttInputDevice.tryLoad(
+            thenStartListeningEventListener = { inputEvent ->
+                when (inputEvent) {
+                    is InputEvent.Error -> {
+                        logRemoteExceptions { listener.error(SpeechRecognizer.ERROR_SERVER) }
                     }
 
-                    val results = Bundle()
-                    results.putStringArrayList(
-                        SpeechRecognizer.RESULTS_RECOGNITION,
-                        ArrayList(inputEvent.utterances.map { it.first })
-                    )
-                    results.putFloatArray(
-                        SpeechRecognizer.CONFIDENCE_SCORES,
-                        inputEvent.utterances.map { it.second }.toFloatArray()
-                    )
+                    is InputEvent.Final -> {
+                        if (beginningOfSpeech) {
+                            logRemoteExceptions { listener.beginningOfSpeech() }
+                            beginningOfSpeech = false
+                        }
 
-                    logRemoteExceptions { listener.results(results) }
-                    logRemoteExceptions { listener.endOfSpeech() }
-                }
+                        val results = Bundle()
+                        results.putStringArrayList(
+                            SpeechRecognizer.RESULTS_RECOGNITION,
+                            ArrayList(inputEvent.utterances.map { it.first })
+                        )
+                        results.putFloatArray(
+                            SpeechRecognizer.CONFIDENCE_SCORES,
+                            inputEvent.utterances.map { it.second }.toFloatArray()
+                        )
 
-                InputEvent.None -> {
-                    logRemoteExceptions { listener.error(SpeechRecognizer.ERROR_SPEECH_TIMEOUT) }
-                    logRemoteExceptions { listener.endOfSpeech() }
-                }
-
-                is InputEvent.Partial -> {
-                    if (beginningOfSpeech) {
-                        logRemoteExceptions { listener.beginningOfSpeech() }
-                        beginningOfSpeech = false
+                        logRemoteExceptions { listener.results(results) }
+                        logRemoteExceptions { listener.endOfSpeech() }
                     }
 
-                    val partResult = Bundle()
-                    partResult.putStringArrayList(
-                        SpeechRecognizer.RESULTS_RECOGNITION,
-                        arrayListOf(inputEvent.utterance)
-                    )
+                    InputEvent.None -> {
+                        logRemoteExceptions { listener.error(SpeechRecognizer.ERROR_SPEECH_TIMEOUT) }
+                        logRemoteExceptions { listener.endOfSpeech() }
+                    }
 
-                    logRemoteExceptions { listener.partialResults(partResult) }
+                    is InputEvent.Partial -> {
+                        if (beginningOfSpeech) {
+                            logRemoteExceptions { listener.beginningOfSpeech() }
+                            beginningOfSpeech = false
+                        }
+
+                        val partResult = Bundle()
+                        partResult.putStringArrayList(
+                            SpeechRecognizer.RESULTS_RECOGNITION,
+                            arrayListOf(inputEvent.utterance)
+                        )
+
+                        logRemoteExceptions { listener.partialResults(partResult) }
+                    }
                 }
             }
-        }
+        )
 
         if (!willStartListening) {
             Log.w(TAG, "Could not start STT recognizer")
