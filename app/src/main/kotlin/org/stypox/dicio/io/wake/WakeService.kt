@@ -114,33 +114,36 @@ class WakeService : Service() {
             }
             InputEvent.None -> restartListening()
             is InputEvent.Final -> {
-                handleFinalEvent(event)
-                restartListening()
+                val triggered = handleFinalEvent(event)
+                restartListening(playSound = triggered)
             }
         }
     }
 
-    private fun handleFinalEvent(event: InputEvent.Final) {
-        val utterance = event.utterances.firstOrNull() ?: return
+    private fun handleFinalEvent(event: InputEvent.Final): Boolean {
+        val utterance = event.utterances.firstOrNull() ?: return false
         val text = utterance.first
         val confidence = utterance.second
         val lower = text.lowercase(Locale.getDefault())
-        if (lower.startsWith(TRIGGER_WORD)) {
-            val command = text.substring(TRIGGER_WORD.length).trim()
+        val triggerWord = TRIGGER_WORD.lowercase(Locale.getDefault())
+        if (lower.startsWith(triggerWord)) {
+            val command = text.substring(triggerWord.length).trim()
             if (command.isNotEmpty()) {
                 skillEvaluator.processInputEvent(
                     InputEvent.Final(listOf(Pair(command, confidence)))
                 )
                 openMainActivity()
+                return true
             }
         }
+        return false
     }
 
-    private fun restartListening() {
+    private fun restartListening(playSound: Boolean = true) {
         if (listening.get()) {
             handler.removeCallbacks(releaseSttResourcesRunnable)
             handler.postDelayed(releaseSttResourcesRunnable, RELEASE_STT_RESOURCES_MILLIS)
-            sttInputDevice.tryLoad(::onInputEvent)
+            sttInputDevice.tryLoad(::onInputEvent, playSound)
         }
     }
 
