@@ -29,16 +29,24 @@ import kotlinx.coroutines.delay
  * Каждая эмоция определяет форму век и прочие элементы рисунка.
  */
 enum class EyeExpression {
-    /** Нейтральное спокойное выражение */
-    NEUTRAL,
-    /** Улыбка – верхние веки слегка опущены */
-    HAPPY,
-    /** Сердитый взгляд – верхние веки наклонены внутрь */
+    NORMAL,
     ANGRY,
-    /** Грустный взгляд – нижние веки приподняты */
+    GLEE,
+    HAPPY,
     SAD,
-    /** Удивление – глаза широко раскрыты */
+    WORRIED,
+    FOCUSED,
+    ANNOYED,
     SURPRISED,
+    SKEPTIC,
+    FRUSTRATED,
+    UNIMPRESSED,
+    SLEEPY,
+    SUSPICIOUS,
+    SQUINT,
+    FURIOUS,
+    SCARED,
+    AWE,
 }
 
 /**
@@ -47,7 +55,7 @@ enum class EyeExpression {
  */
 class EyesState {
     // Текущая эмоция хранится во внутреннем стейте
-    private var _expression by mutableStateOf(EyeExpression.NEUTRAL)
+    private var _expression by mutableStateOf(EyeExpression.NORMAL)
 
     /** Текущая эмоция глаз – доступна только для чтения */
     val expression: EyeExpression
@@ -150,8 +158,7 @@ private fun DrawScope.drawEye(
 
     // Рисуем веки в зависимости от эмоции
     when (expression) {
-        EyeExpression.HAPPY -> {
-            // Верхняя дуга, создающая "улыбку"
+        EyeExpression.HAPPY, EyeExpression.GLEE -> {
             drawArc(
                 color = pupilColor,
                 startAngle = 0f,
@@ -162,8 +169,7 @@ private fun DrawScope.drawEye(
                 style = Stroke(width = height * 0.15f, cap = StrokeCap.Round)
             )
         }
-        EyeExpression.ANGRY -> {
-            // Диагональная линия сверху-внутрь
+        EyeExpression.ANGRY, EyeExpression.FURIOUS -> {
             drawLine(
                 color = pupilColor,
                 start = Offset(rect.left, rect.top + height * 0.2f),
@@ -173,7 +179,6 @@ private fun DrawScope.drawEye(
             )
         }
         EyeExpression.SAD -> {
-            // Нижняя дуга "печали"
             drawArc(
                 color = pupilColor,
                 startAngle = 180f,
@@ -184,8 +189,7 @@ private fun DrawScope.drawEye(
                 style = Stroke(width = height * 0.15f, cap = StrokeCap.Round)
             )
         }
-        EyeExpression.SURPRISED -> {
-            // Толстая обводка вокруг глаза для эффекта удивления
+        EyeExpression.SURPRISED, EyeExpression.SCARED, EyeExpression.AWE -> {
             drawOval(
                 color = pupilColor.copy(alpha = 0.3f),
                 topLeft = rect.topLeft,
