@@ -14,10 +14,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
 import kotlin.math.min
@@ -47,6 +46,40 @@ enum class EyeExpression {
     FURIOUS,
     SCARED,
     AWE,
+}
+
+// Описание параметров формы глаз для каждой эмоции
+private data class EyeConfig(
+    val offsetX: Float,
+    val offsetY: Float,
+    val width: Float,
+    val height: Float,
+    val slopeTop: Float,
+    val slopeBottom: Float,
+    val radiusTop: Float,
+    val radiusBottom: Float,
+)
+
+// Карта настроек эмоций на основе пресетов из esp32-eyes
+private fun EyeExpression.config(): EyeConfig = when (this) {
+    EyeExpression.NORMAL -> EyeConfig(0f, 0f, 40f, 40f, 0f, 0f, 8f, 8f)
+    EyeExpression.HAPPY -> EyeConfig(0f, 0f, 40f, 10f, 0f, 0f, 10f, 0f)
+    EyeExpression.GLEE -> EyeConfig(0f, 0f, 40f, 8f, 0f, 0f, 8f, 0f)
+    EyeExpression.SAD -> EyeConfig(0f, 0f, 40f, 15f, -0.5f, 0f, 1f, 10f)
+    EyeExpression.WORRIED -> EyeConfig(0f, 0f, 40f, 25f, -0.1f, 0f, 6f, 10f)
+    EyeExpression.FOCUSED -> EyeConfig(0f, 0f, 40f, 14f, 0.2f, 0f, 3f, 1f)
+    EyeExpression.ANNOYED -> EyeConfig(0f, 0f, 40f, 12f, 0f, 0f, 0f, 10f)
+    EyeExpression.SURPRISED -> EyeConfig(-2f, 0f, 45f, 45f, 0f, 0f, 16f, 16f)
+    EyeExpression.SKEPTIC -> EyeConfig(0f, -6f, 40f, 26f, 0.3f, 0f, 1f, 10f)
+    EyeExpression.FRUSTRATED -> EyeConfig(3f, -5f, 40f, 12f, 0f, 0f, 0f, 10f)
+    EyeExpression.UNIMPRESSED -> EyeConfig(3f, 0f, 40f, 12f, 0f, 0f, 1f, 10f)
+    EyeExpression.SLEEPY -> EyeConfig(0f, -2f, 40f, 14f, -0.5f, -0.5f, 3f, 3f)
+    EyeExpression.SUSPICIOUS -> EyeConfig(0f, 0f, 40f, 22f, 0f, 0f, 8f, 3f)
+    EyeExpression.SQUINT -> EyeConfig(-10f, -3f, 35f, 35f, 0f, 0f, 8f, 8f)
+    EyeExpression.ANGRY -> EyeConfig(-3f, 0f, 40f, 20f, 0.3f, 0f, 2f, 12f)
+    EyeExpression.FURIOUS -> EyeConfig(-2f, 0f, 40f, 30f, 0.4f, 0f, 2f, 8f)
+    EyeExpression.SCARED -> EyeConfig(-3f, 0f, 40f, 40f, -0.1f, 0f, 12f, 8f)
+    EyeExpression.AWE -> EyeConfig(2f, 0f, 45f, 35f, -0.1f, 0.1f, 12f, 12f)
 }
 
 /**
@@ -120,12 +153,11 @@ fun AnimatedEyes(
             .height(120.dp)
     ) {
         val eyeWidth = size.width / 2f
-        val eyeHeight = size.height * 0.8f * blink.value
         val leftCenter = Offset(eyeWidth * 0.5f, size.height / 2f)
         val rightCenter = Offset(eyeWidth * 1.5f, size.height / 2f)
-        drawEye(leftCenter, eyeWidth, eyeHeight, pupilOffsetX, pupilOffsetY,
+        drawEye(leftCenter, eyeWidth, blink.value, pupilOffsetX, pupilOffsetY,
             state.expression, eyeColor, irisColor, pupilColor)
-        drawEye(rightCenter, eyeWidth, eyeHeight, pupilOffsetX, pupilOffsetY,
+        drawEye(rightCenter, eyeWidth, blink.value, pupilOffsetX, pupilOffsetY,
             state.expression, eyeColor, irisColor, pupilColor)
     }
 }
@@ -133,8 +165,8 @@ fun AnimatedEyes(
 /** Вспомогательная функция для рисования одного глаза */
 private fun DrawScope.drawEye(
     center: Offset,
-    width: Float,
-    height: Float,
+    baseSize: Float,
+    blink: Float,
     pupilOffsetX: Float,
     pupilOffsetY: Float,
     expression: EyeExpression,
@@ -142,62 +174,47 @@ private fun DrawScope.drawEye(
     irisColor: Color,
     pupilColor: Color,
 ) {
-    // Овал глаза
-    val rect = Rect(center.x - width / 2f, center.y - height / 2f,
-        center.x + width / 2f, center.y + height / 2f)
-    drawOval(color = eyeColor, topLeft = rect.topLeft, size = rect.size)
+    val cfg = expression.config()
+    val scale = baseSize / 40f
+    var width = cfg.width * scale
+    var height = cfg.height * scale * blink
+    val radiusTop = cfg.radiusTop * scale * blink
+    val radiusBottom = cfg.radiusBottom * scale * blink
+    val centerWithOffset = Offset(center.x + cfg.offsetX * scale, center.y + cfg.offsetY * scale)
+    val deltaTop = height * cfg.slopeTop / 2f
+    val deltaBottom = height * cfg.slopeBottom / 2f
 
-    // Радужка и зрачок
-    val radius = min(width, height) / 4f
-    val pupilCenter = Offset(
-        x = center.x + pupilOffsetX * radius,
-        y = center.y + pupilOffsetY * radius,
-    )
-    drawCircle(color = irisColor, radius = radius, center = pupilCenter)
-    drawCircle(color = pupilColor, radius = radius / 2f, center = pupilCenter)
+    val topLeft = Offset(centerWithOffset.x - width / 2f, centerWithOffset.y - height / 2f - deltaTop)
+    val topRight = Offset(centerWithOffset.x + width / 2f, centerWithOffset.y - height / 2f + deltaTop)
+    val bottomRight = Offset(centerWithOffset.x + width / 2f, centerWithOffset.y + height / 2f + deltaBottom)
+    val bottomLeft = Offset(centerWithOffset.x - width / 2f, centerWithOffset.y + height / 2f - deltaBottom)
 
-    // Рисуем веки в зависимости от эмоции
-    when (expression) {
-        EyeExpression.HAPPY, EyeExpression.GLEE -> {
-            drawArc(
-                color = pupilColor,
-                startAngle = 0f,
-                sweepAngle = 180f,
-                useCenter = false,
-                topLeft = rect.topLeft,
-                size = rect.size,
-                style = Stroke(width = height * 0.15f, cap = StrokeCap.Round)
-            )
-        }
-        EyeExpression.ANGRY, EyeExpression.FURIOUS -> {
-            drawLine(
-                color = pupilColor,
-                start = Offset(rect.left, rect.top + height * 0.2f),
-                end = Offset(rect.right, rect.top - height * 0.1f),
-                strokeWidth = height * 0.15f,
-                cap = StrokeCap.Round,
-            )
-        }
-        EyeExpression.SAD -> {
-            drawArc(
-                color = pupilColor,
-                startAngle = 180f,
-                sweepAngle = 180f,
-                useCenter = false,
-                topLeft = rect.topLeft,
-                size = rect.size,
-                style = Stroke(width = height * 0.15f, cap = StrokeCap.Round)
-            )
-        }
-        EyeExpression.SURPRISED, EyeExpression.SCARED, EyeExpression.AWE -> {
-            drawOval(
-                color = pupilColor.copy(alpha = 0.3f),
-                topLeft = rect.topLeft,
-                size = rect.size,
-                style = Stroke(width = height * 0.08f)
-            )
-        }
-        else -> Unit
+    val path = Path().apply {
+        moveTo(topLeft.x, topLeft.y + radiusTop)
+        quadTo(topLeft.x, topLeft.y, topLeft.x + radiusTop, topLeft.y)
+        lineTo(topRight.x - radiusTop, topRight.y)
+        quadTo(topRight.x, topRight.y, topRight.x, topRight.y + radiusTop)
+        lineTo(bottomRight.x, bottomRight.y - radiusBottom)
+        quadTo(bottomRight.x, bottomRight.y, bottomRight.x - radiusBottom, bottomRight.y)
+        lineTo(bottomLeft.x + radiusBottom, bottomLeft.y)
+        quadTo(bottomLeft.x, bottomLeft.y, bottomLeft.x, bottomLeft.y - radiusBottom)
+        close()
+    }
+
+    drawPath(path, color = eyeColor)
+
+    clipPath(path) {
+        val r = min(width, height) / 4f
+        val pupilCenter = Offset(
+            x = centerWithOffset.x + pupilOffsetX * r,
+            y = centerWithOffset.y + pupilOffsetY * r,
+        )
+        drawCircle(color = irisColor, radius = r, center = pupilCenter)
+        drawCircle(color = pupilColor, radius = r / 2f, center = pupilCenter)
+    }
+
+    if (expression == EyeExpression.SURPRISED || expression == EyeExpression.SCARED || expression == EyeExpression.AWE) {
+        drawPath(path, color = pupilColor.copy(alpha = 0.3f), style = Stroke(width = height * 0.08f))
     }
 }
 
