@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlin.random.Random
+import kotlin.math.abs
 import kotlinx.coroutines.delay
 
 /**
@@ -89,13 +90,31 @@ class EyesState {
     // Текущая эмоция хранится во внутреннем стейте
     private var _expression by mutableStateOf(EyeExpression.NORMAL)
 
+    // Направление взгляда по осям X и Y (диапазон -1..1)
+    private var _lookX by mutableStateOf(0f)
+    private var _lookY by mutableStateOf(0f)
+
     /** Текущая эмоция глаз – доступна только для чтения */
     val expression: EyeExpression
         get() = _expression
 
+    /** Текущее направление взгляда по горизонтали */
+    val lookX: Float
+        get() = _lookX
+
+    /** Текущее направление взгляда по вертикали */
+    val lookY: Float
+        get() = _lookY
+
     /** Установить новую эмоцию глаз */
     fun setExpression(newExpression: EyeExpression) {
         _expression = newExpression
+    }
+
+    /** Повернуть взгляд в указанном направлении (-1..1) */
+    fun lookAt(x: Float, y: Float) {
+        _lookX = x.coerceIn(-1f, 1f)
+        _lookY = y.coerceIn(-1f, 1f)
     }
 }
 
@@ -140,6 +159,28 @@ fun AnimatedEyes(
         }
     }
 
+    // Анимация "блуждающего" взгляда
+    val lookX = remember { Animatable(0f) }
+    val lookY = remember { Animatable(0f) }
+
+    // Плавно переводим взгляд к значениям из состояния
+    LaunchedEffect(state.lookX) {
+        lookX.animateTo(state.lookX, tween(durationMillis = 500))
+    }
+    LaunchedEffect(state.lookY) {
+        lookY.animateTo(state.lookY, tween(durationMillis = 500))
+    }
+
+    // Периодически задаём новое направление взгляда
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(4_000L)
+            val x = Random.nextInt(-50, 51) / 100f
+            val y = Random.nextInt(-50, 51) / 100f
+            state.lookAt(x, y)
+        }
+    }
+
     // Основное полотно для рисования глаз. Высота задаётся параметром [eyeSize],
     // что позволяет менять масштаб глаз в различных режимах экрана.
     Canvas(
@@ -154,8 +195,10 @@ fun AnimatedEyes(
         val centerX = size.width / 2f
         val leftCenter = Offset(centerX - offset, centerY)
         val rightCenter = Offset(centerX + offset, centerY)
-        drawEye(leftCenter, eyeSize, blink.value, state.expression, eyeColor)
-        drawEye(rightCenter, eyeSize, blink.value, state.expression, eyeColor)
+        val lx = lookX.value
+        val ly = lookY.value
+        drawEye(leftCenter, eyeSize, blink.value, state.expression, eyeColor, lx, ly, true)
+        drawEye(rightCenter, eyeSize, blink.value, state.expression, eyeColor, lx, ly, false)
     }
 }
 
@@ -166,14 +209,27 @@ private fun DrawScope.drawEye(
     blink: Float,
     expression: EyeExpression,
     eyeColor: Color,
+    lookX: Float,
+    lookY: Float,
+    isLeft: Boolean,
 ) {
     val cfg = expression.config()
     val scale = baseSize / 40f
+    // Перевод коэффициентов из esp32-eyes к нашим координатам
+    val moveX = -25f * lookX * scale
+    val moveY = 20f * lookY * scale
+    val scaleYCommon = 1f - abs(lookY) * 0.4f
+    val scaleYx = 1f + (if (isLeft) 1f else -1f) * lookX * 0.2f
+    val verticalScale = scaleYCommon * scaleYx
+
     var width = cfg.width * scale
-    var height = cfg.height * scale * blink
-    val radiusTop = cfg.radiusTop * scale * blink
-    val radiusBottom = cfg.radiusBottom * scale * blink
-    val centerWithOffset = Offset(center.x + cfg.offsetX * scale, center.y + cfg.offsetY * scale)
+    var height = cfg.height * scale * blink * verticalScale
+    val radiusTop = cfg.radiusTop * scale * blink * verticalScale
+    val radiusBottom = cfg.radiusBottom * scale * blink * verticalScale
+    val centerWithOffset = Offset(
+        center.x + cfg.offsetX * scale + moveX,
+        center.y + cfg.offsetY * scale + moveY
+    )
     val deltaTop = height * cfg.slopeTop / 2f
     val deltaBottom = height * cfg.slopeBottom / 2f
 
