@@ -13,17 +13,23 @@ import org.dicio.skill.standard.StandardRecognizerSkill
 import org.stypox.dicio.sentences.Sentences.Open
 import org.stypox.dicio.util.StringUtils
 
+/**
+ * Скилл для запуска других приложений по их названию.
+ */
 class OpenSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognizerData<Open>)
     : StandardRecognizerSkill<Open>(correspondingSkillInfo, data) {
 
     override suspend fun generateOutput(ctx: SkillContext, inputData: Open): SkillOutput {
+        // Название приложения, которое произнёс пользователь
         val userAppName = when (inputData) {
             is Open.Query -> inputData.what?.trim { it <= ' ' }
         }
         val packageManager: PackageManager = ctx.android.packageManager
+        // Пытаемся найти наиболее похожее приложение по названию
         val applicationInfo = userAppName?.let { getMostSimilarApp(packageManager, it) }
 
         if (applicationInfo != null) {
+            // Формируем интент для запуска найденного приложения
             val launchIntent: Intent =
                 packageManager.getLaunchIntentForPackage(applicationInfo.packageName)!!
             launchIntent.action = Intent.ACTION_MAIN
@@ -46,7 +52,7 @@ class OpenSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognizerData<
             val resolveInfosIntent = Intent(Intent.ACTION_MAIN, null)
             resolveInfosIntent.addCategory(Intent.CATEGORY_LAUNCHER)
 
-            @SuppressLint("QueryPermissionsNeeded") // we need to query all apps
+            @SuppressLint("QueryPermissionsNeeded") // нужно получить список всех приложений
             val resolveInfos: List<ResolveInfo> =
                 packageManager.queryIntentActivities(resolveInfosIntent, 0)
             var bestDistance = Int.MAX_VALUE
@@ -68,6 +74,7 @@ class OpenSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognizerData<
                 } catch (ignored: PackageManager.NameNotFoundException) {
                 }
             }
+            // Если расстояние слишком велико, считаем, что подходящего приложения нет
             return if (bestDistance > 5) null else bestApplicationInfo
         }
     }

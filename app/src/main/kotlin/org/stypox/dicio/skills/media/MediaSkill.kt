@@ -10,12 +10,13 @@ import org.dicio.skill.standard.StandardRecognizerData
 import org.dicio.skill.standard.StandardRecognizerSkill
 import org.stypox.dicio.sentences.Sentences.Media
 
+/** Скилл управления воспроизведением мультимедиа. */
 class MediaSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognizerData<Media>)
     : StandardRecognizerSkill<Media>(correspondingSkillInfo, data) {
 
     override suspend fun generateOutput(ctx: SkillContext, inputData: Media): SkillOutput {
         val audioManager = getSystemService(ctx.android, AudioManager::class.java)
-            ?: return MediaOutput(performedAction = null) // no media session found
+            ?: return MediaOutput(performedAction = null) // нет активной медиа-сессии
 
         val key = when (inputData) {
             is Media.Play -> KeyEvent.KEYCODE_MEDIA_PLAY
@@ -24,6 +25,7 @@ class MediaSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognizerData
             is Media.Next -> KeyEvent.KEYCODE_MEDIA_NEXT
         }
 
+        // Отправляем событие клавиши в системный аудио-менеджер
         audioManager.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, key))
         audioManager.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_UP, key))
         return MediaOutput(performedAction = inputData)

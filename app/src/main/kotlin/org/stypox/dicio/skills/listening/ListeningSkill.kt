@@ -9,15 +9,20 @@ import org.stypox.dicio.io.wake.WakeService
 import org.stypox.dicio.sentences.Sentences.Listening
 import org.stypox.dicio.settings.datastore.WakeDevice
 
+/**
+ * Скилл управления фоновым режимом прослушивания "приветственного" слова.
+ */
 class ListeningSkill(val listeningInfo: ListeningInfo, data: StandardRecognizerData<Listening>) :
     StandardRecognizerSkill<Listening>(listeningInfo, data) {
 
     override suspend fun generateOutput(ctx: SkillContext, inputData: Listening): SkillOutput {
+        // Если устройство пробуждения не настроено, ничего не делаем
         if (listeningInfo.dataStore.data.first().wakeDevice == WakeDevice.WAKE_DEVICE_NOTHING) {
             return ListeningOutput(false, false, false)
         }
 
         val previouslyRunning = WakeService.isRunning()
+        // Определяем, нужно ли запускать или останавливать прослушивание
         val shouldBeRunning = when (inputData) {
             is Listening.Start -> true
             is Listening.Stop -> false

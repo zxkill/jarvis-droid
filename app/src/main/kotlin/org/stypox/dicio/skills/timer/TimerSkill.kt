@@ -19,16 +19,19 @@ import org.stypox.dicio.util.getString
 import java.time.Duration
 
 // TODO cleanup this skill and use a service to manage timers
+/** Скилл управления таймерами: установка, отмена и запрос оставшегося времени. */
 class TimerSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognizerData<Timer>) :
     StandardRecognizerSkill<Timer>(correspondingSkillInfo, data) {
 
     override suspend fun generateOutput(ctx: SkillContext, inputData: Timer): SkillOutput {
+        // Определяем действие пользователя: установить, запросить или отменить таймер
         return when (inputData) {
             is Timer.Set -> {
                 val duration = inputData.duration?.let {
                     ctx.parserFormatter?.extractDuration(it)?.first?.toJavaDuration()
                 }
                 if (duration == null) {
+                    // Пользователь не указал длительность, просим её
                     TimerOutput.SetAskDuration { setTimer(ctx, it, inputData.name) }
                 } else {
                     setTimer(ctx, duration, inputData.name)
@@ -54,6 +57,7 @@ class TimerSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognizerData
     ): SkillOutput {
         var ringtone: Ringtone? = null
 
+        // Создаём и запускаем таймер на главном потоке
         val setTimer = withContext(Dispatchers.Main) { SetTimer(
             duration = duration,
             name = name,
@@ -72,7 +76,7 @@ class TimerSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognizerData
                 }
             },
             onExpiredCallback = { theName ->
-                // initialize ringtone when the timer has expired (play will be called right after)
+                // Инициализируем звонок, когда таймер истёк
                 ringtone = RingtoneManager.getActualDefaultRingtoneUri(
                     ctx.android, RingtoneManager.TYPE_ALARM
                 )
@@ -81,14 +85,14 @@ class TimerSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognizerData
                     }
                     ?.also {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                            // on older API versions it is looped manually in onMillisTickCallback
+                            // На старых версиях API зацикливание реализуем вручную
                             it.isLooping = true
                         }
                         it.play()
                     }
 
                 if (ringtone == null) {
-                    // we could not load a ringtone, so we can announce via speech instead
+                    // Если мелодия не загрузилась, произносим сообщение голосом
                     ctx.speechOutputDevice.speak(
                         formatStringWithName(
                             ctx.android,
@@ -102,7 +106,7 @@ class TimerSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognizerData
             onCancelCallback = { timerToCancel ->
                 ringtone?.stop()
                 ringtone = null
-                // removed from setTimers list
+                // Удаляем таймер из списка активных
                 SET_TIMERS.removeIf { setTimer -> setTimer === timerToCancel }
             }
         ) }

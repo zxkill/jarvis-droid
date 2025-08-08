@@ -14,6 +14,7 @@ import java.io.FileNotFoundException
 import java.util.Locale
 import kotlin.math.roundToInt
 
+/** Скилл получения текущей погоды для указанного города. */
 class WeatherSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognizerData<Weather>) :
     StandardRecognizerSkill<Weather>(correspondingSkillInfo, data) {
 
@@ -23,7 +24,7 @@ class WeatherSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognizerDa
 
         val weatherData = try {
             ConnectionUtils.getPageJson(
-                // always request in metric units (°C and m) and convert later
+                // Всегда запрашиваем данные в метрических единицах и переводим позже
                 "$WEATHER_API_URL?APPID=$API_KEY&units=metric&lang=" +
                         ctx.locale.language.lowercase(Locale.getDefault()) +
                         "&q=" + ConnectionUtils.urlEncode(city)
