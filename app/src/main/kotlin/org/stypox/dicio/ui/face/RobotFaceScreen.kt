@@ -170,8 +170,6 @@ fun RobotEyes(modifier: Modifier = Modifier) {
 
     AnimatedEyes(
         state = eyesState,
-        modifier = modifier
-            .fillMaxWidth()
-            .height(160.dp),
+        modifier = modifier,
     )
 }

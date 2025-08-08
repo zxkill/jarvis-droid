@@ -1,7 +1,6 @@
 package org.stypox.dicio.ui.eyes
 
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,9 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.unit.dp
-import kotlin.math.min
 import kotlin.random.Random
 import kotlinx.coroutines.delay
 
@@ -84,8 +81,8 @@ private fun EyeExpression.config(): EyeConfig = when (this) {
 }
 
 /**
- * Состояние глаз, которое позволяет изменять эмоции и направление взгляда
- * извне через удобные методы [setExpression] и [lookAt].
+ * Состояние глаз, позволяющее изменять эмоции извне
+ * через удобный метод [setExpression].
  */
 class EyesState {
     // Текущая эмоция хранится во внутреннем стейте
@@ -95,21 +92,9 @@ class EyesState {
     val expression: EyeExpression
         get() = _expression
 
-    // Куда "смотрят" зрачки. Диапазон -1..1 по каждой оси.
-    var lookX by mutableStateOf(0f)
-        private set
-    var lookY by mutableStateOf(0f)
-        private set
-
     /** Установить новую эмоцию глаз */
     fun setExpression(newExpression: EyeExpression) {
         _expression = newExpression
-    }
-
-    /** Повернуть взгляд в указанную сторону. Значения ограничиваются диапазоном -1..1 */
-    fun lookAt(x: Float, y: Float) {
-        lookX = x.coerceIn(-1f, 1f)
-        lookY = y.coerceIn(-1f, 1f)
     }
 }
 
@@ -118,20 +103,16 @@ class EyesState {
 fun rememberEyesState(): EyesState = remember { EyesState() }
 
 /**
- * Основной компонент, рисующий пару глаз с анимациями моргания и движения зрачков.
+ * Основной компонент, рисующий пару глаз с анимацией моргания.
  * @param state состояние глаз, позволяющее изменять эмоции
  * @param modifier модификатор для размещения компонента
- * @param eyeColor цвет "белка" глаз
- * @param irisColor цвет радужки
- * @param pupilColor цвет зрачка
+ * @param eyeColor цвет глаз
  */
 @Composable
 fun AnimatedEyes(
     state: EyesState,
     modifier: Modifier = Modifier,
     eyeColor: Color = Color.White,
-    irisColor: Color = Color(0xFF40C4FF),
-    pupilColor: Color = Color.Black,
 ) {
     // Анимация моргания: значение 1 – глаза открыты, 0 – закрыты
     val blink = remember { Animatable(1f) }
@@ -144,22 +125,25 @@ fun AnimatedEyes(
         }
     }
 
-    // Плавное движение зрачков при изменении направления взгляда
-    val pupilOffsetX by animateFloatAsState(state.lookX)
-    val pupilOffsetY by animateFloatAsState(state.lookY)
+    // Автоматическая смена эмоций каждые 30 секунд
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(30_000L)
+            val values = EyeExpression.values()
+            state.setExpression(values[Random.nextInt(values.size)])
+        }
+    }
 
     Canvas(
         modifier = modifier
             .fillMaxWidth()
-            .height(120.dp)
+            .height(30.dp)
     ) {
-        val eyeWidth = size.width / 2f
-        val leftCenter = Offset(eyeWidth * 0.5f, size.height / 2f)
-        val rightCenter = Offset(eyeWidth * 1.5f, size.height / 2f)
-        drawEye(leftCenter, eyeWidth, blink.value, pupilOffsetX, pupilOffsetY,
-            state.expression, eyeColor, irisColor, pupilColor)
-        drawEye(rightCenter, eyeWidth, blink.value, pupilOffsetX, pupilOffsetY,
-            state.expression, eyeColor, irisColor, pupilColor)
+        val eyeSize = size.height
+        val leftCenter = Offset(size.width * 0.25f, size.height / 2f)
+        val rightCenter = Offset(size.width * 0.75f, size.height / 2f)
+        drawEye(leftCenter, eyeSize, blink.value, state.expression, eyeColor)
+        drawEye(rightCenter, eyeSize, blink.value, state.expression, eyeColor)
     }
 }
 
@@ -168,12 +152,8 @@ private fun DrawScope.drawEye(
     center: Offset,
     baseSize: Float,
     blink: Float,
-    pupilOffsetX: Float,
-    pupilOffsetY: Float,
     expression: EyeExpression,
     eyeColor: Color,
-    irisColor: Color,
-    pupilColor: Color,
 ) {
     val cfg = expression.config()
     val scale = baseSize / 40f
@@ -208,18 +188,8 @@ private fun DrawScope.drawEye(
 
     drawPath(path, color = eyeColor)
 
-    clipPath(path) {
-        val r = min(width, height) / 4f
-        val pupilCenter = Offset(
-            x = centerWithOffset.x + pupilOffsetX * r,
-            y = centerWithOffset.y + pupilOffsetY * r,
-        )
-        drawCircle(color = irisColor, radius = r, center = pupilCenter)
-        drawCircle(color = pupilColor, radius = r / 2f, center = pupilCenter)
-    }
-
     if (expression == EyeExpression.SURPRISED || expression == EyeExpression.SCARED || expression == EyeExpression.AWE) {
-        drawPath(path, color = pupilColor.copy(alpha = 0.3f), style = Stroke(width = height * 0.08f))
+        drawPath(path, color = Color.Black.copy(alpha = 0.3f), style = Stroke(width = height * 0.08f))
     }
 }
 
