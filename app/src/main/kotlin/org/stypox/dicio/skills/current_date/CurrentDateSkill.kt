@@ -1,0 +1,123 @@
+package org.stypox.dicio.skills.current_date
+
+import org.dicio.skill.context.SkillContext
+import org.dicio.skill.skill.SkillInfo
+import org.dicio.skill.skill.SkillOutput
+import org.dicio.skill.standard.StandardRecognizerData
+import org.dicio.skill.standard.StandardRecognizerSkill
+import org.stypox.dicio.sentences.Sentences.CurrentDate
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
+import java.time.format.TextStyle
+import java.util.Locale
+
+class CurrentDateSkill(
+    correspondingSkillInfo: SkillInfo,
+    data: StandardRecognizerData<CurrentDate>
+) : StandardRecognizerSkill<CurrentDate>(correspondingSkillInfo, data) {
+
+    override suspend fun generateOutput(ctx: SkillContext, inputData: CurrentDate): SkillOutput {
+        val today = LocalDate.now()
+        return when (inputData) {
+            is CurrentDate.Day -> {
+                val formatted = formatDay(ctx, today)
+                CurrentDateOutput(CurrentDateOutput.Type.DAY, formatted)
+            }
+            is CurrentDate.Year -> {
+                val formatted = formatYear(ctx, today)
+                CurrentDateOutput(CurrentDateOutput.Type.YEAR, formatted)
+            }
+            is CurrentDate.Month -> {
+                val formatted = formatMonth(ctx, today)
+                CurrentDateOutput(CurrentDateOutput.Type.MONTH, formatted)
+            }
+        }
+    }
+
+    private fun formatDay(ctx: SkillContext, date: LocalDate): String {
+        return when (ctx.locale.language) {
+            "ru" -> formatRussianFullDate(date)
+            else -> ctx.parserFormatter?.niceDate(date)?.get()
+                ?: DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL)
+                    .withLocale(ctx.locale)
+                    .format(date)
+        }
+    }
+
+    private fun formatYear(ctx: SkillContext, date: LocalDate): String {
+        return when (ctx.locale.language) {
+            "ru" -> russianYear(date.year, nominative = true)
+            else -> ctx.parserFormatter?.niceYear(date)?.get() ?: date.year.toString()
+        }
+    }
+
+    private fun formatMonth(ctx: SkillContext, date: LocalDate): String {
+        return when (ctx.locale.language) {
+            "ru" -> MONTHS_NOMINATIVE[date.monthValue]
+            else -> date.month.getDisplayName(TextStyle.FULL, ctx.locale)
+        }
+    }
+
+    private fun formatRussianFullDate(date: LocalDate): String {
+        val weekday = WEEKDAYS[date.dayOfWeek.value]
+        val day = ORDINALS_NEUTER[date.dayOfMonth]
+        val month = MONTHS_GENITIVE[date.monthValue]
+        val year = russianYear(date.year, nominative = false)
+        return "$weekday $day $month $year года"
+    }
+
+    private fun russianYear(year: Int, nominative: Boolean): String {
+        if (year in 2000..2099) {
+            val remainder = year % 100
+            val thousandPart = if (remainder == 0) {
+                if (nominative) "двухтысячный" else "двухтысячного"
+            } else {
+                val ord = ordinalMasculine(remainder, nominative)
+                "две тысячи $ord"
+            }
+            return thousandPart
+        }
+        return year.toString()
+    }
+
+    private fun ordinalMasculine(number: Int, nominative: Boolean): String {
+        val unitsNom = arrayOf("", "первый", "второй", "третий", "четвёртый", "пятый", "шестой", "седьмой", "восьмой", "девятый")
+        val unitsGen = arrayOf("", "первого", "второго", "третьего", "четвёртого", "пятого", "шестого", "седьмого", "восьмого", "девятого")
+        val teensNom = arrayOf("десятый", "одиннадцатый", "двенадцатый", "тринадцатый", "четырнадцатый", "пятнадцатый", "шестнадцатый", "семнадцатый", "восемнадцатый", "девятнадцатый")
+        val teensGen = arrayOf("десятого", "одиннадцатого", "двенадцатого", "тринадцатого", "четырнадцатого", "пятнадцатого", "шестнадцатого", "семнадцатого", "восемнадцатого", "девятнадцатого")
+        val tensCardinal = arrayOf("", "", "двадцать", "тридцать", "сорок", "пятьдесят", "шестьдесят", "семьдесят", "восемьдесят", "девяносто")
+        val tensOrdNom = arrayOf("", "", "двадцатый", "тридцатый", "сороковой", "пятидесятый", "шестидесятый", "семидесятый", "восьмидесятый", "девяностый")
+        val tensOrdGen = arrayOf("", "", "двадцатого", "тридцатого", "сорокового", "пятидесятого", "шестидесятого", "семидесятого", "восьмидесятого", "девяностого")
+
+        val units = if (nominative) unitsNom else unitsGen
+        val teens = if (nominative) teensNom else teensGen
+        val tensOrd = if (nominative) tensOrdNom else tensOrdGen
+
+        return when {
+            number < 10 -> units[number]
+            number in 10..19 -> teens[number - 10]
+            number % 10 == 0 -> tensOrd[number / 10]
+            else -> tensCardinal[number / 10] + " " + units[number % 10]
+        }
+    }
+
+    companion object {
+        private val WEEKDAYS = arrayOf(
+            "", "понедельник", "вторник", "среда", "четверг", "пятница", "суббота", "воскресенье"
+        )
+        private val ORDINALS_NEUTER = arrayOf(
+            "", "первое", "второе", "третье", "четвёртое", "пятое", "шестое", "седьмое", "восьмое", "девятое",
+            "десятое", "одиннадцатое", "двенадцатое", "тринадцатое", "четырнадцатое", "пятнадцатое", "шестнадцатое", "семнадцатое", "восемнадцатое", "девятнадцатое",
+            "двадцатое", "двадцать первое", "двадцать второе", "двадцать третье", "двадцать четвёртое", "двадцать пятое", "двадцать шестое", "двадцать седьмое", "двадцать восьмое", "двадцать девятое",
+            "тридцатое", "тридцать первое"
+        )
+        private val MONTHS_NOMINATIVE = arrayOf(
+            "", "январь", "февраль", "март", "апрель", "май", "июнь", "июль", "август", "сентябрь", "октябрь", "ноябрь", "декабрь"
+        )
+        private val MONTHS_GENITIVE = arrayOf(
+            "", "января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"
+        )
+    }
+}
+

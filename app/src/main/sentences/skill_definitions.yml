@@ -4,6 +4,13 @@ skills:
     sentences:
       - id: query
 
+  - id: current_date
+    specificity: high
+    sentences:
+      - id: day
+      - id: month
+      - id: year
+
   - id: calculator
     specificity: medium
     sentences:
