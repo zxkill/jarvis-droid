@@ -1,6 +1,6 @@
 day:
   - (what day is it today)
-  - (what's the date today)
+  - what|(what s|is)|whats the? date today
 month:
   - (what month is it)
   - (which month is it)
