@@ -16,6 +16,6 @@ class FakeSkillEvaluator : SkillEvaluator {
 
     override var permissionRequester: suspend (List<Permission>) -> Boolean = { true }
 
-    override fun processInputEvent(event: InputEvent) {
+    override fun processInputEvent(event: InputEvent, askToRepeat: Boolean) {
     }
 }
