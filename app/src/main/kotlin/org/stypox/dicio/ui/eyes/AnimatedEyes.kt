@@ -222,8 +222,8 @@ private fun DrawScope.drawEye(
     val scaleYx = 1f + (if (isLeft) 1f else -1f) * lookX * 0.2f
     val verticalScale = scaleYCommon * scaleYx
 
-    var width = cfg.width * scale
-    var height = cfg.height * scale * blink * verticalScale
+    val width = cfg.width * scale
+    val height = cfg.height * scale * blink * verticalScale
     val radiusTop = cfg.radiusTop * scale * blink * verticalScale
     val radiusBottom = cfg.radiusBottom * scale * blink * verticalScale
     val centerWithOffset = Offset(

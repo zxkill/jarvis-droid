@@ -401,6 +401,12 @@ class VoskInputDevice(
      * @param eventListener используется, если загрузка уже завершена
      *   и нужно сразу начать слушать
      */
+    /**
+     * Переключает отложенный запуск прослушивания.
+     * Если во время загрузки модели пользователь уже нажал на кнопку,
+     * этот метод запоминает обработчик и запускает прослушивание
+     * сразу после завершения загрузки.
+     */
     private fun toggleThenStartListening(eventListener: (InputEvent) -> Unit) {
         if (
             !_state.compareAndSet(Loading(null), Loading(eventListener)) &&
