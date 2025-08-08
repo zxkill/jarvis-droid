@@ -41,9 +41,6 @@ tasks.withType<Test>().configureEach {
 }
 
 dependencies {
-    // dicio-numbers is needed to bring ParserFormatter into the classpath
-    implementation(libs.dicio.numbers)
-
     // Compose (check out https://developer.android.com/jetpack/compose/bom/bom-mapping)
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.ui)

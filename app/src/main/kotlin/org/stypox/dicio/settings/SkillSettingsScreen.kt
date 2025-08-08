@@ -57,12 +57,9 @@ import org.stypox.dicio.skills.search.SearchInfo
 import org.stypox.dicio.skills.weather.WeatherInfo
 import org.stypox.dicio.ui.theme.AppTheme
 import org.stypox.dicio.ui.util.SkillInfoPreviews
-import org.stypox.dicio.util.ShareUtils
 import org.stypox.dicio.util.getNonGrantedPermissions
 import org.stypox.dicio.util.commaJoinPermissions
 import org.stypox.dicio.util.requestAnyPermission
-
-const val DICIO_NUMBERS_LINK = "https://github.com/Stypox/dicio-numbers"
 
 @Composable
 fun SkillSettingsScreen(
@@ -94,24 +91,6 @@ fun SkillSettingsScreen(
         contentPadding = PaddingValues(top = 4.dp, bottom = 4.dp),
         modifier = modifier,
     ) {
-        if (viewModel.numberLibraryNotAvailable) {
-            item {
-                val context = LocalContext.current
-                Card(
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                    onClick = { ShareUtils.openUrlInBrowser(context, DICIO_NUMBERS_LINK) },
-                ) {
-                    Text(
-                        text = stringResource(R.string.pref_skill_number_library_not_available),
-                        textAlign = TextAlign.Center,
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                    )
-                }
-            }
-        }
         items(skills) { skill ->
             SkillSettingsItem(
                 skill = skill,

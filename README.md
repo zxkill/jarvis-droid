@@ -44,7 +44,7 @@ Dicio uses [Vosk](https://github.com/alphacep/vosk-api/) as its speech to text (
 
 ## Contributing
 
-Dicio's code is **not only here**! The repository with the *compiler for sentences* language files is at [`dicio-sentences-compiler`](https://github.com/Stypox/dicio-sentences-compiler), the *number parser and formatter* is at [`dicio-numbers`](https://github.com/Stypox/dicio-numbers) and the code for evaluating matching algorithms is at [`dicio-evaluation`](https://github.com/Stypox/dicio-evaluation).
+Dicio's code is **not only here**! The repository with the *compiler for sentences* language files is at [`dicio-sentences-compiler`](https://github.com/Stypox/dicio-sentences-compiler) and the code for evaluating matching algorithms is at [`dicio-evaluation`](https://github.com/Stypox/dicio-evaluation).
 
 When contributing keep in mind that other people may have **needs** and **views different** than yours, so please *respect* them. For any question feel free to contact the project team at [@Stypox](https://github.com/Stypox).
 
@@ -107,7 +107,7 @@ The new skill most likely needs to interpret user input. The Dicio framework pro
               # Currently only string capturing groups are supported, but in
               # the future "number", "duration" and "date" will also be possible.
               # For the moment use "string" and then manually parse the string to
-              # number, duration or date using dicio-numbers.
+              # number, duration or date.
               type: string
     ```
 
