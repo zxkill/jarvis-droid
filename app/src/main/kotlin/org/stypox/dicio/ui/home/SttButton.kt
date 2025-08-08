@@ -158,7 +158,7 @@ private fun SttFabIcon(state: SttState, contentDescription: String) {
     }
 }
 
-@Preview
+@Preview(locale = "ru")
 @Composable
 private fun SttFabPreview(@PreviewParameter(SttStatesPreviews::class) state: SttState) {
     Column {
@@ -180,7 +180,7 @@ private fun SttFabPreview(@PreviewParameter(SttStatesPreviews::class) state: Stt
 }
 
 // this preview is useful to take screenshots
-@Preview(device = "spec:width=2500px,height=2340px,dpi=440")
+@Preview(device = "spec:width=2500px,height=2340px,dpi=440", locale = "ru")
 @Composable
 private fun SttFabPreviewAll() {
     AppTheme {

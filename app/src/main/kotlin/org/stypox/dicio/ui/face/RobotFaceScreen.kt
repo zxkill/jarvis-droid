@@ -167,7 +167,7 @@ fun RobotFaceScreen(
 
         if (sttState != null) {
             SttFab(
-                state = sttState,
+                state = sttState!!,
                 onClick = startListening,
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
