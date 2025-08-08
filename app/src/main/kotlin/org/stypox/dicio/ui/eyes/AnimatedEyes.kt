@@ -107,12 +107,14 @@ fun rememberEyesState(): EyesState = remember { EyesState() }
  * @param state состояние глаз, позволяющее изменять эмоции
  * @param modifier модификатор для размещения компонента
  * @param eyeColor цвет глаз
+ * @param spacingRatio коэффициент расстояния между глазами
  */
 @Composable
 fun AnimatedEyes(
     state: EyesState,
     modifier: Modifier = Modifier,
     eyeColor: Color = Color.White,
+    spacingRatio: Float = 0.5f,
 ) {
     // Анимация моргания: значение 1 – глаза открыты, 0 – закрыты
     val blink = remember { Animatable(1f) }
@@ -140,8 +142,12 @@ fun AnimatedEyes(
             .height(30.dp)
     ) {
         val eyeSize = size.height
-        val leftCenter = Offset(size.width * 0.25f, size.height / 2f)
-        val rightCenter = Offset(size.width * 0.75f, size.height / 2f)
+        val gap = eyeSize * spacingRatio
+        val offset = eyeSize / 2f + gap / 2f
+        val centerY = size.height / 2f
+        val centerX = size.width / 2f
+        val leftCenter = Offset(centerX - offset, centerY)
+        val rightCenter = Offset(centerX + offset, centerY)
         drawEye(leftCenter, eyeSize, blink.value, state.expression, eyeColor)
         drawEye(rightCenter, eyeSize, blink.value, state.expression, eyeColor)
     }
