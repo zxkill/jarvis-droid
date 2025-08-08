@@ -12,13 +12,18 @@ import java.time.format.FormatStyle
 import java.time.format.TextStyle
 import java.util.Locale
 
+/**
+ * Скилл сообщает текущую дату или её части.
+ */
 class CurrentDateSkill(
     correspondingSkillInfo: SkillInfo,
-    data: StandardRecognizerData<CurrentDate>
+    data: StandardRecognizerData<CurrentDate>,
 ) : StandardRecognizerSkill<CurrentDate>(correspondingSkillInfo, data) {
 
     override suspend fun generateOutput(ctx: SkillContext, inputData: CurrentDate): SkillOutput {
+        // Получаем сегодняшнюю дату
         val today = LocalDate.now()
+        // Возвращаем нужную часть даты в зависимости от запроса
         return when (inputData) {
             is CurrentDate.Day -> {
                 val formatted = formatDay(ctx, today)
@@ -35,9 +40,12 @@ class CurrentDateSkill(
         }
     }
 
+    /** Форматирование полной даты. */
     private fun formatDay(ctx: SkillContext, date: LocalDate): String {
         return when (ctx.locale.language) {
+            // Для русского языка используем собственную реализацию
             "ru" -> formatRussianFullDate(date)
+            // В остальных случаях используем парсер или стандартный формат
             else -> ctx.parserFormatter?.niceDate(date)?.get()
                 ?: DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL)
                     .withLocale(ctx.locale)
@@ -45,6 +53,7 @@ class CurrentDateSkill(
         }
     }
 
+    /** Форматирование года. */
     private fun formatYear(ctx: SkillContext, date: LocalDate): String {
         return when (ctx.locale.language) {
             "ru" -> russianYear(date.year, nominative = true)
@@ -52,6 +61,7 @@ class CurrentDateSkill(
         }
     }
 
+    /** Форматирование месяца. */
     private fun formatMonth(ctx: SkillContext, date: LocalDate): String {
         return when (ctx.locale.language) {
             "ru" -> MONTHS_NOMINATIVE[date.monthValue]
@@ -59,6 +69,7 @@ class CurrentDateSkill(
         }
     }
 
+    /** Полный формат даты на русском языке. */
     private fun formatRussianFullDate(date: LocalDate): String {
         val weekday = WEEKDAYS[date.dayOfWeek.value]
         val day = ORDINALS_NEUTER[date.dayOfMonth]
@@ -67,6 +78,10 @@ class CurrentDateSkill(
         return "$weekday $day $month $year года"
     }
 
+    /**
+     * Преобразует год в слова для русского языка.
+     * Поддерживает особый случай для диапазона 2000-2099.
+     */
     private fun russianYear(year: Int, nominative: Boolean): String {
         if (year in 2000..2099) {
             val remainder = year % 100
@@ -81,6 +96,7 @@ class CurrentDateSkill(
         return year.toString()
     }
 
+    /** Возвращает порядковое числительное мужского рода. */
     private fun ordinalMasculine(number: Int, nominative: Boolean): String {
         val unitsNom = arrayOf("", "первый", "второй", "третий", "четвёртый", "пятый", "шестой", "седьмой", "восьмой", "девятый")
         val unitsGen = arrayOf("", "первого", "второго", "третьего", "четвёртого", "пятого", "шестого", "седьмого", "восьмого", "девятого")

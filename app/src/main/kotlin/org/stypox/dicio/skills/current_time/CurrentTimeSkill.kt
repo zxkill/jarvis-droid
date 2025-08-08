@@ -10,16 +10,25 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
+/**
+ * Скилл озвучивает текущее время.
+ */
 class CurrentTimeSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognizerData<CurrentTime>)
     : StandardRecognizerSkill<CurrentTime>(correspondingSkillInfo, data) {
+
     override suspend fun generateOutput(ctx: SkillContext, inputData: CurrentTime): SkillOutput {
+        // Получаем текущее время на устройстве
         val now = LocalTime.now()
+        // Форматируем строку в зависимости от локали
         val formatted = when {
+            // Специальная обработка для русского языка
             ctx.locale.language == "ru" -> formatRussianTime(now)
+            // Если доступен парсер форматов, используем его
             ctx.parserFormatter != null -> ctx.parserFormatter!!
                 .niceTime(now)
                 .use24Hour(true)
                 .get()
+            // В остальных случаях используем стандартный формат времени
             else -> DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)
                 .withLocale(ctx.locale)
                 .format(now)
@@ -27,6 +36,7 @@ class CurrentTimeSkill(correspondingSkillInfo: SkillInfo, data: StandardRecogniz
         return CurrentTimeOutput(formatted)
     }
 
+    /** Форматирование времени на русском языке без зависимости от внешних библиотек. */
     private fun formatRussianTime(time: LocalTime): String {
         val hours = time.hour
         val minutes = time.minute
@@ -37,6 +47,7 @@ class CurrentTimeSkill(correspondingSkillInfo: SkillInfo, data: StandardRecogniz
         return "$hourText $hourWord $minuteText $minuteWord"
     }
 
+    /** Преобразует число в слова, учитывая род существительного. */
     private fun numberToWords(number: Int, feminine: Boolean): String {
         val unitsMasculine = arrayOf("ноль", "один", "два", "три", "четыре", "пять", "шесть", "семь", "восемь", "девять")
         val unitsFeminine = arrayOf("ноль", "одна", "две", "три", "четыре", "пять", "шесть", "семь", "восемь", "девять")
@@ -55,6 +66,7 @@ class CurrentTimeSkill(correspondingSkillInfo: SkillInfo, data: StandardRecogniz
         }
     }
 
+    /** Возвращает правильную форму слова "час". */
     private fun hourWord(hours: Int): String {
         val mod10 = hours % 10
         val mod100 = hours % 100
@@ -65,6 +77,7 @@ class CurrentTimeSkill(correspondingSkillInfo: SkillInfo, data: StandardRecogniz
         }
     }
 
+    /** Возвращает правильную форму слова "минута". */
     private fun minuteWord(minutes: Int): String {
         val mod10 = minutes % 10
         val mod100 = minutes % 100

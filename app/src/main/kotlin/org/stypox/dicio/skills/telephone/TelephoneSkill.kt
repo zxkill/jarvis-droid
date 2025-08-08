@@ -10,6 +10,7 @@ import org.dicio.skill.standard.StandardRecognizerData
 import org.dicio.skill.standard.StandardRecognizerSkill
 import org.stypox.dicio.sentences.Sentences.Telephone
 
+/** Скилл совершения телефонных звонков по имени контакта. */
 class TelephoneSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognizerData<Telephone>) :
     StandardRecognizerSkill<Telephone>(correspondingSkillInfo, data) {
 
@@ -31,29 +32,26 @@ class TelephoneSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognizer
             }
             if (validContacts.isEmpty()
                 && contact.distance < 3
-                && numbers.size == 1 // it has just one number
-                && (contacts.size <= i + 1 // the next contact has a distance higher by 3+
+                && numbers.size == 1 // у контакта только один номер
+                && (contacts.size <= i + 1 // следующий контакт существенно менее похож
                         || contacts[i + 1].distance - 2 > contact.distance)
             ) {
-                // very close match with just one number and without distance ties: call it directly
+                // Очень близкое совпадение — звоним напрямую
                 return ConfirmCallOutput(contact.name, numbers[0])
             }
             validContacts.add(Pair(contact.name, numbers))
             ++i
         }
 
-        if (validContacts.size == 1 // there is exactly one valid contact and ...
-            // ... either it has exactly one number, or we would be forced (because no number parser
-            // is available) to use ContactChooserName, which only uses the first phone number
-            // anyway
+        if (validContacts.size == 1
             && (validContacts[0].second.size == 1 || ctx.parserFormatter == null)
         ) {
-            // not a good enough match, but since we have only this, call it directly
+            // Остался единственный кандидат: звоним на его номер
             val contact = validContacts[0]
             return ConfirmCallOutput(contact.first, contact.second[0])
         }
 
-        // this point will not be reached if a very close match was found
+        // Если однозначного контакта нет, возвращаем список для выбора пользователем
         return TelephoneOutput(validContacts)
     }
 

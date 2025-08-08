@@ -12,6 +12,9 @@ import org.stypox.dicio.sentences.Sentences.CalculatorOperators
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 
+/**
+ * Скилл-калькулятор. Позволяет выполнять простые математические выражения из речи.
+ */
 class CalculatorSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognizerData<Calculator>)
     : StandardRecognizerSkill<Calculator>(correspondingSkillInfo, data) {
 
@@ -20,6 +23,7 @@ class CalculatorSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognize
         text: String
     ): CalculatorOperators? {
         val (score, result) = operatorSection.score(text)
+        // Если уверенность распознавания низкая, считаем что оператор не найден
         return if (score.scoreIn01Range() < 0.3) {
             null
         } else {
@@ -36,9 +40,11 @@ class CalculatorSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognize
     }
 
     override suspend fun generateOutput(ctx: SkillContext, inputData: Calculator): SkillOutput {
+        // Извлекаем из фразы числа и текстовые операторы
         val textWithNumbers: List<Any>? = when (inputData) {
             is Calculator.Calculate -> inputData.calculation
         }?.let { ctx.parserFormatter?.extractNumber(it)?.mixedWithText }
+        // Если не найдено ни одного числа, возвращаем пустой результат
         if (textWithNumbers.isNullOrEmpty()
             || (textWithNumbers.size == 1 && textWithNumbers[0] !is Number)) {
             return CalculatorOutput(null, "", "")
@@ -61,6 +67,7 @@ class CalculatorSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognize
         }
 
         val decimalFormat = DecimalFormat("#.##", DecimalFormatSymbols(ctx.locale))
+        // Строка с интерпретацией введённого пользователем выражения
         val inputInterpretation = StringBuilder(numberToString(decimalFormat, firstNumber))
 
         var currentVariableNumber = 0
@@ -75,11 +82,12 @@ class CalculatorSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognize
         ++currentVariableNumber
         while (i < textWithNumbers.size) {
             val operation: CalculatorOperators
+            // Если вместо оператора сразу число, подразумеваем сложение
             if (textWithNumbers[i] is Number) {
                 operation = CalculatorOperators.Addition
             } else if (i + 1 < textWithNumbers.size) {
                 operation = getOperation(operatorRecognizerData, textWithNumbers[i] as String)
-                    ?: CalculatorOperators.Addition // perform addition by default
+                    ?: CalculatorOperators.Addition // по умолчанию выполняем сложение
                 ++i
             } else {
                 break
@@ -110,8 +118,7 @@ class CalculatorSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognize
                     expressionString.append("^")
                 }
                 CalculatorOperators.SquareRoot -> {
-                    // TODO unimplemented, this way of building expressions doesn't allow for unary
-                    //  operations
+                    // TODO реализовать поддержку унарных операций
                     inputInterpretation.append(" + ")
                     expressionString.append("+")
                 }

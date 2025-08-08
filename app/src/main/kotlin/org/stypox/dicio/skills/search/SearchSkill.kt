@@ -13,9 +13,11 @@ import org.stypox.dicio.sentences.Sentences.Search
 import org.stypox.dicio.util.ConnectionUtils
 import org.stypox.dicio.util.LocaleUtils
 
+/** Скилл для поиска информации в интернете (DuckDuckGo). */
 class SearchSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognizerData<Search>)
     : StandardRecognizerSkill<Search>(correspondingSkillInfo, data) {
     override suspend fun generateOutput(ctx: SkillContext, inputData: Search): SkillOutput {
+        // Получаем поисковый запрос пользователя
         val query = when (inputData) {
             is Search.Query -> inputData.what ?: return SearchOutput(null, true)
         }
@@ -36,7 +38,7 @@ private val DUCK_DUCK_GO_SUPPORTED_LOCALES = listOf(
 )
 
 internal fun searchOnDuckDuckGo(ctx: SkillContext, query: String): List<SearchOutput.Data> {
-    // find the locale supported by DuckDuckGo that matches the user locale the most
+    // Ищем наиболее подходящую локаль для запроса
     var resolvedLocale: LocaleUtils.LocaleResolutionResult? = null
     try {
         resolvedLocale = LocaleUtils.resolveSupportedLocale(
@@ -46,7 +48,7 @@ internal fun searchOnDuckDuckGo(ctx: SkillContext, query: String): List<SearchOu
     }
     val locale = resolvedLocale?.supportedLocaleString ?: ""
 
-    // make request using headers
+    // Выполняем HTTP-запрос к DuckDuckGo с нужными заголовками
     val html: String = ConnectionUtils.getPage(
         DUCK_DUCK_GO_SEARCH_URL + ConnectionUtils.urlEncode(query),
         object : HashMap<String?, String?>() {
@@ -73,7 +75,7 @@ internal fun searchOnDuckDuckGo(ctx: SkillContext, query: String): List<SearchOu
     val result: MutableList<SearchOutput.Data> = ArrayList()
     for (element in elements) {
         try {
-            // the url is under the "uddg" query parameter
+            // Ссылка на результат находится в параметре "uddg"
             val ddgUrl = element.select("a[class=result__a]").first()!!.attr("href")
             val url = ddgUrl.toUri().getQueryParameter("uddg")!!
 

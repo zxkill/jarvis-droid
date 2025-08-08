@@ -16,14 +16,16 @@ import org.unbescape.javascript.JavaScriptEscape
 import org.unbescape.json.JsonEscape
 import java.util.regex.Pattern
 
+/** Скилл получения текста песен с сервиса Genius. */
 class LyricsSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognizerData<Lyrics>)
     : StandardRecognizerSkill<Lyrics>(correspondingSkillInfo, data) {
 
     /**
-     * This connects to Genius to get lyrics information.
-     * More services could be added in the future.
+     * Подключается к Genius для получения текста песни.
+     * В будущем можно добавить поддержку других сервисов.
      */
     override suspend fun generateOutput(ctx: SkillContext, inputData: Lyrics): SkillOutput {
+        // Извлекаем название песни из запроса
         val songName: String = when (inputData) {
             is Lyrics.Query -> inputData.song ?: return LyricsOutput.Failed(title = "")
         }
@@ -54,7 +56,7 @@ class LyricsSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognizerDat
     }
 
     companion object {
-        // replace "songs" with "multi" to get all kinds of results and not just songs
+        // замените "songs" на "multi", чтобы получать результаты всех типов, а не только песни
         private const val GENIUS_SEARCH_URL = "https://genius.com/api/search/songs?q="
         private const val GENIUS_LYRICS_URL = "https://genius.com/songs/"
         private val LYRICS_PATTERN =
