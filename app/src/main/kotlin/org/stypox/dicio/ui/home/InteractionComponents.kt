@@ -193,7 +193,7 @@ fun InteractionList(
     }
 }
 
-@Preview
+@Preview(locale = "ru")
 @Composable
 fun InteractionListPreview(
     @PreviewParameter(InteractionLogPreviews::class) interactionLog: InteractionLog,
@@ -212,7 +212,7 @@ fun InteractionListPreview(
     }
 }
 
-@Preview
+@Preview(locale = "ru")
 @Composable
 fun PendingQuestionCard(@PreviewParameter(UserInputPreviews::class) userInput: String) {
     MessageCard(containerColor = MaterialTheme.colorScheme.tertiaryContainer) {
@@ -233,7 +233,7 @@ fun PendingQuestionCard(@PreviewParameter(UserInputPreviews::class) userInput: S
     }
 }
 
-@Preview
+@Preview(locale = "ru")
 @Composable
 fun ConfirmedQuestionCard(
     @PreviewParameter(UserInputPreviews::class) userInput: String,
