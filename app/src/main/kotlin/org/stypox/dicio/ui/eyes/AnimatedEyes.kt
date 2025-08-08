@@ -191,13 +191,17 @@ private fun DrawScope.drawEye(
 
     val path = Path().apply {
         moveTo(topLeft.x, topLeft.y + radiusTop)
-        quadTo(topLeft.x, topLeft.y, topLeft.x + radiusTop, topLeft.y)
+        quadraticBezierTo(topLeft.x, topLeft.y, topLeft.x + radiusTop, topLeft.y)
         lineTo(topRight.x - radiusTop, topRight.y)
-        quadTo(topRight.x, topRight.y, topRight.x, topRight.y + radiusTop)
+        quadraticBezierTo(topRight.x, topRight.y, topRight.x, topRight.y + radiusTop)
         lineTo(bottomRight.x, bottomRight.y - radiusBottom)
-        quadTo(bottomRight.x, bottomRight.y, bottomRight.x - radiusBottom, bottomRight.y)
+        quadraticBezierTo(
+            bottomRight.x, bottomRight.y, bottomRight.x - radiusBottom, bottomRight.y
+        )
         lineTo(bottomLeft.x + radiusBottom, bottomLeft.y)
-        quadTo(bottomLeft.x, bottomLeft.y, bottomLeft.x, bottomLeft.y - radiusBottom)
+        quadraticBezierTo(
+            bottomLeft.x, bottomLeft.y, bottomLeft.x, bottomLeft.y - radiusBottom
+        )
         close()
     }
 
