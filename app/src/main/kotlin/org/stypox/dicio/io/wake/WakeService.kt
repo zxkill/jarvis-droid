@@ -41,6 +41,9 @@ import javax.inject.Inject
 class WakeService : Service() {
 
     private val listening = AtomicBoolean(false)
+    // Флаг, показывающий, что ключевое слово уже было услышано и
+    // следующая фраза должна трактоваться как команда.
+    private var awaitingCommand = false
 
     @Inject
     lateinit var skillEvaluator: SkillEvaluator
@@ -110,9 +113,16 @@ class WakeService : Service() {
             is InputEvent.Partial -> {}
             is InputEvent.Error -> {
                 Log.e(TAG, "Error during STT", event.throwable)
+                // При ошибке сбрасываем состояние ожидания команды
+                awaitingCommand = false
                 restartListening(playSound = false)
             }
-            InputEvent.None -> restartListening(playSound = false)
+            InputEvent.None -> {
+                // По таймауту или при отсутствии речи возвращаемся
+                // к ожиданию ключевого слова
+                awaitingCommand = false
+                restartListening(playSound = false)
+            }
             is InputEvent.Final -> {
                 val triggered = handleFinalEvent(event)
                 restartListening(playSound = triggered)
@@ -120,23 +130,52 @@ class WakeService : Service() {
         }
     }
 
+    /**
+     * Обработка окончательно распознанной фразы.
+     * Возвращает `true`, если была выполнена команда.
+     */
     private fun handleFinalEvent(event: InputEvent.Final): Boolean {
         val utterance = event.utterances.firstOrNull() ?: return false
         val text = utterance.first
         val confidence = utterance.second
         val lower = text.lowercase(Locale.getDefault())
         val triggerWord = TRIGGER_WORD.lowercase(Locale.getDefault())
-        if (lower.startsWith(triggerWord)) {
-            val command = text.substring(triggerWord.length).trim()
+
+        return if (awaitingCommand) {
+            // Предыдущее распознавание было только ключевым словом,
+            // значит текущий текст — это команда.
+            awaitingCommand = false
+            val command = text.trim()
             if (command.isNotEmpty()) {
+                // Передаём команду обработчику без просьбы повторить
                 skillEvaluator.processInputEvent(
-                    InputEvent.Final(listOf(Pair(command, confidence)))
+                    InputEvent.Final(listOf(Pair(command, confidence))),
+                    askToRepeat = false
                 )
                 openMainActivity()
-                return true
+                true
+            } else {
+                false
             }
+        } else if (lower.startsWith(triggerWord)) {
+            // В фразе присутствует ключевое слово.
+            val command = text.substring(triggerWord.length).trim()
+            if (command.isNotEmpty()) {
+                // Ключевое слово и команда произнесены вместе.
+                skillEvaluator.processInputEvent(
+                    InputEvent.Final(listOf(Pair(command, confidence))),
+                    askToRepeat = false
+                )
+                openMainActivity()
+                true
+            } else {
+                // Было сказано только ключевое слово — ждём следующую фразу.
+                awaitingCommand = true
+                false
+            }
+        } else {
+            false
         }
-        return false
     }
 
     private fun restartListening(playSound: Boolean = true) {

@@ -19,6 +19,7 @@ import org.stypox.dicio.di.SttInputDeviceWrapper
 import org.stypox.dicio.io.graphical.ErrorSkillOutput
 import org.stypox.dicio.io.graphical.MissingPermissionsSkillOutput
 import org.stypox.dicio.io.input.InputEvent
+import org.stypox.dicio.skills.fallback.text.TextFallbackOutput
 import org.stypox.dicio.ui.home.Interaction
 import org.stypox.dicio.ui.home.InteractionLog
 import org.stypox.dicio.ui.home.PendingQuestion
@@ -34,7 +35,9 @@ interface SkillEvaluator {
     var permissionRequester: suspend (List<Permission>) -> Boolean
 
     // Обрабатывает входящие события от устройства ввода речи.
-    fun processInputEvent(event: InputEvent)
+    // [askToRepeat] определяет, нужно ли в случае нераспознанной команды
+    // просить пользователя повторить её.
+    fun processInputEvent(event: InputEvent, askToRepeat: Boolean = true)
 }
 
 class SkillEvaluatorImpl(
@@ -62,14 +65,14 @@ class SkillEvaluatorImpl(
     override var permissionRequester: suspend (List<Permission>) -> Boolean = { false }
 
     // Обработка событий происходит в отдельной корутине.
-    override fun processInputEvent(event: InputEvent) {
+    override fun processInputEvent(event: InputEvent, askToRepeat: Boolean) {
         scope.launch {
-            suspendProcessInputEvent(event)
+            suspendProcessInputEvent(event, askToRepeat)
         }
     }
 
     // Основной метод, реагирующий на новое событие от микрофона.
-    private suspend fun suspendProcessInputEvent(event: InputEvent) {
+    private suspend fun suspendProcessInputEvent(event: InputEvent, askToRepeat: Boolean) {
         when (event) {
             is InputEvent.Error -> {
                 addErrorInteractionFromPending(event.throwable)
@@ -83,7 +86,7 @@ class SkillEvaluatorImpl(
                         skillBeingEvaluated = null,
                     )
                 )
-                evaluateMatchingSkill(event.utterances.map { it.first })
+                evaluateMatchingSkill(event.utterances.map { it.first }, askToRepeat)
             }
             InputEvent.None -> {
                 // Пользователь молчит — очищаем ожидаемый вопрос.
@@ -105,7 +108,10 @@ class SkillEvaluatorImpl(
     }
 
     // Пытается подобрать и выполнить подходящий навык для пользовательского ввода.
-    private suspend fun evaluateMatchingSkill(utterances: List<String>) {
+    private suspend fun evaluateMatchingSkill(
+        utterances: List<String>,
+        askToRepeat: Boolean,
+    ) {
         val (chosenInput, chosenSkill) = try {
             utterances.firstNotNullOfOrNull { input: String ->
                 skillRanker.getBest(skillContext, input)?.let { skillWithResult ->
@@ -135,8 +141,14 @@ class SkillEvaluatorImpl(
                 return
             }
 
+            // Если необходимо игнорировать фразы без распознанного навыка,
+            // устанавливаем предыдущий вывод так, чтобы TextFallbackSkill
+            // не попросил повторить команду.
             skillContext.previousOutput =
                 _state.value.interactions.lastOrNull()?.questionsAnswers?.lastOrNull()?.answer
+            if (!askToRepeat) {
+                skillContext.previousOutput = TextFallbackOutput(true)
+            }
             val output = chosenSkill.generateOutput(skillContext)
 
             val interactionPlan = output.getInteractionPlan(skillContext)
