@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlin.random.Random
 import kotlinx.coroutines.delay
@@ -108,13 +109,16 @@ fun rememberEyesState(): EyesState = remember { EyesState() }
  * @param modifier модификатор для размещения компонента
  * @param eyeColor цвет глаз
  * @param spacingRatio коэффициент расстояния между глазами
- */
+ * @param eyeSize высота области рисования глаза. Меняя этот параметр,
+ *               можно масштабировать глаза без изменения логики рисования.
+*/
 @Composable
 fun AnimatedEyes(
     state: EyesState,
     modifier: Modifier = Modifier,
     eyeColor: Color = Color.White,
     spacingRatio: Float = 0.5f,
+    eyeSize: Dp = 120.dp,
 ) {
     // Анимация моргания: значение 1 – глаза открыты, 0 – закрыты
     val blink = remember { Animatable(1f) }
@@ -136,10 +140,12 @@ fun AnimatedEyes(
         }
     }
 
+    // Основное полотно для рисования глаз. Высота задаётся параметром [eyeSize],
+    // что позволяет менять масштаб глаз в различных режимах экрана.
     Canvas(
         modifier = modifier
             .fillMaxWidth()
-            .height(30.dp)
+            .height(eyeSize)
     ) {
         val eyeSize = size.height
         val gap = eyeSize * spacingRatio

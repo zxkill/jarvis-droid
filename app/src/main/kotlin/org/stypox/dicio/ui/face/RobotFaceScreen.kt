@@ -135,6 +135,7 @@ fun RobotFaceScreen(
 
         if (visibleOutput == null) {
             // Слушаем пользователя — глаза по центру
+            // Отображаем крупные глаза по центру, когда вывод скилла отсутствует
             RobotEyes(modifier = Modifier.align(Alignment.Center))
         } else {
             // Делим экран: глаза слева, вывод скилла справа
@@ -145,7 +146,9 @@ fun RobotFaceScreen(
                         .fillMaxHeight(),
                     contentAlignment = Alignment.Center
                 ) {
-                    RobotEyes()
+                    // При показе ответа скилла глаза занимают лишь половину экрана,
+                    // поэтому уменьшаем их размер для визуального баланса
+                    RobotEyes(compact = true)
                 }
                 Box(
                     modifier = Modifier
@@ -164,12 +167,22 @@ fun RobotFaceScreen(
  * Отображение пары анимированных глаз. Благодаря [rememberEyesState]
  * анимации и выбранная эмоция сохраняются между перерисовками.
  */
+/**
+ * Обёртка вокруг [AnimatedEyes], позволяющая переключать размер глаз.
+ * @param compact если `true`, глаза будут уменьшены и подойдут для режима,
+ *                когда экран поделён между глазами и выводом скилла
+ */
 @Composable
-fun RobotEyes(modifier: Modifier = Modifier) {
+fun RobotEyes(modifier: Modifier = Modifier, compact: Boolean = false) {
     val eyesState = rememberEyesState()
+
+    // В зависимости от режима выбираем высоту области рисования глаз.
+    // В обычном состоянии глаза крупнее (120dp), а в "компактном" режиме – меньше.
+    val size = if (compact) 60.dp else 120.dp
 
     AnimatedEyes(
         state = eyesState,
         modifier = modifier,
+        eyeSize = size,
     )
 }
