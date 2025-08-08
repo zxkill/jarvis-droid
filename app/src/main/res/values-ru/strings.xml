@@ -110,6 +110,9 @@
     <string name="error_sorry">К сожалению, произошла ошибка</string>
     <string name="error_title">Сообщение об ошибке</string>
     <string name="skill_time_current_time">Сейчас %1$s</string>
+    <string name="skill_date_today">Сегодня %1$s</string>
+    <string name="skill_date_year">Сейчас %1$s год</string>
+    <string name="skill_date_month">Сейчас %1$s</string>
     <string name="error_report_channel_name">Уведомление с отчетом об ошибке</string>
     <string name="pref_stt_auto_finish_title">Автоматически отправлять распознанный текст</string>
     <string name="pref_stt_auto_finish_summary_on">Автоматически передавать распознанную речь в запрашиваемое приложение по завершению прослушивания</string>
@@ -137,6 +140,8 @@
     <string name="skill_navigation_navigating_to">Построение маршрута к %1$s</string>
     <string name="skill_name_current_time">Текущее время</string>
     <string name="skill_sentence_example_current_time">Который час?</string>
+    <string name="skill_name_current_date">Текущая дата</string>
+    <string name="skill_sentence_example_current_date">Какой сегодня день?</string>
     <string name="back">Назад</string>
     <string name="clear">Очистить</string>
     <string name="copy_to_clipboard">Копировать в буфер обмена</string>
