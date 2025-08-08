@@ -65,8 +65,11 @@ class MainActivity : BaseActivity() {
         if (nextAssistAllowed < now) {
             nextAssistAllowed = now.plusMillis(INTENT_BACKOFF_MILLIS)
             Log.d(TAG, "Получен интент ассистента")
-            // Запускаем распознавание и передаём события напрямую обработчику
-            sttInputDevice.tryLoad { event -> skillEvaluator.processInputEvent(event) }
+            // Запускаем распознавание и передаём события напрямую обработчику.
+            // Лямбда должна быть передана первым параметром, поэтому используем скобки.
+            sttInputDevice.tryLoad({ event ->
+                skillEvaluator.processInputEvent(event)
+            })
         } else {
             Log.w(TAG, "Повторный интент ассистента проигнорирован")
         }
