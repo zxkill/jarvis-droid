@@ -36,7 +36,13 @@ class ParserFormatter(private val locale: Locale) {
     fun extractNumber(text: String): Extraction = Extraction(emptyList())
 
     /**
-     * Преобразует число в строку без какого‑либо специального форматирования.
+     * Проговаривает число, возвращая его строковое представление без
+     * какого‑либо специального форматирования.
+     */
+    fun pronounceNumber(number: Double): NiceString = NiceString(number.toString())
+
+    /**
+     * Преобразует число в строку без дополнительного форматирования.
      */
     fun niceNumber(number: Double): NiceString = NiceString(number.toString())
 

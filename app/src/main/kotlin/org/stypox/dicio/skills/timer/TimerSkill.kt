@@ -27,24 +27,24 @@ class TimerSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognizerData
         // Определяем действие пользователя: установить, запросить или отменить таймер
         return when (inputData) {
             is Timer.Set -> {
-                val duration = inputData.duration?.let {
+                val duration = inputData.duration?.value?.let {
                     ctx.parserFormatter?.extractDuration(it)?.first?.toJavaDuration()
                 }
                 if (duration == null) {
                     // Пользователь не указал длительность, просим её
-                    TimerOutput.SetAskDuration { setTimer(ctx, it, inputData.name) }
+                    TimerOutput.SetAskDuration { setTimer(ctx, it, inputData.name?.value) }
                 } else {
-                    setTimer(ctx, duration, inputData.name)
+                    setTimer(ctx, duration, inputData.name?.value)
                 }
             }
             is Timer.Query -> {
-                queryTimer(ctx, inputData.name)
+                queryTimer(ctx, inputData.name?.value)
             }
             is Timer.Cancel -> {
                 if (inputData.name == null && SET_TIMERS.size > 1) {
                     TimerOutput.ConfirmCancel { cancelTimer(ctx, null) }
                 } else {
-                    cancelTimer(ctx, inputData.name)
+                    cancelTimer(ctx, inputData.name?.value)
                 }
             }
         }
