@@ -20,6 +20,7 @@ import org.stypox.dicio.skills.telephone.ConfirmCallOutput
 import org.stypox.dicio.skills.telephone.ConfirmedCallOutput
 import org.stypox.dicio.skills.telephone.TelephoneInfo
 import org.stypox.dicio.skills.weather.WeatherInfo
+import org.stypox.dicio.skills.face_tracker.FaceTrackerInfo
 import org.stypox.dicio.ui.home.Interaction
 import org.stypox.dicio.ui.home.InteractionLog
 import org.stypox.dicio.ui.home.PendingQuestion
@@ -37,6 +38,7 @@ class UserInputPreviews : CollectionPreviewParameterProvider<String>(listOf(
 class SkillInfoPreviews : CollectionPreviewParameterProvider<SkillInfo>(listOf(
     WeatherInfo,
     TelephoneInfo,
+    FaceTrackerInfo,
     object : SkillInfo("test") {
         override fun name(context: Context) = "Long name lorem ipsum dolor sit amet, consectetur"
         override fun sentenceExample(context: Context) = "Long sentence ".repeat(20)

@@ -28,6 +28,11 @@ val PERMISSION_CALL_PHONE = Permission.NormalPermission(
     id = Manifest.permission.CALL_PHONE,
 )
 
+val PERMISSION_CAMERA = Permission.NormalPermission(
+    name = R.string.perm_camera,
+    id = Manifest.permission.CAMERA,
+)
+
 /**
  * @param context the Android context
  * @param permissions an array of permissions to check (can be empty)
