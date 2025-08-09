@@ -11,7 +11,6 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.time.format.TextStyle
-import java.util.Locale
 
 /**
  * Скилл сообщает текущую дату или её части.
@@ -25,16 +24,30 @@ class CurrentDateSkill(
     override val autoUpdateIntervalMillis: Long = 60_000L
 
     override suspend fun generateOutput(ctx: SkillContext, inputData: CurrentDate): SkillOutput {
-        return outputForDay(ctx)
+        val today = LocalDate.now()
+        return when (inputData) {
+            // "Какой сегодня день?"
+            is CurrentDate.Day -> {
+                val formatted = formatDay(ctx, today)
+                CurrentDateOutput(CurrentDateOutput.Type.DAY, formatted)
+            }
+            // "Какой сейчас год?"
+            is CurrentDate.Year -> {
+                val formatted = formatYear(ctx, today)
+                CurrentDateOutput(CurrentDateOutput.Type.YEAR, formatted)
+            }
+            // "Какой месяц?"
+            is CurrentDate.Month -> {
+                val formatted = formatMonth(ctx, today)
+                CurrentDateOutput(CurrentDateOutput.Type.MONTH, formatted)
+            }
+        }
     }
 
     override suspend fun autoOutput(ctx: SkillContext): SkillOutput {
-        return outputForDay(ctx)
-    }
-
-    private fun outputForDay(ctx: SkillContext): SkillOutput {
         val today = LocalDate.now()
-        val formatted = formatDay(ctx, today)
+        // Для компактного углового виджета используем числовой формат "09.08.2025"
+        val formatted = today.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
         return CurrentDateOutput(CurrentDateOutput.Type.DAY, formatted)
     }
 
