@@ -23,6 +23,7 @@ import org.stypox.dicio.io.graphical.HeadlineSpeechSkillOutput
 import org.stypox.dicio.util.getString
 import org.stypox.dicio.util.lowercaseCapitalized
 import java.util.Locale
+import kotlin.math.roundToInt
 
 sealed interface WeatherOutput : SkillOutput {
     data class Success(
@@ -37,9 +38,28 @@ sealed interface WeatherOutput : SkillOutput {
         val temperatureUnit: ResolvedTemperatureUnit,
         val lengthUnit: ResolvedLengthUnit,
     ) : WeatherOutput {
-        override fun getSpeechOutput(ctx: SkillContext): String = ctx.getString(
-            R.string.skill_weather_in_city_there_is_description, city, description, tempString
-        )
+        override fun getSpeechOutput(ctx: SkillContext): String {
+            return if (ctx.locale.language.lowercase(Locale.getDefault()) == "ru") {
+                val degreeWord = ctx.android.resources.getQuantityString(
+                    R.plurals.skill_weather_degree,
+                    temp.roundToInt()
+                )
+                ctx.getString(
+                    R.string.skill_weather_in_city_there_is_description_ru,
+                    city,
+                    description,
+                    tempString,
+                    degreeWord
+                )
+            } else {
+                ctx.getString(
+                    R.string.skill_weather_in_city_there_is_description,
+                    city,
+                    description,
+                    tempString
+                )
+            }
+        }
 
         @Composable
         override fun GraphicalOutput(ctx: SkillContext) {

@@ -155,6 +155,11 @@
     <string name="skill_search_what_question">What do you want to search for?</string>
     <string name="skill_weather_could_not_find_city">Could not find city %1$s</string>
     <string name="skill_weather_in_city_there_is_description">There is %2$s and %3$s degrees in %1$s right now</string>
+    <string name="skill_weather_in_city_there_is_description_ru">There is %2$s and %3$s %4$s in %1$s right now</string>
+    <plurals name="skill_weather_degree">
+        <item quantity="one">degree</item>
+        <item quantity="other">degrees</item>
+    </plurals>
     <string name="skill_weather_description_temperature">%1$s · %2$.1f%3$s</string>
     <string name="skill_weather_min_max_wind">Minimum temperature: %1$.1f%4$s\nMaximum temperature: %2$.1f%4$s\nWind speed: %3$.1f%5$s</string>
     <string name="skill_lyrics_song_not_found">Unable to find song %1$s</string>

@@ -1,5 +1,9 @@
 package org.stypox.dicio.skills.weather
 
+import android.annotation.SuppressLint
+import android.content.Context
+import android.location.Location
+import android.location.LocationManager
 import kotlinx.coroutines.flow.first
 import org.dicio.skill.context.SkillContext
 import org.dicio.skill.skill.SkillInfo
@@ -20,17 +24,24 @@ class WeatherSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognizerDa
 
     override suspend fun generateOutput(ctx: SkillContext, inputData: Weather): SkillOutput {
         val prefs = ctx.android.weatherDataStore.data.first()
-        val city = getCity(prefs, inputData) ?: return WeatherOutput.Failed(city = "")
+        val city = getCity(prefs, inputData)
+        val lang = ctx.locale.language.lowercase(Locale.getDefault())
 
         val weatherData = try {
-            ConnectionUtils.getPageJson(
-                // Всегда запрашиваем данные в метрических единицах и переводим позже
-                "$WEATHER_API_URL?APPID=$API_KEY&units=metric&lang=" +
-                        ctx.locale.language.lowercase(Locale.getDefault()) +
-                        "&q=" + ConnectionUtils.urlEncode(city)
-            )
+            when {
+                city != null -> WeatherCache.getWeather(city = city, lang = lang)
+                else -> {
+                    val coords = getCoordinates(ctx)
+                    if (coords != null) {
+                        WeatherCache.getWeather(coords = coords, lang = lang)
+                    } else {
+                        val ipCity = ConnectionUtils.getPageJson(IP_INFO_URL).getString("city")
+                        WeatherCache.getWeather(city = ipCity, lang = lang)
+                    }
+                }
+            }
         } catch (_: FileNotFoundException) {
-            return WeatherOutput.Failed(city = city)
+            return WeatherOutput.Failed(city = city ?: "")
         }
 
         val weatherObject = weatherData.getJSONArray("weather").getJSONObject(0)
@@ -66,20 +77,26 @@ class WeatherSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognizerDa
             city = StringUtils.removePunctuation(prefs.defaultCity.trim { ch -> ch <= ' ' })
         }
 
-        if (city.isEmpty()) {
-            city = ConnectionUtils.getPageJson(IP_INFO_URL).getString("city")
-        }
+        return city?.takeIf { it.isNotEmpty() }
+    }
 
-        if (city.isNullOrEmpty()) {
-            return null
+    @SuppressLint("MissingPermission")
+    private fun getCoordinates(ctx: SkillContext): Pair<Double, Double>? {
+        val lm = ctx.android.getSystemService(Context.LOCATION_SERVICE) as? LocationManager
+            ?: return null
+        val providers = lm.getProviders(true)
+        var best: Location? = null
+        for (provider in providers) {
+            val l = lm.getLastKnownLocation(provider) ?: continue
+            if (best == null || l.accuracy < best!!.accuracy) {
+                best = l
+            }
         }
-        return city
+        return best?.let { it.latitude to it.longitude }
     }
 
     companion object {
         private const val IP_INFO_URL = "https://ipinfo.io/json"
-        private const val WEATHER_API_URL = "https://api.openweathermap.org/data/2.5/weather"
-        private const val API_KEY = "061f24cf3cde2f60644a8240302983f2"
         private const val ICON_BASE_URL = "https://openweathermap.org/img/wn/"
         private const val ICON_FORMAT = "@2x.png"
     }
