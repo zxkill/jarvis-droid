@@ -48,7 +48,6 @@
     <string name="skill_sentence_example_lyrics">Z jakiej piosenki jest \'we will rock you\'\?</string>
     <string name="skill_sentence_example_open">Otwórz NewPipe</string>
     <string name="skill_name_open">Otwórz aplikację</string>
-    <string name="skill_sentence_example_calculator">Ile to pięć razy cztery odjąć milion\?</string>
     <string name="here_is_what_i_can_do">Oto co potrafię!</string>
     <string name="android_tts_unsupported_language">Wybrany język nie jest wspierany przez syntetyzator mowy Android</string>
     <string name="pref_skill_not_available">Ta umiejętność nie jest jeszcze dostępna dla twojego języka. Wsparcie jest mile widziane!</string>
@@ -66,13 +65,11 @@
     <string name="skill_lyrics_found_song_by_artist">Znalazłem %1$s autorstwa %2$s</string>
     <string name="skill_open_unknown_app">Nieznana aplikacja %1$s</string>
     <string name="skill_open_opening">Otwieranie %1$s…</string>
-    <string name="skill_calculator_could_not_calculate">Nie potrafię przetworzyć twojego żądania</string>
     <string name="pref_language">Język</string>
     <string name="pref_language_summary">Jakiego języka powinien używać Dicio, by się z tobą porozumieć\?</string>
     <string name="pref_input_method_text">Tylko pole tekstowe</string>
     <string name="pref_input_method_summary">Wybierz usługę, z której będziesz korzystał, by rozmawiać z Dicio</string>
     <string name="pref_weather_default_city_using_ip_info">Wybierz miasto do celów prognozy pogody, gdy nie wskażesz konkretnej lokacji. Obecnie lokacja wybierana jest na bazie adresu IP.</string>
-    <string name="skill_name_calculator">Kalkulator</string>
     <string name="permission_denied">Zezwolenie odrzucone</string>
     <string name="microphone_error">Brak dostępu do mikrofonu. Prawdopodobnie jest w użyciu przez inny program lub zezwolenie zostało odrzucone.</string>
     <string name="listening">Słuchanie…</string>
@@ -104,7 +101,6 @@
     <string name="pref_skill_missing_permissions">Wymaga następujących uprawnień: %1$s</string>
     <string name="skill_sentence_example_telephone">Zadzwoń do Tomasza</string>
     <string name="android_tts_error">Wystąpił błąd przy inicjalizacii silnika zamiany tekstu na mowę Androida</string>
-    <string name="skill_timer_confirm_cancel">Czy na pewno chcesz anulować wszystkie liczniki czasu\?</string>
     <string name="error_crash_log_headline">Dziennik awarii:</string>
     <string name="skill_navigation_specify_where">Określ miejsce, do którego ma prowadzić nawigacja</string>
     <string name="pref_stt_auto_finish_title">Bezpośrednie przesłanie wyniku rozpoznawania mowy do powiadomienia</string>
@@ -116,26 +112,10 @@
     <string name="skill_name_navigation">Nawigacja</string>
     <string name="skill_sentence_example_navigation">Nawiguj do międzynarodowego lotniska w Vancouver</string>
     <string name="skill_navigation_navigating_to">Nawigacja do %1$s</string>
-    <string name="skill_timer_canceled">Licznik czasu został anulowany</string>
-    <string name="skill_timer_all_canceled">Wszystkie liczniki czasu zostały anulowane</string>
     <string name="error_github_notice">Sprawdź, czy problem dotyczący Twojej awarii już istnieje. Tworząc zduplikowane zgłoszenia, zajmujesz nam czas, który możemy poświęcić na naprawienie istniejącego błędu.</string>
     <string name="error_report_channel_name">Powiadomienie o błędzie</string>
     <string name="error_report_channel_description">Powiadomienia o zgłaszaniu błędów</string>
     <string name="pref_skill_number_library_not_available">Biblioteka analizowania i formatowania liczb <i>dicio-numbers</i> nie jest jeszcze przetłumaczona na Twój język, co oznacza, że wszystkie umiejętności związane z liczbami, czasem trwania i datami nie są dostępne. <b>Prosimy o wsparcie</b>, jeśli możesz, stuknij tutaj!</string>
-    <string name="skill_name_timer">Zegar</string>
-    <string name="skill_sentence_example_timer">Ustaw zegar na pięć minut</string>
-    <string name="skill_timer_how_much_time">Ile czasu powinno trwać odliczanie\?</string>
-    <string name="skill_timer_no_active">Nie ma żadnego aktywnego czasomierza</string>
-    <string name="skill_timer_no_active_name">Nie ma żadnego aktywnego czasomierza o nazwie %1$s</string>
-    <string name="skill_timer_query">Czasomierz wygasa za %1$s</string>
-    <string name="skill_timer_query_name">Czasomierz %1$s wygasa za %2$s</string>
-    <string name="skill_timer_query_last">Ostatni czasomierz wygasa za %1$s</string>
-    <string name="skill_timer_none_canceled">OK, żaden timer nie został anulowany</string>
-    <string name="skill_timer_expired">Czas się skończył!</string>
-    <string name="skill_timer_expired_name">Czasomierz %1$s wygasł!</string>
-    <string name="skill_timer_set">OK, czasomierz wygaśnie za %1$s</string>
-    <string name="skill_timer_set_name">OK, czasomierz %1$s wygaśnie za %2$s</string>
-    <string name="skill_timer_canceled_name">Czasomierz %1$s został anulowany</string>
     <string name="pref_skills_title">Umiejętności</string>
     <string name="pref_theme_system">Użyj motywu systemowego</string>
     <string name="pref_theme_system_dark_black">Użyj motywu systemowego (użyj wariantu Black dla ciemnego motywu)</string>
@@ -206,6 +186,4 @@
     <string name="pref_weather_temperature_unit_fahrenheit">Stopnie Fahrenheita (°F)</string>
     <string name="pref_weather_temperature_unit_kelvin">Stopnie Kelvina (K)</string>
     <string name="waiting">Oczekiwanie…</string>
-    <string name="skill_name_media">Kontrola multimediów</string>
-    <string name="skill_sentence_example_media">Następna piosenka</string>
 </resources>

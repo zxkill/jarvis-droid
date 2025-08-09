@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="settings">Innstillinger</string>
-    <string name="skill_calculator_could_not_calculate">Kunne ikke regne ut forespørselen din</string>
     <string name="skill_open_opening">Åpner %1$s …</string>
     <string name="skill_open_unknown_app">Ukjent program %1$s</string>
     <string name="skill_lyrics_found_song_by_artist">Fant %1$s av %2$s</string>
@@ -14,8 +13,6 @@
     <string name="skill_weather_could_not_find_city">Fant ikke byen %1$s</string>
     <string name="skill_search_here_is_what_i_found">Dette ble funnet</string>
     <string name="skill_fallback_name_text">Tekstbasert melding</string>
-    <string name="skill_sentence_example_calculator">Hva er fem ganger fire minus én million\?</string>
-    <string name="skill_name_calculator">Kalkulator</string>
     <string name="skill_sentence_example_open">Åpne NewPipe</string>
     <string name="skill_name_open">Programåpner</string>
     <string name="skill_sentence_example_lyrics">Hva er den sangen som inneholder «We will, we will, rock you»\?</string>

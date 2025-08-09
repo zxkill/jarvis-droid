@@ -15,7 +15,7 @@ enum class Specificity {
     HIGH,
 
     /**
-     * For not-too-specific things (e.g. calculator that parses numbers)
+     * For not-too-specific things
      */
     MEDIUM,
 

@@ -17,18 +17,14 @@ import org.stypox.dicio.di.SkillContextImpl
 import org.stypox.dicio.di.SkillContextInternal
 import org.stypox.dicio.settings.datastore.UserSettings
 import org.stypox.dicio.settings.datastore.UserSettingsModule
-import org.stypox.dicio.skills.calculator.CalculatorInfo
 import org.stypox.dicio.skills.current_date.CurrentDateInfo
 import org.stypox.dicio.skills.current_time.CurrentTimeInfo
 import org.stypox.dicio.skills.fallback.text.TextFallbackInfo
-import org.stypox.dicio.skills.listening.ListeningInfo
 import org.stypox.dicio.skills.lyrics.LyricsInfo
-import org.stypox.dicio.skills.media.MediaInfo
 import org.stypox.dicio.skills.navigation.NavigationInfo
 import org.stypox.dicio.skills.open.OpenInfo
 import org.stypox.dicio.skills.search.SearchInfo
 import org.stypox.dicio.skills.telephone.TelephoneInfo
-import org.stypox.dicio.skills.timer.TimerInfo
 import org.stypox.dicio.skills.weather.WeatherInfo
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -45,14 +41,10 @@ class SkillHandler @Inject constructor(
         SearchInfo,
         LyricsInfo,
         OpenInfo,
-        CalculatorInfo,
         NavigationInfo,
         TelephoneInfo,
-        TimerInfo,
         CurrentTimeInfo,
         CurrentDateInfo,
-        MediaInfo,
-        ListeningInfo(dataStore),
     )
 
     // TODO add more fallback skills (e.g. search)

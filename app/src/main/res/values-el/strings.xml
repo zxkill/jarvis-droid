@@ -40,8 +40,6 @@
     <string name="skill_name_lyrics">Στίχοι τραγουδιού</string>
     <string name="skill_name_open">Άνοιγμα εφαρμογής</string>
     <string name="skill_sentence_example_open">Άνοιγμα NewPipe</string>
-    <string name="skill_name_calculator">Αριθμομηχανή</string>
-    <string name="skill_sentence_example_calculator">Πόσο μας κάνει πέντε επί τέσσερα μείον ένα εκατομμύριο;</string>
     <string name="skill_weather_in_city_there_is_description">Αυτή τη στιγμή στην πόλη %1$s υπάρχει %2$s</string>
     <string name="skill_weather_description_temperature">%1$s · %2$.1f%3$s</string>
     <string name="skill_weather_min_max_wind">Ελάχιστη θερμοκρασία: %1$.1f%4$s
@@ -51,7 +49,6 @@
     <string name="skill_lyrics_found_song_by_artist">Βρέθηκε %1$s από %2$s</string>
     <string name="skill_open_unknown_app">Άγνωστη εφαρμογή %1$s</string>
     <string name="skill_open_opening">Ανοίγεται το %1$s…</string>
-    <string name="skill_calculator_could_not_calculate">Δεν μπόρεσα να υπολογίσω το αίτημά σας</string>
     <string name="no_app_to_open_intent">Καμία εφαρμογή στη συσκευή δεν μπορεί να το ανοίξει</string>
     <string name="open_with">Άνοιγμα με</string>
     <string name="text_input_hint">Ρώτησε με οτιδήποτε…</string>
