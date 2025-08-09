@@ -1,9 +1,5 @@
 package org.stypox.dicio.skills.weather
 
-import android.annotation.SuppressLint
-import android.content.Context
-import android.location.Location
-import android.location.LocationManager
 import kotlinx.coroutines.flow.first
 import org.dicio.skill.context.SkillContext
 import org.dicio.skill.skill.SkillInfo
@@ -31,7 +27,7 @@ class WeatherSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognizerDa
             when {
                 city != null -> WeatherCache.getWeather(city = city, lang = lang)
                 else -> {
-                    val coords = getCoordinates(ctx)
+                    val coords = WeatherCache.getCoordinates(ctx.android)
                     if (coords != null) {
                         WeatherCache.getWeather(coords = coords, lang = lang)
                     } else {
@@ -78,21 +74,6 @@ class WeatherSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognizerDa
         }
 
         return city?.takeIf { it.isNotEmpty() }
-    }
-
-    @SuppressLint("MissingPermission")
-    private fun getCoordinates(ctx: SkillContext): Pair<Double, Double>? {
-        val lm = ctx.android.getSystemService(Context.LOCATION_SERVICE) as? LocationManager
-            ?: return null
-        val providers = lm.getProviders(true)
-        var best: Location? = null
-        for (provider in providers) {
-            val l = lm.getLastKnownLocation(provider) ?: continue
-            if (best == null || l.accuracy < best!!.accuracy) {
-                best = l
-            }
-        }
-        return best?.let { it.latitude to it.longitude }
     }
 
     companion object {

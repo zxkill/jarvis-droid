@@ -1,12 +1,18 @@
 package org.stypox.dicio.skills.weather
 
+import android.annotation.SuppressLint
+import android.content.Context
+import android.location.Location
+import android.location.LocationManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import org.stypox.dicio.util.ConnectionUtils
 import org.json.JSONObject
+import org.stypox.dicio.skills.weather.WeatherInfo.weatherDataStore
+import org.stypox.dicio.util.ConnectionUtils
 import java.util.Locale
 import java.util.concurrent.ConcurrentHashMap
 
@@ -59,6 +65,38 @@ object WeatherCache {
                 }
             }
         }
+    }
+
+    fun preload(context: Context) {
+        val appContext = context.applicationContext
+        val lang = Locale.getDefault().language.lowercase(Locale.getDefault())
+        scope.launch {
+            try {
+                val prefs = appContext.weatherDataStore.data.first()
+                val city = prefs.defaultCity.takeIf { it.isNotBlank() }
+                val coords = if (city == null) getCoordinates(appContext) else null
+                if (city != null || coords != null) {
+                    getWeather(city, coords, lang)
+                }
+            } catch (_: Exception) {
+                // ignore failures during warmup
+            }
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    fun getCoordinates(context: Context): Pair<Double, Double>? {
+        val lm = context.getSystemService(Context.LOCATION_SERVICE) as? LocationManager
+            ?: return null
+        val providers = lm.getProviders(true)
+        var best: Location? = null
+        for (provider in providers) {
+            val l = lm.getLastKnownLocation(provider) ?: continue
+            if (best == null || l.accuracy < best!!.accuracy) {
+                best = l
+            }
+        }
+        return best?.let { it.latitude to it.longitude }
     }
 
     private fun fetch(city: String?, coords: Pair<Double, Double>?, lang: String): JSONObject {
