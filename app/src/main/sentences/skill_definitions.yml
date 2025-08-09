@@ -11,22 +11,6 @@ skills:
       - id: month
       - id: year
 
-  - id: calculator
-    specificity: medium
-    sentences:
-      - id: calculate
-        captures:
-          - id: calculation
-            type: string
-  - id: calculator_operators
-    specificity: low
-    sentences:
-      - id: addition
-      - id: subtraction
-      - id: multiplication
-      - id: division
-      - id: power
-      - id: square_root
 
   - id: lyrics
     specificity: high
@@ -44,13 +28,6 @@ skills:
           - id: where
             type: string
 
-  - id: media
-    specificity: high
-    sentences:
-      - id: play
-      - id: pause
-      - id: previous
-      - id: next
 
   - id: open
     specificity: medium
@@ -60,11 +37,6 @@ skills:
           - id: what
             type: string
 
-  - id: listening
-    specificity: high
-    sentences:
-      - id: stop
-      - id: start
 
   - id: search
     specificity: low
@@ -82,23 +54,6 @@ skills:
           - id: who
             type: string
 
-  - id: timer
-    specificity: high
-    sentences:
-      - id: set
-        captures:
-          - id: duration
-            type: duration
-          - id: name
-            type: string
-      - id: cancel
-        captures:
-          - id: name
-            type: string
-      - id: query
-        captures:
-          - id: name
-            type: string
 
   - id: util_yes_no
     specificity: high

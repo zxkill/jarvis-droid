@@ -74,14 +74,10 @@
     <string name="skill_name_lyrics">Besedilo pesmi</string>
     <string name="skill_name_open">Odpiralnik aplikacij</string>
     <string name="skill_sentence_example_open">Odpri NewPipe</string>
-    <string name="skill_name_calculator">Kalkulator</string>
-    <string name="skill_sentence_example_calculator">Kaj je pet krat štiri minus milijon\?</string>
     <string name="skill_navigation_specify_where">Določi, kam hočeš iti</string>
     <string name="skill_navigation_navigating_to">Pelji me v %1$s</string>
     <string name="skill_name_telephone">Telefon</string>
     <string name="skill_sentence_example_telephone">Pokliči Julija</string>
-    <string name="skill_name_timer">Časovnik</string>
-    <string name="skill_sentence_example_timer">Nastavi časovnik na pet minut</string>
     <string name="skill_name_current_time">Trenuten čas</string>
     <string name="skill_sentence_example_current_time">Koliko je ura\?</string>
     <string name="skill_fallback_name_text">Besedilno sporočilo</string>
@@ -98,24 +94,11 @@
     <string name="skill_lyrics_found_song_by_artist">Našel sem %1$s, ki jo je napisal %2$s</string>
     <string name="skill_open_unknown_app">Ne najdem aplikacije po imenu %1$s</string>
     <string name="skill_open_opening">Odpiram %1$s…</string>
-    <string name="skill_calculator_could_not_calculate">Ne morem preračunati tvoje želje</string>
     <string name="skill_telephone_found_contacts">Našel sem %1$d stikov, katerega naj pokličem\?</string>
     <string name="skill_telephone_confirm_call">Naj pokličem %1$s\?</string>
     <string name="skill_telephone_calling">Kličem %1$s…</string>
     <string name="skill_telephone_not_calling">V redu, nobenega ne kličem</string>
     <string name="skill_time_current_time">Trenutno je %1$s</string>
-    <string name="skill_timer_how_much_time">Koliko časa naj traja časovnik\?</string>
-    <string name="skill_timer_expired">Časovnik je potekel!</string>
-    <string name="skill_timer_expired_name">Časovnik %1$s je potekel!</string>
-    <string name="skill_timer_set">V redu, časovnik bo potekel v %1$s</string>
-    <string name="skill_timer_set_name">V redu, časovnik %1$s bo potekel v %2$s</string>
-    <string name="skill_timer_all_canceled">Vsi časovniki so bili prekinjeni</string>
-    <string name="skill_timer_canceled_name">Časovnik %1$s je bil prekinjen</string>
-    <string name="skill_timer_no_active">Ni aktivnih časovnikov</string>
-    <string name="skill_timer_no_active_name">Ni aktivnih časovnikov poimenovanih %1$s</string>
-    <string name="skill_timer_query">Časovnik bo potekel v %1$s</string>
-    <string name="skill_timer_query_name">Časovnik %1$s poteče v %2$s</string>
-    <string name="skill_timer_none_canceled">V redu, časovnik je bil prekinjen</string>
     <string name="share">Deli</string>
     <string name="text_input_hint">Vprašaj me karkoli…</string>
     <string name="error_sorry">Oprostite, prišlo je do napake</string>
@@ -128,9 +111,6 @@
     <string name="skill_sentence_example_navigation">Pelji me na letališče Brnik</string>
     <string name="skill_name_navigation">Navigacija</string>
     <string name="skill_telephone_unknown_contact">Ne najdem nobenega stika s tem imenom, poskusi znova</string>
-    <string name="skill_timer_confirm_cancel">Ali ste prepričani, da prekinem vse časovnike\?</string>
-    <string name="skill_timer_canceled">Časovnik je bil prekinjen</string>
-    <string name="skill_timer_query_last">Zadnji časovnik poteče v %1$s</string>
     <string name="error_details_labels">Dejanje:
 \nKraj:
 \nGMT čas:

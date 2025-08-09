@@ -59,7 +59,7 @@ def add_line_to_incremental_graph_plots(benchmark_file, item_name, benchmark_dir
     incremental_graph_plots[key].append((benchmark_dir, xs, ys))
 
 
-for benchmark_file in ["current_time", "weather", "timer"]:
+for benchmark_file in ["current_time", "weather"]:
     for benchmark_dir, benchmark_dir_name in zip(benchmark_dirs, benchmark_dir_names):
         data = json.load(open(os.path.join("benchmarks/", benchmark_dir, benchmark_file + ".json")))
 

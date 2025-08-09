@@ -31,12 +31,9 @@ Currently Dicio answers questions about:
 - **weather**: collects weather information from **OpenWeatherMap** - _What's the weather like?_
 - **lyrics**: shows **Genius** lyrics for songs - _What's the song that goes we will we will rock you?_
 - **open**: opens an app on your device - _Open NewPipe_
-- **calculator**: evaluates basic calculations - _What is four thousand and two times three minus a million divided by three hundred?_
 - **telephone**: view and call contacts - _Call Tom_
-- **timer**: set, query and cancel timers - _Set a timer for five minutes_
 - **current time**: query current time - _What time is it?_
 - **navigation**: opens the navigation app at the requested position - _Take me to New York, fifteenth avenue_
-- **media**: play, pause, previous, next song
 
 ## Speech to text
 
@@ -93,8 +90,8 @@ The new skill most likely needs to interpret user input. The Dicio framework pro
       # about famous people has a lower specificity.
       specificity: SPECIFICITY
       # A list of definitions for the types of sentences this skill can interpret.
-      # Can contain multiple sentences, e.g. the timer skill has the
-      # "set", "cancel" and "query" sentences.
+      # Can contain multiple sentences, for example a navigation skill might have
+      # "set destination" and "cancel" sentences.
       sentences:
           # An ID for the sentence, must be unique amongst this skill's sentences.
         - id: SENTENCE_1_ID
@@ -174,7 +171,7 @@ Create a class named `$SkillId$Output` (e.g. `WeatherOutput`): it will contain t
 
 1. The class should be constructed by `Skill.generateOutput()` with all of the data needed to display/speak output, and is meant to be serializable (so in most cases it is a `data class`). In some cases it might make sense to have multiple types of output (e.g. the weather has `Success` and `Failed` output types): in that case you can create a `sealed interface` and have both output types extend it.
 2. `getSpeechOutput()` returns a localized string that will be spoken via the configured Text To Speech service.
-3. `@Composable GraphicalOutput()` builds the UI that will be shown in a box on the home screen. The UI can be interactive and can act as a widget: for example the timer skill shows the ongoing countdown.
+3. `@Composable GraphicalOutput()` builds the UI that will be shown in a box on the home screen. The UI can be interactive and can act as a widget: for example a weather skill could show the current conditions.
 4. _\[Optional\]_ `getNextSkills()` returns a list of skills that could continue the current conversation. If this list is non-empty, the next time the user asks something to the assistant, these skills will be considered before all other skills, and if any of these skills understands the user input well enough, the conversation continues. For example, if the user says "Call Mom", the assistant may answer with "Should I call mom?" and this method would return a skill that can understand a yes/no response.
 
 This is a stub implementation of `WeatherOutput`:

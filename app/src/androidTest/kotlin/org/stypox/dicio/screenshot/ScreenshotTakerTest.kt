@@ -2,7 +2,6 @@ package org.stypox.dicio.screenshot
 
 import android.Manifest
 import android.view.WindowInsets
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
@@ -31,8 +30,6 @@ import org.stypox.dicio.eval.SkillEvaluatorModule
 import org.stypox.dicio.settings.datastore.Theme
 import org.stypox.dicio.settings.datastore.UserSettings
 import org.stypox.dicio.settings.datastore.copy
-import org.stypox.dicio.skills.calculator.CalculatorInfo
-import org.stypox.dicio.skills.calculator.CalculatorOutput
 import org.stypox.dicio.skills.lyrics.LyricsInfo
 import org.stypox.dicio.skills.lyrics.LyricsOutput
 import org.stypox.dicio.skills.search.SearchInfo
@@ -40,8 +37,6 @@ import org.stypox.dicio.skills.search.SearchOutput
 import org.stypox.dicio.skills.telephone.ConfirmCallOutput
 import org.stypox.dicio.skills.telephone.ConfirmedCallOutput
 import org.stypox.dicio.skills.telephone.TelephoneInfo
-import org.stypox.dicio.skills.timer.TimerInfo
-import org.stypox.dicio.skills.timer.TimerOutput
 import org.stypox.dicio.skills.weather.WeatherInfo
 import org.stypox.dicio.skills.weather.WeatherOutput
 import org.stypox.dicio.ui.home.Interaction
@@ -145,7 +140,7 @@ class ScreenshotTakerTest {
         fakeSttInputDeviceWrapper.uiState.emit(SttState.Listening)
         composeRule.takeScreenshot("en-US", "0")
 
-        // screenshot 1: home screen with interactions with weather, timer and lyrics skills
+        // screenshot 1: home screen with interactions with weather and lyrics skills
         dataStore.updateData { it.copy { theme = Theme.THEME_LIGHT } }
         fakeSttInputDeviceWrapper.uiState.emit(SttState.Loaded)
         coilEventListener.resetStartedImages()
@@ -155,7 +150,7 @@ class ScreenshotTakerTest {
         composeRule.waitUntil { coilEventListener.isIdle(startedAtLeast = 1) }
         composeRule.takeScreenshot("en-US", "1")
 
-        // screenshot 2: home screen with interactions with calculator, telephone and search skills
+        // screenshot 2: home screen with interactions with telephone and search skills
         dataStore.updateData { it.copy { theme = Theme.THEME_BLACK } }
         fakeSttInputDeviceWrapper.uiState.emit(SttState.Loaded)
         coilEventListener.resetStartedImages()
@@ -202,16 +197,6 @@ class ScreenshotTakerTest {
                     )
                 )
             )),
-            Interaction(TimerInfo, listOf(
-                QuestionAnswer(
-                    question = "set a timer for two minutes thirty seconds",
-                    answer = TimerOutput.Set(
-                        milliseconds = 150000L,
-                        lastTickMillis = mutableLongStateOf(139000L),
-                        name = null,
-                    )
-                )
-            )),
             Interaction(LyricsInfo, listOf(
                 QuestionAnswer(
                     question = "lyrics bohemian rhapsody",
@@ -240,16 +225,6 @@ class ScreenshotTakerTest {
         ), null)
 
         private val screenshot3InteractionLog = InteractionLog(listOf(
-            Interaction(CalculatorInfo, listOf(
-                QuestionAnswer(
-                    question = "what is twelve plus three fifths minus two to the power of three",
-                    answer = CalculatorOutput(
-                        result = "4.6",
-                        spokenResult = "four and three fifths",
-                        inputInterpretation = "12 + 0.6 - 2 ^ 3"
-                    )
-                )
-            )),
             Interaction(TelephoneInfo, listOf(
                 QuestionAnswer(
                     question = "call michael",

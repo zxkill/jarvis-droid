@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="skill_name_calculator">Calculadora</string>
     <string name="skill_weather_min_max_wind">Temperatura mínima: %1$.1f%4$s
 \nTemperatura máxima: %2$.1f%4$s
 \nVelocidad del viento: %3$.1f%5$s</string>
@@ -51,7 +50,6 @@
     <string name="skill_sentence_example_lyrics">¿Cuál es la canción que dice we will we will rock you\?</string>
     <string name="skill_name_open">Abrir aplicaciones</string>
     <string name="skill_sentence_example_open">Abrir NewPipe</string>
-    <string name="skill_sentence_example_calculator">¿Cuánto es cinco por cuatro menos un millón\?</string>
     <string name="skill_fallback_name_text">Mensaje de texto</string>
     <string name="skill_search_here_is_what_i_found">Esto es lo que he encontrado</string>
     <string name="skill_weather_could_not_find_city">No pudo encontrar la ciudad %1$s</string>
@@ -61,7 +59,6 @@
     <string name="skill_lyrics_found_song_by_artist">Se ha encontrado la canción %1$s de %2$s</string>
     <string name="skill_open_unknown_app">Aplicación desconocida %1$s</string>
     <string name="skill_open_opening">Abriendo %1$s…</string>
-    <string name="skill_calculator_could_not_calculate">No pude calcular su solicitud</string>
     <string name="eval_network_error">Error de la red</string>
     <string name="drawer_close">Cerrar la caja de navegación</string>
     <string name="microphone_error">No se puede acceder al micrófono, quizás ya esté en uso o se denegó el permiso correspondiente.</string>
@@ -87,24 +84,7 @@
     <string name="skill_telephone_confirm_call">¿Debería llamar a %1$s\?</string>
     <string name="skill_telephone_calling">Llamando a %1$s…</string>
     <string name="skill_telephone_not_calling">Vale, no voy a llamar a nadie</string>
-    <string name="skill_timer_canceled">El temporizador ha sido cancelado</string>
-    <string name="skill_timer_expired">¡El temporizador ha finalizado!</string>
-    <string name="skill_timer_expired_name">¡El temporizador %1$s ha finalizado!</string>
-    <string name="skill_timer_no_active_name">No hay ningún temporizador activo llamado %1$s</string>
-    <string name="skill_timer_how_much_time">¿Cuánto tiempo debe durar el temporizador\?</string>
-    <string name="skill_timer_confirm_cancel">¿Está seguro de que desea cancelar todos los temporizadores\?</string>
     <string name="pref_skill_number_library_not_available">La biblioteca de formato y análisis de números <i>dicio-numbers</i> aún no está traducida a su idioma, lo que significa que todas las habilidades relacionadas con números, duraciones y fechas no están disponibles. <b>¡Por favor, contribuya</b> si le es posible tocando aquí!</string>
-    <string name="skill_timer_set">Vale, el temporizador finalizará en %1$s</string>
-    <string name="skill_name_timer">Temporizador</string>
-    <string name="skill_sentence_example_timer">Configura un temporizador de cinco minutos</string>
-    <string name="skill_timer_query_last">El último temporizador finalizará en %1$s</string>
-    <string name="skill_timer_none_canceled">Vale, ningún temporizador fue cancelado</string>
-    <string name="skill_timer_set_name">Vale, el temporizador %1$s finalizará en %2$s</string>
-    <string name="skill_timer_all_canceled">Todos los temporizadores han sido cancelados</string>
-    <string name="skill_timer_canceled_name">El temporizador %1$s ha sido cancelado</string>
-    <string name="skill_timer_query">El temporizador finalizará en %1$s</string>
-    <string name="skill_timer_query_name">El temporizador %1$s finalizará en %2$s</string>
-    <string name="skill_timer_no_active">No hay ningún temporizador activo</string>
     <string name="error_crash_log_headline">Registro de fallos:</string>
     <string name="error_details_headline">Detalles:</string>
     <string name="error_title">Informe de errores</string>
@@ -189,7 +169,6 @@
     <string name="wake_service_triggered_notification">Palabra de activación de Dicio activada, toque para abrir</string>
     <string name="wake_service_start_notification_summary">En Android 11+ Dicio no puede iniciar el servicio sin una interacción manual del usuario.</string>
     <string name="waiting">Esperando…</string>
-    <string name="skill_sentence_example_media">Sig. canción</string>
     <string name="eval_no_match_repeat">¿Podría repetirlo?</string>
     <string name="skill_search_no_results_stop">La búsqueda no arrojó resultados</string>
     <string name="wake_custom_service_foreground_notification">Escuchando la palabra de activación personalizada</string>
@@ -204,15 +183,9 @@
     <string name="skill_weather_miles_per_hour">mph</string>
     <string name="pref_input_method_vosk_summary">Descarga y ejecuta un modelo Vosk SpeechToText sin conexión dentro de Dicio</string>
     <string name="pref_input_method_external_popup">Popup externa SpeechToText</string>
-    <string name="skill_media_playing">Reproduciendo medio…</string>
-    <string name="skill_media_pausing">Pausando medio…</string>
-    <string name="skill_media_previous">Medio anterior…</string>
-    <string name="skill_media_next">Medio siguiente…</string>
     <string name="pref_wake_custom_delete">Borrar palabra de activación personalizada</string>
     <string name="pref_wake_custom_import">Importar palabra de activación personalizada</string>
     <string name="perm_call_phone">llamar directamente a los números de teléfono</string>
-    <string name="skill_name_media">Control de medios</string>
-    <string name="skill_media_no_media_session">No está activada la sesión de medios</string>
     <string name="pref_input_method_external_popup_summary">Abre la interfaz de usuario de otra aplicación por medio de ACTION​_​RECOGNIZE​_​SPEECH; por ejemplo, whisperIME, Kõnele y Futo Voice Input</string>
     <string name="pref_wake_custom_delete_summary">Regresa a la palabra de activación predeterminada \"Hey Dicio\"</string>
     <string name="pref_weather_temperature_unit_kelvin">Kelvin (K)</string>
