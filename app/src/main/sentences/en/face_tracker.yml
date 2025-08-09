@@ -1,0 +1,4 @@
+start:
+  - (start|turn on|enable) (face )?tracking
+stop:
+  - (stop|turn off|disable) (face )?tracking

@@ -26,6 +26,7 @@ import org.stypox.dicio.skills.open.OpenInfo
 import org.stypox.dicio.skills.search.SearchInfo
 import org.stypox.dicio.skills.telephone.TelephoneInfo
 import org.stypox.dicio.skills.weather.WeatherInfo
+import org.stypox.dicio.skills.face_tracker.FaceTrackerInfo
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -43,6 +44,7 @@ class SkillHandler @Inject constructor(
         OpenInfo,
         NavigationInfo,
         TelephoneInfo,
+        FaceTrackerInfo,
         CurrentTimeInfo,
         CurrentDateInfo,
     )

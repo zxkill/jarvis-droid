@@ -120,6 +120,7 @@
     <string name="pref_stt_play_sound_none">Do not play sound</string>
     <string name="perm_read_contacts">read your contacts</string>
     <string name="perm_call_phone">directly call phone numbers</string>
+    <string name="perm_camera">use the camera</string>
     <string name="settings_description_with_value">%1$s — %2$s</string>
     <string name="eval_missing_permissions">The skill \"%1$s\" needs these permissions to work: %2$s</string>
     <string name="eval_fatal_error">Could not evaluate your request</string>
@@ -148,6 +149,10 @@
     <string name="skill_sentence_example_current_time">What time is it?</string>
     <string name="skill_name_current_date">Current date</string>
     <string name="skill_sentence_example_current_date">What day is it today?</string>
+    <string name="skill_name_face_tracker">Face tracker</string>
+    <string name="skill_sentence_example_face_tracker">Turn on tracking</string>
+    <string name="skill_face_tracking_enabled">Face tracking enabled</string>
+    <string name="skill_face_tracking_disabled">Face tracking disabled</string>
     <string name="skill_fallback_name_text">Text message</string>
     <string name="skill_search_here_is_what_i_found">Here is what I found</string>
     <string name="skill_search_no_results">The search returned no results, try telling me again what you want to search for</string>
