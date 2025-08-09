@@ -128,12 +128,9 @@ class MainActivity : BaseActivity() {
         // Не даём экрану гаснуть, чтобы постоянно показывать информацию
         window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        // Скрываем строку состояния и навигации для полноэкранного режима
-        WindowCompat.getInsetsController(window, window.decorView)?.let { controller ->
-            controller.hide(WindowInsetsCompat.Type.systemBars())
-            controller.systemBarsBehavior =
-                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-        }
+        // Скрываем системные панели максимально рано,
+        // чтобы избежать их мерцания при запуске
+        hideSystemBars()
 
         handleWakeWordTurnOnScreen(intent)
         if (isAssistIntent(intent)) {
@@ -181,6 +178,31 @@ class MainActivity : BaseActivity() {
                     Navigation()
                 }
             }
+        }
+
+        // После установки контента повторно прячем панели –
+        // некоторые прошивки могут снова их показать
+        hideSystemBars()
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) {
+            // При возвращении фокуса (например, после диалогов)
+            // снова скрываем системные панели
+            hideSystemBars()
+        }
+    }
+
+    /**
+     * Скрывает строку состояния и навигации и задаёт
+     * поведение для их временного появления по жесту.
+     */
+    private fun hideSystemBars() {
+        WindowCompat.getInsetsController(window, window.decorView)?.let { controller ->
+            controller.hide(WindowInsetsCompat.Type.systemBars())
+            controller.systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         }
     }
 

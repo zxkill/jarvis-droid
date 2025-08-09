@@ -1,6 +1,10 @@
 <resources>
 
-    <style name="AppTheme" parent="android:Theme.Material.Light.NoActionBar" />
+    <!-- Тема приложения сразу скрывает строку состояния,
+         чтобы запуск происходил в режиме полноценного фуллскрина -->
+    <style name="AppTheme" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowFullscreen">true</item>
+    </style>
 
     <style name="SttPopupTheme">
         <item name="windowActionBar">false</item>
