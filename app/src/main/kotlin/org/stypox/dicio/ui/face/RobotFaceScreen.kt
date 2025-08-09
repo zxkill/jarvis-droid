@@ -2,14 +2,19 @@ package org.stypox.dicio.ui.face
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import org.dicio.skill.skill.SkillInfo
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.delay
+import org.dicio.skill.context.SkillContext
 import org.dicio.skill.skill.SkillOutput
 import org.stypox.dicio.io.input.InputEvent
 import org.stypox.dicio.io.input.SttState
@@ -43,7 +48,10 @@ fun RobotFaceScreen(
     var visibleOutput by remember { mutableStateOf<SkillOutput?>(null) }
 
     // Текущее состояние устройства распознавания речи
-    val sttState by viewModel.sttInputDevice.uiState.collectAsState()
+      val sttState by viewModel.sttInputDevice.uiState.collectAsState()
+
+      val autoOutputs by viewModel.autoSkillOutputs.collectAsState()
+      val autoInfos by viewModel.skillHandler.enabledSkillsInfo.collectAsState()
 
     // Функция запуска прослушивания и обработки команд, если они начинаются
     // с ключевого слова
@@ -61,8 +69,40 @@ fun RobotFaceScreen(
                             viewModel.skillEvaluator.processInputEvent(
                                 InputEvent.Partial(trimmed)
                             )
-                        }
-                    }
+  }
+}
+
+@Composable
+private fun BoxScope.AutoInfoCorner(
+    infos: List<SkillInfo>,
+    outputs: Map<String, SkillOutput>,
+    ctx: SkillContext,
+) {
+    Column(
+        modifier = Modifier
+            .align(Alignment.TopEnd)
+            .padding(8.dp),
+        horizontalAlignment = Alignment.End,
+    ) {
+        infos.forEach { info ->
+            val output = outputs[info.id] ?: return@forEach
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    painter = info.icon(),
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = output.getSpeechOutput(ctx),
+                    color = Color.White,
+                    fontSize = 12.sp,
+                )
+            }
+        }
+    }
+}
                 }
                 is InputEvent.Final -> {
                     // Итоговое распознавание. Проверяем наличие ключевого слова
@@ -137,11 +177,11 @@ fun RobotFaceScreen(
             navigationIcon()
         }
 
-        if (visibleOutput == null) {
-            // Слушаем пользователя — глаза по центру
-            // Отображаем крупные глаза по центру, когда вывод скилла отсутствует
-            RobotEyes(modifier = Modifier.align(Alignment.Center))
-        } else {
+          if (visibleOutput == null) {
+              // Слушаем пользователя — глаза по центру
+              // Отображаем крупные глаза по центру, когда вывод скилла отсутствует
+              RobotEyes(modifier = Modifier.align(Alignment.Center))
+          } else {
             // Делим экран: глаза слева, вывод скилла справа
             Row(modifier = Modifier.fillMaxSize()) {
                 Box(
@@ -153,7 +193,13 @@ fun RobotFaceScreen(
                     // При показе ответа скилла глаза занимают лишь половину экрана,
                     // поэтому уменьшаем их размер для визуального баланса
                     RobotEyes(compact = true)
-                }
+          }
+
+          AutoInfoCorner(
+              infos = autoInfos ?: listOf(),
+              outputs = autoOutputs,
+              ctx = viewModel.skillContext,
+          )
                 Box(
                     modifier = Modifier
                         .weight(1f)

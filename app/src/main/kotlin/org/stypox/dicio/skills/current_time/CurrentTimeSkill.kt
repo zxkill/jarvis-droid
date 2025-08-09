@@ -5,6 +5,7 @@ import org.dicio.skill.skill.SkillInfo
 import org.dicio.skill.skill.SkillOutput
 import org.dicio.skill.standard.StandardRecognizerData
 import org.dicio.skill.standard.StandardRecognizerSkill
+import org.dicio.skill.skill.AutoRunnable
 import org.stypox.dicio.sentences.Sentences.CurrentTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -14,21 +15,26 @@ import java.time.format.FormatStyle
  * Скилл озвучивает текущее время.
  */
 class CurrentTimeSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognizerData<CurrentTime>)
-    : StandardRecognizerSkill<CurrentTime>(correspondingSkillInfo, data) {
+    : StandardRecognizerSkill<CurrentTime>(correspondingSkillInfo, data), AutoRunnable {
+
+    override val autoUpdateIntervalMillis: Long = 60_000L
 
     override suspend fun generateOutput(ctx: SkillContext, inputData: CurrentTime): SkillOutput {
-        // Получаем текущее время на устройстве
+        return computeOutput(ctx)
+    }
+
+    override suspend fun autoOutput(ctx: SkillContext): SkillOutput {
+        return computeOutput(ctx)
+    }
+
+    private fun computeOutput(ctx: SkillContext): SkillOutput {
         val now = LocalTime.now()
-        // Форматируем строку в зависимости от локали
         val formatted = when {
-            // Специальная обработка для русского языка
             ctx.locale.language == "ru" -> formatRussianTime(now)
-            // Если доступен парсер форматов, используем его
             ctx.parserFormatter != null -> ctx.parserFormatter!!
                 .niceTime(now)
                 .use24Hour(true)
                 .get()
-            // В остальных случаях используем стандартный формат времени
             else -> DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)
                 .withLocale(ctx.locale)
                 .format(now)

@@ -15,6 +15,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
+import androidx.core.view.WindowCompat
 import dagger.hilt.android.AndroidEntryPoint
 import dev.shreyaspatil.permissionFlow.PermissionFlow
 import kotlinx.coroutines.Job
@@ -117,11 +118,13 @@ class MainActivity : BaseActivity() {
         }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        // Переводим приложение в альбомную ориентацию при запуске
-        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
-        isCreated += 1
+  override fun onCreate(savedInstanceState: Bundle?) {
+      super.onCreate(savedInstanceState)
+      // Переводим приложение в альбомную ориентацию при запуске
+      requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+      isCreated += 1
+      window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+      androidx.core.view.WindowCompat.setDecorFitsSystemWindows(window, false)
 
         handleWakeWordTurnOnScreen(intent)
         if (isAssistIntent(intent)) {
