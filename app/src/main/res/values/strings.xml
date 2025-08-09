@@ -160,7 +160,7 @@
         <item quantity="one">degree</item>
         <item quantity="other">degrees</item>
     </plurals>
-    <string name="skill_weather_description_temperature">%1$s · %2$.1f%3$s</string>
+    <string name="skill_weather_description_temperature">%1$s · %2$d%3$s</string>
     <string name="skill_weather_min_max_wind">Minimum temperature: %1$.1f%4$s\nMaximum temperature: %2$.1f%4$s\nWind speed: %3$.1f%5$s</string>
     <string name="skill_lyrics_song_not_found">Unable to find song %1$s</string>
     <string name="skill_lyrics_found_song_by_artist">Found %1$s by %2$s</string>

@@ -40,7 +40,7 @@
     <string name="pref_stt_play_sound_none">Spela inte ljud</string>
     <string name="skill_sentence_example_telephone">Ring Tom</string>
     <string name="skill_search_no_results">Jag hittade inga resultat, försök berätta igen vad du söker efter</string>
-    <string name="skill_weather_description_temperature">%1$s · %2$.1f%3$s</string>
+    <string name="skill_weather_description_temperature">%1$s · %2$d%3$s</string>
     <string name="skill_lyrics_song_not_found">Kan inte hitta låten %1$s</string>
     <string name="skill_lyrics_found_song_by_artist">Hittade %1$s av %2$s</string>
     <string name="wake_service_foreground_notification">Lyssnar efter \"Hej Dicio\" nyckelordet</string>
@@ -65,7 +65,7 @@
     <string name="skill_sentence_example_weather">Hur är vädret i Rom?</string>
     <string name="skill_sentence_example_lyrics">Vilken sång har texten \"We will we will rock you\"?</string>
     <string name="skill_name_telephone">Telefon</string>
-    <string name="skill_weather_min_max_wind">Lägsta temperatur: %1$.1f%4$s\nHögsta temperatur: %2$.1f%4$s\nVindhastighet: %3$.1f%5$s</string>
+    <string name="skill_weather_min_max_wind">Lägsta temperatur: %1$.1f%4$s\nHögsta temperatur: %2$d%4$s\nVindhastighet: %3$.1f%5$s</string>
     <string name="skill_telephone_found_contacts">Jag hittade %1$d kontakter, vem vill du ringa?</string>
     <string name="stt_service_label">Dicio lokal taligenkänning</string>
     <string name="wake_service_label">Dicios väckningsordtjänst</string>

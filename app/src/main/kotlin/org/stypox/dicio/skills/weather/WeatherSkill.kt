@@ -64,6 +64,8 @@ class WeatherSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognizerDa
         val tempUnit = ResolvedTemperatureUnit.from(prefs)
         val temp = mainObject.getDouble("temp")
         val tempConverted = tempUnit.convert(temp)
+        // Округляем температуру, чтобы в речи не звучало десятых долей
+        val tempRounded = tempConverted.roundToInt()
         val result = WeatherOutput.Success(
             city = weatherData.getString("name"),
             description = weatherObject.getString("description")
@@ -72,9 +74,11 @@ class WeatherSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognizerDa
             temp = temp,
             tempMin = mainObject.getDouble("temp_min"),
             tempMax = mainObject.getDouble("temp_max"),
+            // Убираем дробную часть из текстового представления температуры
             tempString = ctx.parserFormatter
-                ?.niceNumber(tempConverted.roundToInt().toDouble())?.speech(true)?.get()
-                ?: (tempConverted.roundToInt().toString()),
+                ?.niceNumber(tempRounded.toDouble())?.speech(true)?.get()
+                ?.replace(Regex("[.,]0+$"), "")
+                ?: tempRounded.toString(),
             windSpeed = windObject.getDouble("speed"),
             temperatureUnit = tempUnit,
             lengthUnit = ResolvedLengthUnit.from(prefs),

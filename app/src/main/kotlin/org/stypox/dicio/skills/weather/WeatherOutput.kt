@@ -84,6 +84,7 @@ sealed interface WeatherOutput : SkillOutput {
 fun CurrentWeatherRow(data: WeatherOutput.Success) {
     val temperatureUnit = stringResource(data.temperatureUnit.unitString)
     val speedUnit = stringResource(data.lengthUnit.speedUnitString)
+    val tempRounded = data.temperatureUnit.convert(data.temp).roundToInt()
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -108,7 +109,7 @@ fun CurrentWeatherRow(data: WeatherOutput.Success) {
                 text = stringResource(
                     R.string.skill_weather_description_temperature,
                     data.description.lowercaseCapitalized(Locale.getDefault()),
-                    data.temperatureUnit.convert(data.temp),
+                    tempRounded,
                     temperatureUnit,
                 ),
                 textAlign = TextAlign.Center,
