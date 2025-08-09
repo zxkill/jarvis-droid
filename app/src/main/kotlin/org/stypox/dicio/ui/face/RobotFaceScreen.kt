@@ -9,13 +9,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.dicio.skill.skill.SkillInfo
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.delay
-import org.dicio.skill.context.SkillContext
 import org.dicio.skill.skill.SkillOutput
+import org.stypox.dicio.skills.weather.WeatherOutput
 import org.stypox.dicio.io.input.InputEvent
 import org.stypox.dicio.io.input.SttState
 import org.stypox.dicio.io.wake.WakeService.Companion.TRIGGER_WORD
@@ -25,6 +26,11 @@ import org.stypox.dicio.ui.eyes.AnimatedEyes
 import org.stypox.dicio.ui.eyes.rememberEyesState
 import org.stypox.dicio.settings.datastore.UserSettings
 import java.util.Locale
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import coil.compose.AsyncImage
+import kotlin.math.roundToInt
 
 /**
  * Экран с лицом робота. Показывает два глаза и выводит ответы скиллов.
@@ -179,7 +185,6 @@ fun RobotFaceScreen(
         AutoInfoCorner(
             infos = autoInfos ?: listOf(),
             outputs = autoOutputs,
-            ctx = viewModel.skillContext,
         )
 
         if (sttState != null) {
@@ -219,25 +224,32 @@ fun RobotEyes(modifier: Modifier = Modifier, compact: Boolean = false) {
 }
 
 /**
- * Угловой виджет, отображающий результаты авто-скиллов маленькими строками
- * в правом верхнем углу экрана. Для каждой строки показывается иконка
- * соответствующего скилла и его текстовый вывод.
+ * Компактный уголок с автообновляемой информацией.
+ * Показывает дату, время и погоду в одну строку с небольшими иконками.
  */
 @Composable
 private fun BoxScope.AutoInfoCorner(
     infos: List<SkillInfo>,
     outputs: Map<String, SkillOutput>,
-    ctx: SkillContext,
 ) {
-    Column(
+    // Текущие дата и время выводим числовым форматом
+    val dateStr = LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+    val timeStr = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))
+
+    // Получаем структурированный вывод погоды, если он есть
+    val weather = outputs["weather"] as? WeatherOutput.Success
+    val showDate = outputs.containsKey("current_date")
+    val showTime = outputs.containsKey("current_time")
+
+    Row(
         modifier = Modifier
             .align(Alignment.TopEnd)
             .padding(8.dp),
-        horizontalAlignment = Alignment.End,
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        infos.forEach { info ->
-            val output = outputs[info.id] ?: return@forEach
-            Row(verticalAlignment = Alignment.CenterVertically) {
+        if (showDate) {
+            // Иконка и текст даты
+            infos.find { it.id == "current_date" }?.let { info ->
                 Icon(
                     painter = info.icon(),
                     contentDescription = null,
@@ -245,12 +257,49 @@ private fun BoxScope.AutoInfoCorner(
                     modifier = Modifier.size(16.dp)
                 )
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = output.getSpeechOutput(ctx),
-                    color = Color.White,
-                    fontSize = 12.sp,
-                )
             }
+            Text(
+                text = dateStr,
+                color = Color.White,
+                fontSize = 12.sp,
+            )
+        }
+
+        if (showTime) {
+            Spacer(modifier = Modifier.width(8.dp))
+            // Иконка и текст времени
+            infos.find { it.id == "current_time" }?.let { info ->
+                Icon(
+                    painter = info.icon(),
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+            }
+            Text(
+                text = timeStr,
+                color = Color.White,
+                fontSize = 12.sp,
+            )
+        }
+
+        weather?.let { data ->
+            Spacer(modifier = Modifier.width(8.dp))
+            // Иконка погоды берётся из сетевого источника
+            AsyncImage(
+                model = data.iconUrl,
+                contentDescription = data.description,
+                modifier = Modifier.size(16.dp),
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            val unit = stringResource(data.temperatureUnit.unitString)
+            val temp = data.temperatureUnit.convert(data.temp).roundToInt()
+            Text(
+                text = "$temp $unit ${data.description}",
+                color = Color.White,
+                fontSize = 12.sp,
+            )
         }
     }
 }
