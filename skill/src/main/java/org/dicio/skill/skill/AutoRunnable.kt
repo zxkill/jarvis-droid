@@ -3,15 +3,24 @@ package org.dicio.skill.skill
 import org.dicio.skill.context.SkillContext
 
 /**
- * Interface for skills that can provide output automatically without a user query.
- * Implementations can specify how frequently the information should be refreshed
- * and return the [SkillOutput] that should be displayed.
+ * Интерфейс для скиллов, которые способны самостоятельно генерировать
+ * результат без голосового запроса пользователя. Такие скиллы используются
+ * для периодического вывода информации на экран (например, время, дата,
+ * погода) и могут запускаться с заданным интервалом.
  */
 interface AutoRunnable {
-    /** How often this skill should update the output, in milliseconds. */
+    /**
+     * Частота обновления информации в миллисекундах. Значение определяет,
+     * как часто скилл будет автоматически выполняться. Нулевой или отрицательный
+     * интервал не имеет смысла и приведёт к непрерывному запуску.
+     */
     val autoUpdateIntervalMillis: Long
 
-    /** Generate output without any user interaction. */
+    /**
+     * Генерирует вывод без участия пользователя. Метод выполняется в фоновой
+     * корутине и должен быстро возвращать результат, чтобы не блокировать
+     * остальные задачи.
+     */
     suspend fun autoOutput(ctx: SkillContext): SkillOutput
 }
 

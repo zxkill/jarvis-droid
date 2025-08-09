@@ -20,6 +20,7 @@ import kotlin.math.roundToInt
 class WeatherSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognizerData<Weather>) :
     StandardRecognizerSkill<Weather>(correspondingSkillInfo, data), AutoRunnable {
 
+    // Погода меняется не так часто — обновляем информацию каждые 30 минут
     override val autoUpdateIntervalMillis: Long = 30 * 60 * 1000L
 
     private companion object {

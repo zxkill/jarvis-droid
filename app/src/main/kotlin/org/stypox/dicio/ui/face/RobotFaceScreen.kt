@@ -50,7 +50,9 @@ fun RobotFaceScreen(
     // Текущее состояние устройства распознавания речи
       val sttState by viewModel.sttInputDevice.uiState.collectAsState()
 
+      // Карта текущих выводов авто-скиллов (время, дата, погода и т.д.)
       val autoOutputs by viewModel.autoSkillOutputs.collectAsState()
+      // Информация о включённых скиллах — нужна для отображения иконок и порядка
       val autoInfos by viewModel.skillHandler.enabledSkillsInfo.collectAsState()
 
     // Функция запуска прослушивания и обработки команд, если они начинаются
@@ -69,40 +71,8 @@ fun RobotFaceScreen(
                             viewModel.skillEvaluator.processInputEvent(
                                 InputEvent.Partial(trimmed)
                             )
-  }
-}
-
-@Composable
-private fun BoxScope.AutoInfoCorner(
-    infos: List<SkillInfo>,
-    outputs: Map<String, SkillOutput>,
-    ctx: SkillContext,
-) {
-    Column(
-        modifier = Modifier
-            .align(Alignment.TopEnd)
-            .padding(8.dp),
-        horizontalAlignment = Alignment.End,
-    ) {
-        infos.forEach { info ->
-            val output = outputs[info.id] ?: return@forEach
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    painter = info.icon(),
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(16.dp)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = output.getSpeechOutput(ctx),
-                    color = Color.White,
-                    fontSize = 12.sp,
-                )
-            }
-        }
-    }
-}
+                        }
+                    }
                 }
                 is InputEvent.Final -> {
                     // Итоговое распознавание. Проверяем наличие ключевого слова
@@ -195,11 +165,12 @@ private fun BoxScope.AutoInfoCorner(
                     RobotEyes(compact = true)
           }
 
-          AutoInfoCorner(
-              infos = autoInfos ?: listOf(),
-              outputs = autoOutputs,
-              ctx = viewModel.skillContext,
-          )
+            // В углу показываем обновляемую информацию: время, дату, погоду
+            AutoInfoCorner(
+                infos = autoInfos ?: listOf(),
+                outputs = autoOutputs,
+                ctx = viewModel.skillContext,
+            )
                 Box(
                     modifier = Modifier
                         .weight(1f)
@@ -245,4 +216,41 @@ fun RobotEyes(modifier: Modifier = Modifier, compact: Boolean = false) {
         modifier = modifier,
         eyeSize = size,
     )
+}
+
+/**
+ * Угловой виджет, отображающий результаты авто-скиллов маленькими строками
+ * в правом верхнем углу экрана. Для каждой строки показывается иконка
+ * соответствующего скилла и его текстовый вывод.
+ */
+@Composable
+private fun BoxScope.AutoInfoCorner(
+    infos: List<SkillInfo>,
+    outputs: Map<String, SkillOutput>,
+    ctx: SkillContext,
+) {
+    Column(
+        modifier = Modifier
+            .align(Alignment.TopEnd)
+            .padding(8.dp),
+        horizontalAlignment = Alignment.End,
+    ) {
+        infos.forEach { info ->
+            val output = outputs[info.id] ?: return@forEach
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    painter = info.icon(),
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = output.getSpeechOutput(ctx),
+                    color = Color.White,
+                    fontSize = 12.sp,
+                )
+            }
+        }
+    }
 }

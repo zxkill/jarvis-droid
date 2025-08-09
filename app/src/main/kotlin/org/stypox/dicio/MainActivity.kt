@@ -123,6 +123,7 @@ class MainActivity : BaseActivity() {
       // Переводим приложение в альбомную ориентацию при запуске
       requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
       isCreated += 1
+      // Не даём экрану гаснуть, чтобы постоянно показывать информацию
       window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
       androidx.core.view.WindowCompat.setDecorFitsSystemWindows(window, false)
 
