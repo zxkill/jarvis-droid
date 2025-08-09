@@ -3,6 +3,7 @@ package org.stypox.dicio.skills.current_date
 import org.dicio.skill.context.SkillContext
 import org.dicio.skill.skill.SkillInfo
 import org.dicio.skill.skill.SkillOutput
+import org.dicio.skill.skill.AutoRunnable
 import org.dicio.skill.standard.StandardRecognizerData
 import org.dicio.skill.standard.StandardRecognizerSkill
 import org.stypox.dicio.sentences.Sentences.CurrentDate
@@ -10,7 +11,6 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.time.format.TextStyle
-import java.util.Locale
 
 /**
  * Скилл сообщает текущую дату или её части.
@@ -18,26 +18,37 @@ import java.util.Locale
 class CurrentDateSkill(
     correspondingSkillInfo: SkillInfo,
     data: StandardRecognizerData<CurrentDate>,
-) : StandardRecognizerSkill<CurrentDate>(correspondingSkillInfo, data) {
+    ) : StandardRecognizerSkill<CurrentDate>(correspondingSkillInfo, data), AutoRunnable {
+
+    // Обновляем дату каждую минуту, чтобы смена суток отражалась на экране
+    override val autoUpdateIntervalMillis: Long = 60_000L
 
     override suspend fun generateOutput(ctx: SkillContext, inputData: CurrentDate): SkillOutput {
-        // Получаем сегодняшнюю дату
         val today = LocalDate.now()
-        // Возвращаем нужную часть даты в зависимости от запроса
         return when (inputData) {
+            // "Какой сегодня день?"
             is CurrentDate.Day -> {
                 val formatted = formatDay(ctx, today)
                 CurrentDateOutput(CurrentDateOutput.Type.DAY, formatted)
             }
+            // "Какой сейчас год?"
             is CurrentDate.Year -> {
                 val formatted = formatYear(ctx, today)
                 CurrentDateOutput(CurrentDateOutput.Type.YEAR, formatted)
             }
+            // "Какой месяц?"
             is CurrentDate.Month -> {
                 val formatted = formatMonth(ctx, today)
                 CurrentDateOutput(CurrentDateOutput.Type.MONTH, formatted)
             }
         }
+    }
+
+    override suspend fun autoOutput(ctx: SkillContext): SkillOutput {
+        val today = LocalDate.now()
+        // Для компактного углового виджета используем числовой формат "09.08.2025"
+        val formatted = today.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+        return CurrentDateOutput(CurrentDateOutput.Type.DAY, formatted)
     }
 
     /** Форматирование полной даты. */

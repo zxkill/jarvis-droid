@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.first
 import org.dicio.skill.context.SkillContext
 import org.dicio.skill.skill.SkillInfo
 import org.dicio.skill.skill.SkillOutput
+import org.dicio.skill.skill.AutoRunnable
 import org.dicio.skill.standard.StandardRecognizerData
 import org.dicio.skill.standard.StandardRecognizerSkill
 import org.stypox.dicio.sentences.Sentences.Weather
@@ -17,7 +18,10 @@ import kotlin.math.roundToInt
 
 /** Скилл получения текущей погоды для указанного города или текущих координат. */
 class WeatherSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognizerData<Weather>) :
-    StandardRecognizerSkill<Weather>(correspondingSkillInfo, data) {
+    StandardRecognizerSkill<Weather>(correspondingSkillInfo, data), AutoRunnable {
+
+    // Погода меняется не так часто — обновляем информацию каждые 30 минут
+    override val autoUpdateIntervalMillis: Long = 30 * 60 * 1000L
 
     private companion object {
         const val TAG = "WeatherSkill"
@@ -85,6 +89,10 @@ class WeatherSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognizerDa
         )
         Log.d(TAG, "Погода для города ${result.city} получена успешно")
         return result
+    }
+
+    override suspend fun autoOutput(ctx: SkillContext): SkillOutput {
+        return generateOutput(ctx, Weather.Current(where = null))
     }
 
     private fun getCity(prefs: SkillSettingsWeather, inputData: Weather): String? {

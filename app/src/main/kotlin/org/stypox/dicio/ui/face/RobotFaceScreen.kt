@@ -2,15 +2,21 @@ package org.stypox.dicio.ui.face
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import org.dicio.skill.skill.SkillInfo
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.delay
 import org.dicio.skill.skill.SkillOutput
+import org.stypox.dicio.skills.weather.WeatherOutput
 import org.stypox.dicio.io.input.InputEvent
 import org.stypox.dicio.io.input.SttState
 import org.stypox.dicio.io.wake.WakeService.Companion.TRIGGER_WORD
@@ -20,6 +26,11 @@ import org.stypox.dicio.ui.eyes.AnimatedEyes
 import org.stypox.dicio.ui.eyes.rememberEyesState
 import org.stypox.dicio.settings.datastore.UserSettings
 import java.util.Locale
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import coil.compose.AsyncImage
+import kotlin.math.roundToInt
 
 /**
  * Экран с лицом робота. Показывает два глаза и выводит ответы скиллов.
@@ -43,7 +54,12 @@ fun RobotFaceScreen(
     var visibleOutput by remember { mutableStateOf<SkillOutput?>(null) }
 
     // Текущее состояние устройства распознавания речи
-    val sttState by viewModel.sttInputDevice.uiState.collectAsState()
+      val sttState by viewModel.sttInputDevice.uiState.collectAsState()
+
+      // Карта текущих выводов авто-скиллов (время, дата, погода и т.д.)
+      val autoOutputs by viewModel.autoSkillOutputs.collectAsState()
+      // Информация о включённых скиллах — нужна для отображения иконок и порядка
+      val autoInfos by viewModel.skillHandler.enabledSkillsInfo.collectAsState()
 
     // Функция запуска прослушивания и обработки команд, если они начинаются
     // с ключевого слова
@@ -148,7 +164,7 @@ fun RobotFaceScreen(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight(),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     // При показе ответа скилла глаза занимают лишь половину экрана,
                     // поэтому уменьшаем их размер для визуального баланса
@@ -158,12 +174,20 @@ fun RobotFaceScreen(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight(),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     visibleOutput?.GraphicalOutput(viewModel.skillContext)
                 }
             }
         }
+
+        // В левом верхнем углу показываем обновляемую информацию:
+        // время, дату и погоду. Такой выбор позиции позволяет
+        // избежать перекрытия системными индикаторами (например, точкой микрофона)
+        AutoInfoCorner(
+            infos = autoInfos ?: listOf(),
+            outputs = autoOutputs,
+        )
 
         if (sttState != null) {
             SttFab(
@@ -199,4 +223,86 @@ fun RobotEyes(modifier: Modifier = Modifier, compact: Boolean = false) {
         modifier = modifier,
         eyeSize = size,
     )
+}
+
+/**
+ * Компактный уголок с автообновляемой информацией.
+ * Показывает дату, время и погоду в одну строку с небольшими иконками
+ * в левом верхнем углу экрана.
+ */
+@Composable
+private fun BoxScope.AutoInfoCorner(
+    infos: List<SkillInfo>,
+    outputs: Map<String, SkillOutput>,
+) {
+    // Текущие дата и время выводим числовым форматом
+    val dateStr = LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+    val timeStr = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))
+
+    // Получаем структурированный вывод погоды, если он есть
+    val weather = outputs["weather"] as? WeatherOutput.Success
+    val showDate = outputs.containsKey("current_date")
+    val showTime = outputs.containsKey("current_time")
+
+    Row(
+        modifier = Modifier
+            .align(Alignment.TopStart)
+            .padding(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        if (showDate) {
+            // Иконка и текст даты
+            infos.find { it.id == "current_date" }?.let { info ->
+                Icon(
+                    painter = info.icon(),
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+            }
+            Text(
+                text = dateStr,
+                color = Color.White,
+                fontSize = 12.sp,
+            )
+        }
+
+        if (showTime) {
+            Spacer(modifier = Modifier.width(8.dp))
+            // Иконка и текст времени
+            infos.find { it.id == "current_time" }?.let { info ->
+                Icon(
+                    painter = info.icon(),
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+            }
+            Text(
+                text = timeStr,
+                color = Color.White,
+                fontSize = 12.sp,
+            )
+        }
+
+        weather?.let { data ->
+            Spacer(modifier = Modifier.width(8.dp))
+            // Иконка погоды берётся из сетевого источника
+            AsyncImage(
+                model = data.iconUrl,
+                contentDescription = data.description,
+                modifier = Modifier.size(16.dp),
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            val unit = stringResource(data.temperatureUnit.unitString)
+            val temp = data.temperatureUnit.convert(data.temp).roundToInt()
+            Text(
+                text = "$temp $unit ${data.description}",
+                color = Color.White,
+                fontSize = 12.sp,
+            )
+        }
+    }
 }
