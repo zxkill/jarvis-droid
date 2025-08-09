@@ -181,7 +181,9 @@ fun RobotFaceScreen(
             }
         }
 
-        // В углу показываем обновляемую информацию: время, дату, погоду
+        // В левом верхнем углу показываем обновляемую информацию:
+        // время, дату и погоду. Такой выбор позиции позволяет
+        // избежать перекрытия системными индикаторами (например, точкой микрофона)
         AutoInfoCorner(
             infos = autoInfos ?: listOf(),
             outputs = autoOutputs,
@@ -225,7 +227,8 @@ fun RobotEyes(modifier: Modifier = Modifier, compact: Boolean = false) {
 
 /**
  * Компактный уголок с автообновляемой информацией.
- * Показывает дату, время и погоду в одну строку с небольшими иконками.
+ * Показывает дату, время и погоду в одну строку с небольшими иконками
+ * в левом верхнем углу экрана.
  */
 @Composable
 private fun BoxScope.AutoInfoCorner(
@@ -243,7 +246,7 @@ private fun BoxScope.AutoInfoCorner(
 
     Row(
         modifier = Modifier
-            .align(Alignment.TopEnd)
+            .align(Alignment.TopStart)
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
