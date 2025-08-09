@@ -147,40 +147,40 @@ fun RobotFaceScreen(
             navigationIcon()
         }
 
-          if (visibleOutput == null) {
-              // Слушаем пользователя — глаза по центру
-              // Отображаем крупные глаза по центру, когда вывод скилла отсутствует
-              RobotEyes(modifier = Modifier.align(Alignment.Center))
-          } else {
+        if (visibleOutput == null) {
+            // Слушаем пользователя — глаза по центру
+            // Отображаем крупные глаза по центру, когда вывод скилла отсутствует
+            RobotEyes(modifier = Modifier.align(Alignment.Center))
+        } else {
             // Делим экран: глаза слева, вывод скилла справа
             Row(modifier = Modifier.fillMaxSize()) {
                 Box(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight(),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     // При показе ответа скилла глаза занимают лишь половину экрана,
                     // поэтому уменьшаем их размер для визуального баланса
                     RobotEyes(compact = true)
-          }
-
-            // В углу показываем обновляемую информацию: время, дату, погоду
-            AutoInfoCorner(
-                infos = autoInfos ?: listOf(),
-                outputs = autoOutputs,
-                ctx = viewModel.skillContext,
-            )
+                }
                 Box(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight(),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     visibleOutput?.GraphicalOutput(viewModel.skillContext)
                 }
             }
         }
+
+        // В углу показываем обновляемую информацию: время, дату, погоду
+        AutoInfoCorner(
+            infos = autoInfos ?: listOf(),
+            outputs = autoOutputs,
+            ctx = viewModel.skillContext,
+        )
 
         if (sttState != null) {
             SttFab(
