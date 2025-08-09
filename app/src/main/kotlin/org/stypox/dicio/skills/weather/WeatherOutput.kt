@@ -23,6 +23,7 @@ import org.stypox.dicio.io.graphical.HeadlineSpeechSkillOutput
 import org.stypox.dicio.util.getString
 import org.stypox.dicio.util.lowercaseCapitalized
 import java.util.Locale
+import kotlin.math.roundToInt
 
 sealed interface WeatherOutput : SkillOutput {
     data class Success(
@@ -37,9 +38,31 @@ sealed interface WeatherOutput : SkillOutput {
         val temperatureUnit: ResolvedTemperatureUnit,
         val lengthUnit: ResolvedLengthUnit,
     ) : WeatherOutput {
-        override fun getSpeechOutput(ctx: SkillContext): String = ctx.getString(
-            R.string.skill_weather_in_city_there_is_description, city, description, tempString
-        )
+        override fun getSpeechOutput(ctx: SkillContext): String {
+            // Для русского языка выбираем правильное склонение слова "градус"
+            // и подставляем его в отдельную строку ресурсов
+            return if (ctx.locale.language.lowercase(Locale.getDefault()) == "ru") {
+                val degreeWord = ctx.android.resources.getQuantityString(
+                    R.plurals.skill_weather_degree,
+                    temp.roundToInt()
+                )
+                ctx.getString(
+                    R.string.skill_weather_in_city_there_is_description_ru,
+                    city,
+                    description,
+                    tempString,
+                    degreeWord
+                )
+            } else {
+                // Для остальных языков используем англоязычную строку
+                ctx.getString(
+                    R.string.skill_weather_in_city_there_is_description,
+                    city,
+                    description,
+                    tempString
+                )
+            }
+        }
 
         @Composable
         override fun GraphicalOutput(ctx: SkillContext) {
@@ -61,6 +84,7 @@ sealed interface WeatherOutput : SkillOutput {
 fun CurrentWeatherRow(data: WeatherOutput.Success) {
     val temperatureUnit = stringResource(data.temperatureUnit.unitString)
     val speedUnit = stringResource(data.lengthUnit.speedUnitString)
+    val tempRounded = data.temperatureUnit.convert(data.temp).roundToInt()
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -85,7 +109,7 @@ fun CurrentWeatherRow(data: WeatherOutput.Success) {
                 text = stringResource(
                     R.string.skill_weather_description_temperature,
                     data.description.lowercaseCapitalized(Locale.getDefault()),
-                    data.temperatureUnit.convert(data.temp),
+                    tempRounded,
                     temperatureUnit,
                 ),
                 textAlign = TextAlign.Center,

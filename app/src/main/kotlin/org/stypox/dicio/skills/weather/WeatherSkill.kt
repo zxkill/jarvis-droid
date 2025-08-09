@@ -1,5 +1,6 @@
 package org.stypox.dicio.skills.weather
 
+import android.util.Log
 import kotlinx.coroutines.flow.first
 import org.dicio.skill.context.SkillContext
 import org.dicio.skill.skill.SkillInfo
@@ -14,23 +15,46 @@ import java.io.FileNotFoundException
 import java.util.Locale
 import kotlin.math.roundToInt
 
-/** Скилл получения текущей погоды для указанного города. */
+/** Скилл получения текущей погоды для указанного города или текущих координат. */
 class WeatherSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognizerData<Weather>) :
     StandardRecognizerSkill<Weather>(correspondingSkillInfo, data) {
 
+    private companion object {
+        const val TAG = "WeatherSkill"
+        private const val IP_INFO_URL = "https://ipinfo.io/json"
+        private const val ICON_BASE_URL = "https://openweathermap.org/img/wn/"
+        private const val ICON_FORMAT = "@2x.png"
+    }
+
     override suspend fun generateOutput(ctx: SkillContext, inputData: Weather): SkillOutput {
+        // Загружаем настройки умения и определяем город и язык ответа
         val prefs = ctx.android.weatherDataStore.data.first()
-        val city = getCity(prefs, inputData) ?: return WeatherOutput.Failed(city = "")
+        val city = getCity(prefs, inputData)
+        val lang = ctx.locale.language.lowercase(Locale.getDefault())
+        Log.d(TAG, "Запрос погоды. Город из запроса или настроек: $city")
 
         val weatherData = try {
-            ConnectionUtils.getPageJson(
-                // Всегда запрашиваем данные в метрических единицах и переводим позже
-                "$WEATHER_API_URL?APPID=$API_KEY&units=metric&lang=" +
-                        ctx.locale.language.lowercase(Locale.getDefault()) +
-                        "&q=" + ConnectionUtils.urlEncode(city)
-            )
+            when {
+                // Если город известен – берём данные по нему
+                city != null -> WeatherCache.getWeather(city = city, lang = lang)
+                else -> {
+                    // Пытаемся определить координаты устройства
+                    Log.d(TAG, "Город не указан, пробуем определить координаты устройства")
+                    val coords = WeatherCache.getCoordinates(ctx.android)
+                    if (coords != null) {
+                        Log.d(TAG, "Координаты найдены: $coords")
+                        WeatherCache.getWeather(coords = coords, lang = lang)
+                    } else {
+                        // Последняя попытка – определяем город по IP
+                        Log.d(TAG, "Координаты недоступны, определяем город по IP")
+                        val ipCity = ConnectionUtils.getPageJson(IP_INFO_URL).getString("city")
+                        WeatherCache.getWeather(city = ipCity, lang = lang)
+                    }
+                }
+            }
         } catch (_: FileNotFoundException) {
-            return WeatherOutput.Failed(city = city)
+            Log.w(TAG, "Не удалось найти город", _)
+            return WeatherOutput.Failed(city = city ?: "")
         }
 
         val weatherObject = weatherData.getJSONArray("weather").getJSONObject(0)
@@ -40,7 +64,9 @@ class WeatherSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognizerDa
         val tempUnit = ResolvedTemperatureUnit.from(prefs)
         val temp = mainObject.getDouble("temp")
         val tempConverted = tempUnit.convert(temp)
-        return WeatherOutput.Success(
+        // Округляем температуру, чтобы в речи не звучало десятых долей
+        val tempRounded = tempConverted.roundToInt()
+        val result = WeatherOutput.Success(
             city = weatherData.getString("name"),
             description = weatherObject.getString("description")
                 .apply { this[0].uppercaseChar() + this.substring(1) },
@@ -48,39 +74,30 @@ class WeatherSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognizerDa
             temp = temp,
             tempMin = mainObject.getDouble("temp_min"),
             tempMax = mainObject.getDouble("temp_max"),
+            // Убираем дробную часть из текстового представления температуры
             tempString = ctx.parserFormatter
-                ?.niceNumber(tempConverted.roundToInt().toDouble())?.speech(true)?.get()
-                ?: (tempConverted.roundToInt().toString()),
+                ?.niceNumber(tempRounded.toDouble())?.speech(true)?.get()
+                ?.replace(Regex("[.,]0+$"), "")
+                ?: tempRounded.toString(),
             windSpeed = windObject.getDouble("speed"),
             temperatureUnit = tempUnit,
             lengthUnit = ResolvedLengthUnit.from(prefs),
         )
+        Log.d(TAG, "Погода для города ${result.city} получена успешно")
+        return result
     }
 
     private fun getCity(prefs: SkillSettingsWeather, inputData: Weather): String? {
+        // Извлекаем город из пользовательского запроса
         var city = when (inputData) {
             is Weather.Current -> inputData.where
         }
 
+        // Если пользователь ничего не сказал, используем город по умолчанию из настроек
         if (city.isNullOrEmpty()) {
             city = StringUtils.removePunctuation(prefs.defaultCity.trim { ch -> ch <= ' ' })
         }
 
-        if (city.isEmpty()) {
-            city = ConnectionUtils.getPageJson(IP_INFO_URL).getString("city")
-        }
-
-        if (city.isNullOrEmpty()) {
-            return null
-        }
-        return city
-    }
-
-    companion object {
-        private const val IP_INFO_URL = "https://ipinfo.io/json"
-        private const val WEATHER_API_URL = "https://api.openweathermap.org/data/2.5/weather"
-        private const val API_KEY = "061f24cf3cde2f60644a8240302983f2"
-        private const val ICON_BASE_URL = "https://openweathermap.org/img/wn/"
-        private const val ICON_FORMAT = "@2x.png"
+        return city?.takeIf { it.isNotEmpty() }
     }
 }

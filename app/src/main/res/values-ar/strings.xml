@@ -21,7 +21,7 @@
     <string name="skill_sentence_example_weather">كيف الطقس في روما؟</string>
     <string name="skill_name_lyrics">كلمات الأغاني</string>
     <string name="skill_search_here_is_what_i_found">هذا ما وجدته</string>
-    <string name="skill_weather_min_max_wind">أدنى درجة حرارة: %1$.1f%4$s\nأقصى درجة حرارة: %2$.1f%4$s\nسرعة الرياح: %3$.1f%5$s</string>
+    <string name="skill_weather_min_max_wind">أدنى درجة حرارة: %1$.1f%4$s\nأقصى درجة حرارة: %2$d%4$s\nسرعة الرياح: %3$.1f%5$s</string>
     <string name="skill_weather_in_city_there_is_description">هناك %2$s و %3$s درجات في %1$s الآن</string>
     <string name="eval_network_error_description">لم يستطع Dicio الاتصال بالانترنت. رجاءً تأكّد من اتّصالك ثم حاول مجددًا.</string>
     <string name="eval_fatal_error">تعذر تقييم طلبك</string>
@@ -105,7 +105,7 @@
     <string name="pref_skill_missing_permissions">يتطلب هذه الأذونات: %1$s</string>
     <string name="pref_skill_grant_permissions">السماح</string>
     <string name="skill_search_what_question">ما الذي تريد البحث عنه؟</string>
-    <string name="skill_weather_description_temperature">%1$s · %2$.1f%3$s</string>
+    <string name="skill_weather_description_temperature">%1$s · %2$d%3$s</string>
     <string name="pref_stt_auto_finish_summary_on">إرسال نتيجة الكلام تلقائيًا إلى التطبيق الذي يطلبه عند انتهاء الاستماع</string>
     <string name="pref_skill_number_library_not_available">مكتبة تحليل الأرقام وتنسيقها <i> dicio-number </i> لم تتم ترجمتها بعد إلى لغتك ، مما يعني أن جميع المهارات المتعلقة بالأرقام والمدد والتواريخ غير متوفرة. <b> الرجاء المساهمة بـ </b> إذا كان بإمكانك النقر هنا!</string>
     <string name="stt_popup">خدمة تحويل الكلام إلى نص</string>

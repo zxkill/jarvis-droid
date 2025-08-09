@@ -43,7 +43,14 @@
     <string name="skill_sentence_example_open">Открой NewPipe</string>
     <string name="skill_search_here_is_what_i_found">Вот что я нашёл</string>
     <string name="skill_weather_in_city_there_is_description">В %1$s сейчас %2$s и %3$s градусов</string>
-    <string name="skill_weather_description_temperature">%1$s · %2$.1f%3$s</string>
+    <string name="skill_weather_in_city_there_is_description_ru">В %1$s сейчас %2$s и %3$s %4$s</string>
+    <plurals name="skill_weather_degree">
+        <item quantity="one">градус</item>
+        <item quantity="few">градуса</item>
+        <item quantity="many">градусов</item>
+        <item quantity="other">градуса</item>
+    </plurals>
+    <string name="skill_weather_description_temperature">%1$s · %2$d%3$s</string>
     <string name="skill_weather_min_max_wind">Минимальная температура: %1$.1f%4$s
 \nМаксимальная температура: %2$.1f%4$s
 \nСкорость ветра: %3$.1f%5$s</string>

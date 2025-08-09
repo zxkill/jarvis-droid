@@ -7,7 +7,7 @@
     <string name="pref_weather_default_city">இயல்புநிலை நகரம்</string>
     <string name="pref_stt_auto_finish_summary_on">கேட்கும் போது பயன்பாட்டைக் கோருவதற்கு தானாக பேச்சு முடிவை அனுப்பவும்</string>
     <string name="skill_search_no_results">தேடல் எந்த முடிவுகளையும் திருப்பித் தரவில்லை, நீங்கள் தேட விரும்புவதை மீண்டும் என்னிடம் சொல்ல முயற்சிக்கவும்</string>
-    <string name="skill_weather_description_temperature">%1$s · %2$.1f%3$s</string>
+    <string name="skill_weather_description_temperature">%1$s · %2$d%3$s</string>
     <string name="skill_lyrics_song_not_found">%1$s பாடல் கண்டுபிடிக்க முடியவில்லை</string>
     <string name="skill_telephone_confirm_call">நான் %1$s ஐ அழைக்க வேண்டுமா?</string>
     <string name="wake_word_error_downloading">பதிவிறக்கும் போது எதிர்பாராத பிழை ஏற்பட்டது</string>
@@ -141,7 +141,7 @@
     <string name="skill_search_what_question">நீங்கள் எதைத் தேட விரும்புகிறீர்கள்?</string>
     <string name="skill_weather_could_not_find_city">நகர %1$s கண்டுபிடிக்க முடியவில்லை</string>
     <string name="skill_weather_in_city_there_is_description">தற்போது %2$s மற்றும் %3$s டிகிரி %1$s இல் உள்ளது</string>
-    <string name="skill_weather_min_max_wind">குறைந்தபட்ச வெப்பநிலை: %1$.1f%4$s\nஅதிகபட்ச வெப்பநிலை: %2$.1f%4$s\nகாற்றின் வேகம்: %3$.1f%5$s</string>
+    <string name="skill_weather_min_max_wind">குறைந்தபட்ச வெப்பநிலை: %1$.1f%4$s\nஅதிகபட்ச வெப்பநிலை: %2$d%4$s\nகாற்றின் வேகம்: %3$.1f%5$s</string>
     <string name="skill_lyrics_found_song_by_artist">%1$s %2$s உடன் காணப்பட்டது</string>
     <string name="skill_open_could_not_understand">பயன்பாட்டை புரிந்து கொள்ள முடியவில்லை</string>
     <string name="skill_open_unknown_app">தெரியாத பயன்பாடு %1$s</string>

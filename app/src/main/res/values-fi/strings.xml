@@ -116,7 +116,7 @@
     <string name="skill_name_telephone">Puhelin</string>
     <string name="skill_sentence_example_telephone">Soita Tomille</string>
     <string name="skill_weather_could_not_find_city">Kaupunkia %1$s ei löytynyt</string>
-    <string name="skill_weather_description_temperature">%1$s · %2$.1f%3$s</string>
+    <string name="skill_weather_description_temperature">%1$s · %2$d%3$s</string>
     <string name="skill_lyrics_found_song_by_artist">Löytyi %1$s tekijältä %2$s</string>
     <string name="skill_open_could_not_understand">Ei voinut ymmärtää sovellusta</string>
     <string name="skill_telephone_unknown_contact">Yhteystietoa ei löytynyt; yritä uudelleen</string>
@@ -132,7 +132,7 @@
     <string name="skill_name_lyrics">Laulujen sanoitukset</string>
     <string name="skill_name_open">Sovelluksen avaaja</string>
     <string name="skill_sentence_example_open">Avaa NewPipe</string>
-    <string name="skill_weather_min_max_wind">Vähimmäislämpötila: %1$.1f%4$s\nEnimmäislämpötila: %2$.1f%4$s\nTuulen nopeus: %3$.1f%5$s</string>
+    <string name="skill_weather_min_max_wind">Vähimmäislämpötila: %1$.1f%4$s\nEnimmäislämpötila: %2$d%4$s\nTuulen nopeus: %3$.1f%5$s</string>
     <string name="skill_lyrics_song_not_found">Kappaletta %1$s ei löytynyt</string>
     <string name="skill_open_unknown_app">Tuntematon sovellus %1$s</string>
     <string name="skill_name_current_time">Nykyinen aika</string>
