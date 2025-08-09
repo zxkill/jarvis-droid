@@ -16,6 +16,7 @@ import org.dicio.skill.skill.SkillInfo
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.delay
 import org.dicio.skill.skill.SkillOutput
+import org.stypox.dicio.io.graphical.PersistentSkillOutput
 import org.stypox.dicio.skills.weather.WeatherOutput
 import org.stypox.dicio.io.input.InputEvent
 import org.stypox.dicio.io.input.SttState
@@ -123,8 +124,11 @@ fun RobotFaceScreen(
     LaunchedEffect(latestOutput) {
         if (latestOutput != null) {
             visibleOutput = latestOutput
-            delay(displaySeconds * 1000L)
-            visibleOutput = null
+            if (latestOutput !is PersistentSkillOutput) {
+                // Обычный вывод скрываем через заданный таймаут
+                delay(displaySeconds * 1000L)
+                visibleOutput = null
+            }
         }
     }
 
