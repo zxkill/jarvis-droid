@@ -16,6 +16,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
 import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import dagger.hilt.android.AndroidEntryPoint
 import dev.shreyaspatil.permissionFlow.PermissionFlow
 import kotlinx.coroutines.Job
@@ -118,14 +120,20 @@ class MainActivity : BaseActivity() {
         }
     }
 
-  override fun onCreate(savedInstanceState: Bundle?) {
-      super.onCreate(savedInstanceState)
-      // Переводим приложение в альбомную ориентацию при запуске
-      requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
-      isCreated += 1
-      // Не даём экрану гаснуть, чтобы постоянно показывать информацию
-      window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-      androidx.core.view.WindowCompat.setDecorFitsSystemWindows(window, false)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        // Переводим приложение в альбомную ориентацию при запуске
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+        isCreated += 1
+        // Не даём экрану гаснуть, чтобы постоянно показывать информацию
+        window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        // Скрываем строку состояния и навигации для полноэкранного режима
+        WindowCompat.getInsetsController(window, window.decorView)?.let { controller ->
+            controller.hide(WindowInsetsCompat.Type.systemBars())
+            controller.systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
 
         handleWakeWordTurnOnScreen(intent)
         if (isAssistIntent(intent)) {
