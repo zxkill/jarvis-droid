@@ -31,8 +31,6 @@ class SkillSettingsViewModel @Inject constructor(
         .map { it.enabledSkillsMap }
         .toStateFlowDistinctBlockingFirst(viewModelScope)
 
-    val numberLibraryNotAvailable = skillContext.parserFormatter == null
-
     fun setSkillEnabled(id: String, state: Boolean) {
         viewModelScope.launch {
             dataStore.updateData {

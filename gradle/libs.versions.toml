@@ -49,7 +49,6 @@ debug-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 debug-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
 desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugarJdkLibs" }
 # update versions for dicio-* libraries in settings.gradle.kts (they are included via git)
-dicio-numbers = { module = "git.included.build:dicio-numbers" }
 dicio-sentences-compiler = { module = "git.included.build:dicio-sentences-compiler" }
 dicio-sentences-compiler-plugin = { module = "org.stypox.dicio.sentencesCompilerPlugin:sentences-compiler-plugin" }
 exp4j = { module = "net.objecthunter:exp4j", version.ref = "exp4j" }

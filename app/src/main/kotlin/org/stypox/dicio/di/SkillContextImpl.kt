@@ -43,7 +43,7 @@ class SkillContextImpl private constructor(
                 lastParserFormatter = try {
                     Pair(ParserFormatter(currentLocale), currentLocale)
                 } catch (ignored: IllegalArgumentException) {
-                    // current locale is not supported by dicio-numbers
+                    // current locale is not supported by the parser
                     Pair(null, currentLocale)
                 }
             }

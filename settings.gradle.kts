@@ -34,8 +34,8 @@ dependencyResolutionManagement {
 }
 
 
-// All of the code below handles depending on libraries from git repos, in particular dicio-numbers,
-// dicio-skill and dicio-sentences-compiler. The git commits to checkout can be updated here.
+// All of the code below handles depending on libraries from git repos, in particular
+// dicio-sentences-compiler. The git commits to checkout can be updated here.
 // If you want to use a local copy of the projects (provided that you have cloned them in
 // `../dicio-*`), you can add `useLocalDicioLibraries=true` in `local.properties`.
 
@@ -47,12 +47,6 @@ data class IncludeGitRepo(
 )
 
 val includeGitRepos = listOf(
-    IncludeGitRepo(
-        name = "dicio-numbers",
-        uri = "https://github.com/Stypox/dicio-numbers",
-        projectPath = ":numbers",
-        commit = "66fd44b79585f952b76d16e5578d4d6aa5bc030c",
-    ),
     IncludeGitRepo(
         name = "dicio-sentences-compiler",
         uri = "https://github.com/Stypox/dicio-sentences-compiler",

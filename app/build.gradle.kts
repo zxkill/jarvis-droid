@@ -121,7 +121,6 @@ dependencies {
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 
     // Dicio own libraries
-    implementation(libs.dicio.numbers)
     implementation(project(":skill"))
 
     // Android
