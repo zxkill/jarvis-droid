@@ -21,6 +21,7 @@ class CurrentDateSkill(
     data: StandardRecognizerData<CurrentDate>,
     ) : StandardRecognizerSkill<CurrentDate>(correspondingSkillInfo, data), AutoRunnable {
 
+    // Обновляем дату каждую минуту, чтобы смена суток отражалась на экране
     override val autoUpdateIntervalMillis: Long = 60_000L
 
     override suspend fun generateOutput(ctx: SkillContext, inputData: CurrentDate): SkillOutput {

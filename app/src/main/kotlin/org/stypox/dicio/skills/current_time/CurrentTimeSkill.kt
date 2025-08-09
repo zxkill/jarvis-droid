@@ -17,6 +17,7 @@ import java.time.format.FormatStyle
 class CurrentTimeSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognizerData<CurrentTime>)
     : StandardRecognizerSkill<CurrentTime>(correspondingSkillInfo, data), AutoRunnable {
 
+    // Автоматическое обновление раз в минуту
     override val autoUpdateIntervalMillis: Long = 60_000L
 
     override suspend fun generateOutput(ctx: SkillContext, inputData: CurrentTime): SkillOutput {

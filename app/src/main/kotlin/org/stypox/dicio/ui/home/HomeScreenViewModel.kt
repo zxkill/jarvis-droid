@@ -24,11 +24,16 @@ import org.stypox.dicio.settings.datastore.WakeDevice
 import org.stypox.dicio.settings.datastore.copy
 import javax.inject.Inject
 
+/**
+ * ViewModel главного экрана. Хранит ссылки на все устройства ввода/вывода,
+ * управляет их состоянием и предоставляет данные для UI.
+ */
 @HiltViewModel
 class HomeScreenViewModel @Inject constructor(
     application: Application,
     val skillContext: SkillContextInternal,
       val skillHandler: SkillHandler,
+      // Сервис, который выполняет авто-скиллы и отдаёт их результаты
       autoSkillRunner: AutoSkillRunner,
     val dataStore: DataStore<UserSettings>,
     val sttInputDevice: SttInputDeviceWrapper,
@@ -43,6 +48,7 @@ class HomeScreenViewModel @Inject constructor(
     private var showSnackbarJob: Job? = null
       val snackbarHostState = SnackbarHostState()
 
+      // Поток с последними выводами всех авто-скиллов
       val autoSkillOutputs = autoSkillRunner.outputs
 
     init {
