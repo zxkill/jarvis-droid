@@ -6,6 +6,7 @@ import android.os.Build
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationManagerCompat
 import dagger.hilt.android.HiltAndroidApp
+import android.util.Log
 import org.stypox.dicio.skills.weather.WeatherCache
 import org.stypox.dicio.util.checkPermissions
 
@@ -23,6 +24,9 @@ class App : Application() {
             initNotificationChannels()
         }
 
+        // Прогреваем кэш погоды при запуске приложения,
+        // чтобы ответы были мгновенными
+        Log.d("App", "Запускаем предварительную загрузку погоды")
         WeatherCache.preload(this)
     }
 

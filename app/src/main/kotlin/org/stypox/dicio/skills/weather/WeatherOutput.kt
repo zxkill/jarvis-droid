@@ -39,6 +39,8 @@ sealed interface WeatherOutput : SkillOutput {
         val lengthUnit: ResolvedLengthUnit,
     ) : WeatherOutput {
         override fun getSpeechOutput(ctx: SkillContext): String {
+            // Для русского языка выбираем правильное склонение слова "градус"
+            // и подставляем его в отдельную строку ресурсов
             return if (ctx.locale.language.lowercase(Locale.getDefault()) == "ru") {
                 val degreeWord = ctx.android.resources.getQuantityString(
                     R.plurals.skill_weather_degree,
@@ -52,6 +54,7 @@ sealed interface WeatherOutput : SkillOutput {
                     degreeWord
                 )
             } else {
+                // Для остальных языков используем англоязычную строку
                 ctx.getString(
                     R.string.skill_weather_in_city_there_is_description,
                     city,
