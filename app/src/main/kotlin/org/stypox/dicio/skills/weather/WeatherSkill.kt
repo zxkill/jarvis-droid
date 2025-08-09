@@ -21,6 +21,9 @@ class WeatherSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognizerDa
 
     private companion object {
         const val TAG = "WeatherSkill"
+        private const val IP_INFO_URL = "https://ipinfo.io/json"
+        private const val ICON_BASE_URL = "https://openweathermap.org/img/wn/"
+        private const val ICON_FORMAT = "@2x.png"
     }
 
     override suspend fun generateOutput(ctx: SkillContext, inputData: Weather): SkillOutput {
@@ -92,11 +95,5 @@ class WeatherSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognizerDa
         }
 
         return city?.takeIf { it.isNotEmpty() }
-    }
-
-    companion object {
-        private const val IP_INFO_URL = "https://ipinfo.io/json"
-        private const val ICON_BASE_URL = "https://openweathermap.org/img/wn/"
-        private const val ICON_FORMAT = "@2x.png"
     }
 }
