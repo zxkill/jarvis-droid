@@ -33,6 +33,7 @@ litert = "1.1.2"
 permissionFlow = "2.0.0"
 camerax = "1.4.0"
 mlkitFaceDetection = "16.1.5"
+mlkitPoseDetection = "17.0.0"
 
 [libraries]
 accompanist-drawablepainter = { module = "com.google.accompanist:accompanist-drawablepainter", version.ref = "accompanist" }
@@ -57,6 +58,7 @@ camerax-view = { module = "androidx.camera:camera-view", version.ref = "camerax"
 camerax-mlkit-vision = { module = "androidx.camera:camera-mlkit-vision", version.ref = "camerax" }
 # ML Kit
 mlkit-face-detection = { module = "com.google.mlkit:face-detection", version.ref = "mlkitFaceDetection" }
+mlkit-pose-detection = { module = "com.google.mlkit:pose-detection", version.ref = "mlkitPoseDetection" }
 # update versions for dicio-* libraries in settings.gradle.kts (they are included via git)
 dicio-sentences-compiler = { module = "git.included.build:dicio-sentences-compiler" }
 dicio-sentences-compiler-plugin = { module = "org.stypox.dicio.sentencesCompilerPlugin:sentences-compiler-plugin" }
