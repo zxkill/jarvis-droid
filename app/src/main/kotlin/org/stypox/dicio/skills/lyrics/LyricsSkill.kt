@@ -68,8 +68,11 @@ class LyricsSkill(correspondingSkillInfo: SkillInfo) :
         // замените "songs" на "multi", чтобы получать результаты всех типов, а не только песни
         private const val GENIUS_SEARCH_URL = "https://genius.com/api/search/songs?q="
         private const val GENIUS_LYRICS_URL = "https://genius.com/songs/"
+        // Используем полное имя класса, чтобы избежать конфликта с [SkillPattern]
+        // и явно указать, что это регулярные выражения Java.
         private val LYRICS_PATTERN =
-            Pattern.compile("document\\.write\\(JSON\\.parse\\('(.+)'\\)\\)")
-        private val NEWLINE_PATTERN = Pattern.compile("\\s*(\\\\n)?\\s*\\{#%\\)\\s*")
+            java.util.regex.Pattern.compile("document\\.write\\(JSON\\.parse\\('(.+)'\\)\\)")
+        private val NEWLINE_PATTERN =
+            java.util.regex.Pattern.compile("\\s*(\\\\n)?\\s*\\{#%\\)\\s*")
     }
 }
