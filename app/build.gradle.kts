@@ -182,6 +182,7 @@ dependencies {
     implementation(libs.camerax.view)
     implementation(libs.camerax.mlkit.vision)
     implementation(libs.mlkit.face.detection)
+    implementation(libs.mlkit.pose.detection)
 
     // Miscellaneous
     implementation(libs.unbescape)

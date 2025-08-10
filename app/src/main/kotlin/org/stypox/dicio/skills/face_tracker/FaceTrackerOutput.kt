@@ -24,6 +24,9 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetectorOptions
+import com.google.mlkit.vision.pose.PoseDetection
+import com.google.mlkit.vision.pose.PoseDetectorOptions
+import com.google.mlkit.vision.pose.PoseLandmark
 import org.dicio.skill.context.SkillContext
 import org.stypox.dicio.R
 import org.stypox.dicio.io.graphical.PersistentSkillOutput
@@ -32,6 +35,8 @@ import java.util.concurrent.Executors
 /**
  * Графический вывод, показывающий поток с камеры, рамку вокруг обнаруженного
  * лица и рассчитанные углы yaw/pitch относительно центра кадра.
+ * Если лицо не найдено, дополнительно используется детектор позы для
+ * примерного определения положения головы.
  */
 class FaceTrackerOutput : PersistentSkillOutput {
     override fun getSpeechOutput(ctx: SkillContext): String =
@@ -58,6 +63,12 @@ class FaceTrackerOutput : PersistentSkillOutput {
                     .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
                     .build()
             )
+            // Детектор позы: на случай, когда лицо не найдено
+            val poseDetector = PoseDetection.getClient(
+                PoseDetectorOptions.Builder()
+                    .setDetectorMode(PoseDetectorOptions.STREAM_MODE)
+                    .build()
+            )
             // Превью камеры
             val preview = Preview.Builder().build().also {
                 it.setSurfaceProvider(previewView.surfaceProvider)
@@ -66,18 +77,15 @@ class FaceTrackerOutput : PersistentSkillOutput {
             val analysis = ImageAnalysis.Builder()
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build()
-            // Анализ каждого кадра: ищем лицо и вычисляем смещения
+            // Анализ каждого кадра: ищем лицо и при отсутствии пробуем найти голову
             analysis.setAnalyzer(executor) { imageProxy ->
                 val mediaImage = imageProxy.image
                 if (mediaImage != null) {
-                    // Преобразуем кадр в формат ML Kit с учётом ориентации
                     val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
                     detector.process(image)
                         .addOnSuccessListener { faces ->
-                            // Берём самое крупное лицо в кадре
                             val face = faces.maxByOrNull { it.boundingBox.width() * it.boundingBox.height() }
                             if (face != null) {
-                                // Запоминаем размер кадра и отражаем рамку по горизонтали
                                 imageSize = Pair(image.width, image.height)
                                 val box = face.boundingBox
                                 val mirrored = Rect(
@@ -91,18 +99,51 @@ class FaceTrackerOutput : PersistentSkillOutput {
                                 val cy = mirrored.exactCenterY()
                                 val px = image.width.toFloat()
                                 val py = image.height.toFloat()
-                                // Перевод координат в углы поворота камеры
                                 val yaw = (cx - px / 2f) / px * FOV_DEG_X
                                 val pitch = -(cy - py / 2f) / py * FOV_DEG_Y
                                 offsets = Pair(yaw, pitch)
+                                imageProxy.close()
                             } else {
-                                // Лицо не найдено
-                                faceBox = null
-                                offsets = null
-                                imageSize = null
+                                poseDetector.process(image)
+                                    .addOnSuccessListener { pose ->
+                                        // Берём уши и нос, чтобы прикинуть положение головы
+                                        val lEar = pose.getPoseLandmark(PoseLandmark.LEFT_EAR)
+                                        val rEar = pose.getPoseLandmark(PoseLandmark.RIGHT_EAR)
+                                        val nose = pose.getPoseLandmark(PoseLandmark.NOSE)
+                                        val landmarks = listOfNotNull(lEar, rEar, nose)
+                                            .filter { it.inFrameLikelihood >= POSE_MIN_VIS }
+                                        if (landmarks.size >= 2) {
+                                            imageSize = Pair(image.width, image.height)
+                                            val xs = landmarks.map { it.position.x }
+                                            val ys = landmarks.map { it.position.y }
+                                            val xMin = xs.minOrNull()!!
+                                            val xMax = xs.maxOrNull()!!
+                                            val yMin = ys.minOrNull()!!
+                                            val yMax = ys.maxOrNull()!!
+                                            val mirrored = Rect(
+                                                (image.width - xMax).toInt(),
+                                                yMin.toInt(),
+                                                (image.width - xMin).toInt(),
+                                                yMax.toInt()
+                                            )
+                                            faceBox = mirrored
+                                            val cx = mirrored.exactCenterX()
+                                            val cy = mirrored.exactCenterY()
+                                            val px = image.width.toFloat()
+                                            val py = image.height.toFloat()
+                                            val yaw = (cx - px / 2f) / px * FOV_DEG_X
+                                            val pitch = -(cy - py / 2f) / py * FOV_DEG_Y
+                                            offsets = Pair(yaw, pitch)
+                                        } else {
+                                            faceBox = null
+                                            offsets = null
+                                            imageSize = null
+                                        }
+                                    }
+                                    .addOnCompleteListener { imageProxy.close() }
                             }
                         }
-                        .addOnCompleteListener { imageProxy.close() } // освобождаем кадр
+                        .addOnFailureListener { imageProxy.close() }
                 } else {
                     imageProxy.close()
                 }
@@ -121,6 +162,7 @@ class FaceTrackerOutput : PersistentSkillOutput {
             onDispose {
                 cameraProvider.unbindAll()
                 detector.close()
+                poseDetector.close()
                 executor.shutdown()
             }
         }
@@ -160,5 +202,6 @@ class FaceTrackerOutput : PersistentSkillOutput {
     companion object {
         private const val FOV_DEG_X = 62f
         private const val FOV_DEG_Y = 38f
+        private const val POSE_MIN_VIS = 0.8f
     }
 }
