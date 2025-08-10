@@ -10,9 +10,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.dicio.skill.skill.SkillInfo
+import org.dicio.skill.skill.Permission
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.delay
 import org.dicio.skill.skill.SkillOutput
@@ -26,6 +28,8 @@ import org.stypox.dicio.ui.home.SttFab
 import org.stypox.dicio.ui.eyes.AnimatedEyes
 import org.stypox.dicio.ui.eyes.rememberEyesState
 import org.stypox.dicio.settings.datastore.UserSettings
+import org.stypox.dicio.util.checkPermissions
+import org.stypox.dicio.util.getNonGrantedSecurePermissions
 import java.util.Locale
 import java.time.LocalDate
 import java.time.LocalTime
@@ -61,6 +65,17 @@ fun RobotFaceScreen(
       val autoOutputs by viewModel.autoSkillOutputs.collectAsState()
       // Информация о включённых скиллах — нужна для отображения иконок и порядка
       val autoInfos by viewModel.skillHandler.enabledSkillsInfo.collectAsState()
+
+    // Проверяем, выданы ли необходимые разрешения для запуска навыков.
+    // Если приложение уже имеет доступ ко всем требуемым разрешениям,
+    // возвращаем true, иначе выводится сообщение о недостающих разрешениях.
+    val context = LocalContext.current
+    viewModel.skillEvaluator.permissionRequester = { perms: List<Permission> ->
+        val normal = perms.filterIsInstance<Permission.NormalPermission>().map { it.id }.toTypedArray()
+        val secure = perms.filterIsInstance<Permission.SecurePermission>()
+        checkPermissions(context, *normal) &&
+            getNonGrantedSecurePermissions(context, secure).isEmpty()
+    }
 
     // Функция запуска прослушивания и обработки команд, если они начинаются
     // с ключевого слова
