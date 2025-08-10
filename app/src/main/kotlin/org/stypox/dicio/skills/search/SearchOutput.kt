@@ -22,7 +22,6 @@ import org.dicio.skill.skill.InteractionPlan
 import org.dicio.skill.skill.SkillOutput
 import org.stypox.dicio.R
 import org.stypox.dicio.io.graphical.Headline
-import org.stypox.dicio.sentences.Sentences
 import org.stypox.dicio.util.RecognizeEverythingSkill
 import org.stypox.dicio.util.ShareUtils
 import org.stypox.dicio.util.getString
@@ -69,7 +68,7 @@ class SearchOutput(
         return InteractionPlan.StartSubInteraction(
             reopenMicrophone = true,
             nextSkills = listOf(
-                SearchSkill(SearchInfo, Sentences.Search[ctx.sentencesLanguage]!!),
+                SearchSkill(SearchInfo),
                 searchAnythingSkill,
             ),
         )

@@ -1,22 +1,32 @@
 package org.stypox.dicio.util
 
 import org.dicio.skill.context.SkillContext
-import org.dicio.skill.skill.Score
-import org.dicio.skill.skill.Skill
+import org.dicio.skill.recognizer.FuzzyRecognizerSkill
 import org.dicio.skill.skill.SkillInfo
-import org.dicio.skill.standard.StandardRecognizerData
-import org.stypox.dicio.sentences.Sentences.UtilYesNo
+import org.dicio.skill.skill.SkillOutput
+import org.dicio.skill.skill.Specificity
 
-abstract class RecognizeYesNoSkill(
-    correspondingSkillInfo: SkillInfo,
-    private val data: StandardRecognizerData<UtilYesNo>,
-) : Skill<Boolean>(correspondingSkillInfo, data.specificity) {
-    override fun score(
-        ctx: SkillContext,
-        input: String
-    ): Pair<Score, Boolean> {
-        return data.score(input).let { (score, standardResult) ->
-            Pair(score, standardResult is UtilYesNo.Yes)
-        }
-    }
+/**
+ * Базовый класс для распознавания ответов «да» или «нет».
+ * Используется в диалогах подтверждения.
+ */
+abstract class RecognizeYesNoSkill(correspondingSkillInfo: SkillInfo) :
+    FuzzyRecognizerSkill<Boolean>(correspondingSkillInfo, Specificity.LOW) {
+
+    override val patterns = listOf(
+        // Несколько вариантов согласия
+        Pattern(
+            example = "да",
+            regex = Regex("^(?:да|ага|конечно|yes)$"),
+            builder = { true }
+        ),
+        // И варианты отказа
+        Pattern(
+            example = "нет",
+            regex = Regex("^(?:нет|неа|no)$"),
+            builder = { false }
+        )
+    )
+
+    abstract override suspend fun generateOutput(ctx: SkillContext, inputData: Boolean): SkillOutput
 }
