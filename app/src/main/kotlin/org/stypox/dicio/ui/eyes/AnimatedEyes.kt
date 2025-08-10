@@ -1,6 +1,10 @@
 package org.stypox.dicio.ui.eyes
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -181,6 +185,25 @@ fun AnimatedEyes(
         }
     }
 
+    // Небольшие колебания размеров глаз, чтобы сделать взгляд живее
+    val idleTransition = rememberInfiniteTransition()
+    val widthJitter by idleTransition.animateFloat(
+        initialValue = 0.97f,
+        targetValue = 1.03f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1000),
+            repeatMode = RepeatMode.Reverse,
+        ),
+    )
+    val heightJitter by idleTransition.animateFloat(
+        initialValue = 0.95f,
+        targetValue = 1.05f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1200),
+            repeatMode = RepeatMode.Reverse,
+        ),
+    )
+
     // Основное полотно для рисования глаз. Высота задаётся параметром [eyeSize],
     // что позволяет менять масштаб глаз в различных режимах экрана.
     Canvas(
@@ -197,8 +220,8 @@ fun AnimatedEyes(
         val rightCenter = Offset(centerX + offset, centerY)
         val lx = lookX.value
         val ly = lookY.value
-        drawEye(leftCenter, eyeSize, blink.value, state.expression, eyeColor, lx, ly, true)
-        drawEye(rightCenter, eyeSize, blink.value, state.expression, eyeColor, lx, ly, false)
+        drawEye(leftCenter, eyeSize, blink.value, state.expression, eyeColor, lx, ly, true, widthJitter, heightJitter)
+        drawEye(rightCenter, eyeSize, blink.value, state.expression, eyeColor, lx, ly, false, widthJitter, heightJitter)
     }
 }
 
@@ -212,6 +235,8 @@ private fun DrawScope.drawEye(
     lookX: Float,
     lookY: Float,
     isLeft: Boolean,
+    widthJitter: Float,
+    heightJitter: Float,
 ) {
     val cfg = expression.config()
     val scale = baseSize / 40f
@@ -222,10 +247,10 @@ private fun DrawScope.drawEye(
     val scaleYx = 1f + (if (isLeft) 1f else -1f) * lookX * 0.2f
     val verticalScale = scaleYCommon * scaleYx
 
-    val width = cfg.width * scale
-    val height = cfg.height * scale * blink * verticalScale
-    val radiusTop = cfg.radiusTop * scale * blink * verticalScale
-    val radiusBottom = cfg.radiusBottom * scale * blink * verticalScale
+    val width = cfg.width * scale * widthJitter
+    val height = cfg.height * scale * blink * verticalScale * heightJitter
+    val radiusTop = cfg.radiusTop * scale * blink * verticalScale * heightJitter
+    val radiusBottom = cfg.radiusBottom * scale * blink * verticalScale * heightJitter
     val centerWithOffset = Offset(
         center.x + cfg.offsetX * scale + moveX,
         center.y + cfg.offsetY * scale + moveY
