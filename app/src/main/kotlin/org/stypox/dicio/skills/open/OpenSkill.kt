@@ -6,24 +6,37 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import org.dicio.skill.context.SkillContext
+import org.dicio.skill.recognizer.FuzzyRecognizerSkill
 import org.dicio.skill.skill.SkillInfo
 import org.dicio.skill.skill.SkillOutput
-import org.dicio.skill.standard.StandardRecognizerData
-import org.dicio.skill.standard.StandardRecognizerSkill
-import org.stypox.dicio.sentences.Sentences.Open
+import org.dicio.skill.skill.Specificity
 import org.stypox.dicio.util.StringUtils
 
 /**
  * Скилл для запуска других приложений по их названию.
+ * Использует нечёткое сопоставление вводимой команды с шаблонами.
  */
-class OpenSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognizerData<Open>)
-    : StandardRecognizerSkill<Open>(correspondingSkillInfo, data) {
+class OpenSkill(correspondingSkillInfo: SkillInfo) :
+    FuzzyRecognizerSkill<OpenSkill.Command>(correspondingSkillInfo, Specificity.LOW) {
 
-    override suspend fun generateOutput(ctx: SkillContext, inputData: Open): SkillOutput {
+    /** Типы команд, которые может распознать данный скилл. */
+    sealed class Command {
+        data class Query(val app: String?) : Command()
+    }
+
+    override val patterns = listOf(
+        // Поддерживаются конструкции вида "запусти браузер" или "открой телеграм"
+        Pattern(
+            example = "запусти приложение",
+            regex = Regex("^(?:запусти|открой)\\s+(?<app>.+)$"),
+            builder = { Command.Query(it.groups["app"]?.value) }
+        )
+    )
+
+    override suspend fun generateOutput(ctx: SkillContext, inputData: Command?): SkillOutput {
+        val data = requireNotNull(inputData)
         // Название приложения, которое произнёс пользователь
-        val userAppName = when (inputData) {
-            is Open.Query -> inputData.what?.trim { it <= ' ' }
-        }
+        val userAppName = data.app?.trim { it <= ' ' }
         val packageManager: PackageManager = ctx.android.packageManager
         // Пытаемся найти наиболее похожее приложение по названию
         val applicationInfo = userAppName?.let { getMostSimilarApp(packageManager, it) }
@@ -65,13 +78,13 @@ class OpenSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognizerData<
                     )
                     val currentDistance = StringUtils.customStringDistance(
                         appName,
-                        packageManager.getApplicationLabel(currentApplicationInfo).toString()
+                        packageManager.getApplicationLabel(currentApplicationInfo).toString(),
                     )
                     if (currentDistance < bestDistance) {
                         bestDistance = currentDistance
                         bestApplicationInfo = currentApplicationInfo
                     }
-                } catch (ignored: PackageManager.NameNotFoundException) {
+                } catch (_: PackageManager.NameNotFoundException) {
                 }
             }
             // Если расстояние слишком велико, считаем, что подходящего приложения нет

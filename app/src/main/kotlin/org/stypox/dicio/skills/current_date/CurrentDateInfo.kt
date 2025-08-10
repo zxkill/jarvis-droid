@@ -9,8 +9,6 @@ import org.dicio.skill.context.SkillContext
 import org.dicio.skill.skill.Skill
 import org.dicio.skill.skill.SkillInfo
 import org.stypox.dicio.R
-import org.stypox.dicio.sentences.Sentences
-
 object CurrentDateInfo : SkillInfo("current_date") {
     override fun name(context: Context) =
         context.getString(R.string.skill_name_current_date)
@@ -22,12 +20,10 @@ object CurrentDateInfo : SkillInfo("current_date") {
     override fun icon() =
         rememberVectorPainter(Icons.Default.Event)
 
-    override fun isAvailable(ctx: SkillContext): Boolean {
-        return Sentences.CurrentDate[ctx.sentencesLanguage] != null
-    }
+    override fun isAvailable(ctx: SkillContext): Boolean = true
 
     override fun build(ctx: SkillContext): Skill<*> {
-        return CurrentDateSkill(this, Sentences.CurrentDate[ctx.sentencesLanguage]!!)
+        return CurrentDateSkill(this)
     }
 }
 

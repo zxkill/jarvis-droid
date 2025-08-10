@@ -1,13 +1,12 @@
 package org.stypox.dicio.skills.face_tracker
 
 import org.dicio.skill.context.SkillContext
+import org.dicio.skill.recognizer.FuzzyRecognizerSkill
 import org.dicio.skill.skill.SkillInfo
 import org.dicio.skill.skill.SkillOutput
-import org.dicio.skill.standard.StandardRecognizerData
-import org.dicio.skill.standard.StandardRecognizerSkill
-import org.stypox.dicio.io.graphical.HeadlineSpeechSkillOutput
+import org.dicio.skill.skill.Specificity
 import org.stypox.dicio.R
-import org.stypox.dicio.sentences.Sentences.FaceTracker
+import org.stypox.dicio.io.graphical.HeadlineSpeechSkillOutput
 
 /**
  * Скилл, который по голосовой команде запускает или останавливает
@@ -15,19 +14,36 @@ import org.stypox.dicio.sentences.Sentences.FaceTracker
  */
 class FaceTrackerSkill(
     correspondingSkillInfo: SkillInfo,
-    data: StandardRecognizerData<FaceTracker>,
-) : StandardRecognizerSkill<FaceTracker>(correspondingSkillInfo, data) {
+) : FuzzyRecognizerSkill<FaceTrackerSkill.Command>(correspondingSkillInfo, Specificity.LOW) {
 
-    override suspend fun generateOutput(ctx: SkillContext, inputData: FaceTracker): SkillOutput {
-        return when (inputData) {
+    /** Возможные команды для данного скилла. */
+    sealed class Command {
+        object Start : Command()
+        object Stop : Command()
+    }
+
+    override val patterns = listOf(
+        Pattern(
+            example = "запусти трекинг лица",
+            regex = Regex("^(?:запусти|включи)\\s+(?:трек.*лица|слежение лица)$"),
+            builder = { Command.Start }
+        ),
+        Pattern(
+            example = "останови трекинг лица",
+            regex = Regex("^(?:останови|выключи)\\s+(?:трек.*лица|слежение лица)$"),
+            builder = { Command.Stop }
+        ),
+    )
+
+    override suspend fun generateOutput(ctx: SkillContext, inputData: Command?): SkillOutput {
+        return when (requireNotNull(inputData)) {
             // Команда «включи слежение» – показываем постоянный вывод с камеры
-            is FaceTracker.Start -> FaceTrackerOutput()
+            Command.Start -> FaceTrackerOutput()
             // Команда «выключи слежение» – возвращаем только голосовое сообщение
-            is FaceTracker.Stop -> object : HeadlineSpeechSkillOutput {
+            Command.Stop -> object : HeadlineSpeechSkillOutput {
                 override fun getSpeechOutput(ctx: SkillContext) =
                     ctx.android.getString(R.string.skill_face_tracking_disabled)
             }
         }
     }
 }
-

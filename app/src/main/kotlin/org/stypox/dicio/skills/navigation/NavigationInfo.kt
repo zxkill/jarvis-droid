@@ -12,8 +12,6 @@ import org.dicio.skill.skill.Skill
 import org.dicio.skill.context.SkillContext
 import org.dicio.skill.skill.SkillInfo
 import org.stypox.dicio.R
-import org.stypox.dicio.sentences.Sentences
-
 object NavigationInfo : SkillInfo("navigation") {
     override fun name(context: Context) =
         context.getString(R.string.skill_name_navigation)
@@ -25,11 +23,9 @@ object NavigationInfo : SkillInfo("navigation") {
     override fun icon() =
         rememberVectorPainter(Icons.Default.Directions)
 
-    override fun isAvailable(ctx: SkillContext): Boolean {
-        return Sentences.Navigation[ctx.sentencesLanguage] != null
-    }
+    override fun isAvailable(ctx: SkillContext): Boolean = true
 
     override fun build(ctx: SkillContext): Skill<*> {
-        return NavigationSkill(NavigationInfo, Sentences.Navigation[ctx.sentencesLanguage]!!)
+        return NavigationSkill(this)
     }
 }

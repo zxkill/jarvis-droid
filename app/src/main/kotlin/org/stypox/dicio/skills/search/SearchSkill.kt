@@ -3,24 +3,33 @@ package org.stypox.dicio.skills.search
 import androidx.core.net.toUri
 import androidx.core.os.LocaleListCompat
 import org.dicio.skill.context.SkillContext
+import org.dicio.skill.recognizer.FuzzyRecognizerSkill
 import org.dicio.skill.skill.SkillInfo
 import org.dicio.skill.skill.SkillOutput
-import org.dicio.skill.standard.StandardRecognizerData
-import org.dicio.skill.standard.StandardRecognizerSkill
-import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
-import org.stypox.dicio.sentences.Sentences.Search
+import org.dicio.skill.skill.Specificity
 import org.stypox.dicio.util.ConnectionUtils
 import org.stypox.dicio.util.LocaleUtils
+import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
 
-/** Скилл для поиска информации в интернете (DuckDuckGo). */
-class SearchSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognizerData<Search>)
-    : StandardRecognizerSkill<Search>(correspondingSkillInfo, data) {
-    override suspend fun generateOutput(ctx: SkillContext, inputData: Search): SkillOutput {
-        // Получаем поисковый запрос пользователя
-        val query = when (inputData) {
-            is Search.Query -> inputData.what ?: return SearchOutput(null, true)
-        }
+/**
+ * Скилл для поиска информации в интернете (DuckDuckGo).
+ * Команда распознаётся по нечёткому совпадению с простыми шаблонами.
+ */
+class SearchSkill(correspondingSkillInfo: SkillInfo) :
+    FuzzyRecognizerSkill<String>(correspondingSkillInfo, Specificity.LOW) {
+
+    override val patterns = listOf(
+        // Простейший шаблон вида "найди котов" или "поиск погода"
+        Pattern(
+            example = "найди погоду",
+            regex = Regex("^(?:найди|поиск(?:ай)?|посмотри|ищи)\\s+(?<query>.+)$"),
+            builder = { it.groups["query"]!!.value }
+        )
+    )
+
+    override suspend fun generateOutput(ctx: SkillContext, inputData: String?): SkillOutput {
+        val query = inputData ?: return SearchOutput(null, true)
         return SearchOutput(searchOnDuckDuckGo(ctx, query), true)
     }
 }
