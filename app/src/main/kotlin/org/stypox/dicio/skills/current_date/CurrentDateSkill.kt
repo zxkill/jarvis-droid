@@ -2,6 +2,7 @@ package org.stypox.dicio.skills.current_date
 
 import org.dicio.skill.context.SkillContext
 import org.dicio.skill.recognizer.FuzzyRecognizerSkill
+import org.dicio.skill.recognizer.FuzzyRecognizerSkill.Pattern
 import org.dicio.skill.skill.AutoRunnable
 import org.dicio.skill.skill.SkillInfo
 import org.dicio.skill.skill.SkillOutput
@@ -26,7 +27,11 @@ class CurrentDateSkill(correspondingSkillInfo: SkillInfo) :
         object Month : Command()
     }
 
-    override val patterns = listOf(
+    // Список шаблонов распознавания. Явно указываем тип, чтобы все варианты
+    // команды (день, месяц, год) интерпретировались как единый суперкласс
+    // [Command]; иначе Kotlin выводит тип Pattern<*> и переопределение не
+    // совпадает с ожиданиями базового класса.
+    override val patterns: List<Pattern<Command>> = listOf(
         Pattern(
             example = "какое сегодня число",
             regex = Regex("^(?:какое|какой)\\s+(?:сегодня\\s+)?(?:число|день)$"),
