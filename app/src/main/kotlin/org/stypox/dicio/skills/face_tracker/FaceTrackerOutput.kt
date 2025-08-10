@@ -43,6 +43,7 @@ class FaceTrackerOutput : PersistentSkillOutput {
         val context = LocalContext.current
         val previewView = remember { PreviewView(context) } // View для вывода камеры
         var faceBox by remember { mutableStateOf<Rect?>(null) } // текущая рамка лица
+        var imageSize by remember { mutableStateOf<Pair<Int, Int>?>(null) } // ширина/высота кадра
         var offsets by remember { mutableStateOf<Pair<Float, Float>?>(null) } // yaw/pitch
 
         // Асинхронно получаем провайдера камеры
@@ -76,12 +77,20 @@ class FaceTrackerOutput : PersistentSkillOutput {
                             // Берём самое крупное лицо в кадре
                             val face = faces.maxByOrNull { it.boundingBox.width() * it.boundingBox.height() }
                             if (face != null) {
-                                faceBox = face.boundingBox
-                                val cx = face.boundingBox.exactCenterX()
-                                val cy = face.boundingBox.exactCenterY()
-                                // Защищаемся от нулевой ширины/высоты превью
-                                val px = previewView.width.toFloat().takeIf { it > 0f } ?: 1f
-                                val py = previewView.height.toFloat().takeIf { it > 0f } ?: 1f
+                                // Запоминаем размер кадра и отражаем рамку по горизонтали
+                                imageSize = Pair(image.width, image.height)
+                                val box = face.boundingBox
+                                val mirrored = Rect(
+                                    image.width - box.right,
+                                    box.top,
+                                    image.width - box.left,
+                                    box.bottom
+                                )
+                                faceBox = mirrored
+                                val cx = mirrored.exactCenterX()
+                                val cy = mirrored.exactCenterY()
+                                val px = image.width.toFloat()
+                                val py = image.height.toFloat()
                                 // Перевод координат в углы поворота камеры
                                 val yaw = (cx - px / 2f) / px * FOV_DEG_X
                                 val pitch = -(cy - py / 2f) / py * FOV_DEG_Y
@@ -90,6 +99,7 @@ class FaceTrackerOutput : PersistentSkillOutput {
                                 // Лицо не найдено
                                 faceBox = null
                                 offsets = null
+                                imageSize = null
                             }
                         }
                         .addOnCompleteListener { imageProxy.close() } // освобождаем кадр
@@ -121,9 +131,11 @@ class FaceTrackerOutput : PersistentSkillOutput {
             // Слой для рисования рамки
             Canvas(modifier = Modifier.fillMaxSize()) {
                 val box = faceBox
-                if (box != null && previewView.width != 0 && previewView.height != 0) {
-                    val scaleX = size.width / previewView.width
-                    val scaleY = size.height / previewView.height
+                val img = imageSize
+                if (box != null && img != null) {
+                    val (iw, ih) = img
+                    val scaleX = size.width / iw
+                    val scaleY = size.height / ih
                     drawRect(
                         color = Color.Green,
                         topLeft = Offset(box.left * scaleX, box.top * scaleY),
