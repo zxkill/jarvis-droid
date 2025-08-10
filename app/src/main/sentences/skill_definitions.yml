@@ -53,7 +53,11 @@ skills:
         captures:
           - id: who
             type: string
-
+  - id: face_tracker
+    specificity: high
+    sentences:
+      - id: start
+      - id: stop
 
   - id: util_yes_no
     specificity: high

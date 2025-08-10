@@ -176,6 +176,14 @@ dependencies {
     implementation(libs.permission.flow.android)
     implementation(libs.permission.flow.compose)
 
+    // CameraX and ML Kit for face tracking
+    implementation(libs.camerax.camera2)
+    implementation(libs.camerax.lifecycle)
+    implementation(libs.camerax.view)
+    implementation(libs.camerax.mlkit.vision)
+    implementation(libs.mlkit.face.detection)
+    implementation(libs.mlkit.pose.detection)
+
     // Miscellaneous
     implementation(libs.unbescape)
     implementation(libs.jsoup)
