@@ -2,6 +2,7 @@ package org.stypox.dicio.skills.face_tracker
 
 import org.dicio.skill.context.SkillContext
 import org.dicio.skill.recognizer.FuzzyRecognizerSkill
+import org.dicio.skill.recognizer.FuzzyRecognizerSkill.Pattern
 import org.dicio.skill.skill.SkillInfo
 import org.dicio.skill.skill.SkillOutput
 import org.dicio.skill.skill.Specificity
@@ -22,7 +23,9 @@ class FaceTrackerSkill(
         object Stop : Command()
     }
 
-    override val patterns = listOf(
+    // Набор команд, которые распознаёт данный скилл. Тип указан явно, чтобы
+    // избежать выведения Pattern<*> при смешении разных подклассов Command.
+    override val patterns: List<Pattern<Command>> = listOf(
         Pattern(
             example = "запусти трекинг лица",
             regex = Regex("^(?:запусти|включи)\\s+(?:трек.*лица|слежение лица)$"),

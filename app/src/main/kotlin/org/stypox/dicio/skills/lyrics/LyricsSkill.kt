@@ -2,6 +2,7 @@ package org.stypox.dicio.skills.lyrics
 
 import org.dicio.skill.context.SkillContext
 import org.dicio.skill.recognizer.FuzzyRecognizerSkill
+import org.dicio.skill.recognizer.FuzzyRecognizerSkill.Pattern as SkillPattern
 import org.dicio.skill.skill.SkillInfo
 import org.dicio.skill.skill.SkillOutput
 import org.dicio.skill.skill.Specificity
@@ -22,8 +23,9 @@ import java.util.regex.Pattern
 class LyricsSkill(correspondingSkillInfo: SkillInfo) :
     FuzzyRecognizerSkill<String>(correspondingSkillInfo, Specificity.LOW) {
 
-    override val patterns = listOf(
-        Pattern(
+    // Используем псевдоним [SkillPattern], чтобы отличать его от java.util.regex.Pattern.
+    override val patterns: List<SkillPattern<String>> = listOf(
+        SkillPattern(
             example = "текст песни imagine",
             regex = Regex("^(?:текст (?:песни|песенки)|слова песни)\\s+(?<song>.+)$"),
             builder = { it.groups["song"]!!.value }
