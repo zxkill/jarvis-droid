@@ -133,13 +133,16 @@ class SttInputDeviceWrapperImpl(
             _uiState.emit(null)
         } else {
             uiStateJob = scope.launch {
-                newSttInputDevice.uiState.collect {
-                    _uiState.emit(it)
-                    if (it == SttState.Listening) {
+                newSttInputDevice.uiState.collect { state ->
+                    _uiState.emit(state)
+                    if (state == SttState.Listening) {
                         if (playListeningSoundNextTime) {
                             playSound(R.raw.listening_sound)
                         }
-                        playListeningSoundNextTime = true
+                        // После каждого перехода в режим прослушивания
+                        // сбрасываем флаг, чтобы звук не воспроизводился
+                        // повторно без явного указания при следующем запуске.
+                        playListeningSoundNextTime = false
                     }
                 }
             }
