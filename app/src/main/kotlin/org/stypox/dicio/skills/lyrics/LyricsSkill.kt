@@ -27,7 +27,7 @@ class LyricsSkill(correspondingSkillInfo: SkillInfo) :
     override val patterns: List<SkillPattern<String>> = listOf(
         SkillPattern(
             example = "текст песни imagine",
-            regex = Regex("^(?:текст (?:песни|песенки)|слова песни)\\s+(?<song>.+)$"),
+            regex = Regex("(?:текст (?:песни|песенки)|слова песни)\\s+(?<song>.+)"),
             builder = { it.groups["song"]!!.value }
         )
     )

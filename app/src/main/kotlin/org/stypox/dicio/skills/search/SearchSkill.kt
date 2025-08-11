@@ -23,7 +23,7 @@ class SearchSkill(correspondingSkillInfo: SkillInfo) :
         // Простейший шаблон вида "найди котов" или "поиск погода"
         Pattern(
             example = "найди погоду",
-            regex = Regex("^(?:найди|поиск(?:ай)?|посмотри|ищи)\\s+(?<query>.+)$"),
+            regex = Regex("(?:найди|поиск(?:ай)?|посмотри|ищи)\\s+(?<query>.+)"),
             builder = { it.groups["query"]!!.value }
         )
     )

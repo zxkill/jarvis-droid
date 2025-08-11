@@ -16,7 +16,7 @@ class TelephoneSkill(correspondingSkillInfo: SkillInfo) :
     override val patterns = listOf(
         Pattern(
             example = "позвони маме",
-            regex = Regex("^(?:позвони|набер[и]?|позвонить)\\s+(?<who>.+)$"),
+            regex = Regex("(?:позвони|набер[и]?|позвонить)\\s+(?<who>.+)"),
             builder = { it.groups["who"]!!.value }
         )
     )
