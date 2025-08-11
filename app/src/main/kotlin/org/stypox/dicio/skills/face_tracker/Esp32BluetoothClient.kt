@@ -13,6 +13,8 @@ import android.util.Log
 import androidx.core.app.ActivityCompat
 import java.io.IOException
 import java.util.UUID
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
 
 /**
@@ -22,7 +24,8 @@ import kotlin.concurrent.thread
  */
 class Esp32BluetoothClient(
     private val context: Context, // контекст нужен для проверки разрешений
-    private val deviceName: String = "M5Stack" // имя целевого устройства
+    private val deviceName: String = "M5Stack", // имя целевого устройства
+    private val uuid: UUID = UUID.fromString(SPP_UUID) // UUID сервиса SPP
 ) {
     private val adapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
     @Volatile private var socket: BluetoothSocket? = null
@@ -44,18 +47,54 @@ class Esp32BluetoothClient(
                 }
 
                 // Ищем среди уже спаренных устройств подходящее по имени
-                val device = bt.bondedDevices.firstOrNull {
+                var device = bt.bondedDevices.firstOrNull {
                     it.name?.contains(deviceName, ignoreCase = true) == true
                 }
+
+                // Если устройство не найдено, пытаемся обнаружить его сканированием
                 if (device == null) {
-                    onFail()
-                    return@thread
+                    if (!hasScanPermission()) {
+                        Log.w(TAG, "Нет разрешения BLUETOOTH_SCAN")
+                        onFail()
+                        return@thread
+                    }
+                    if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.S &&
+                        ActivityCompat.checkSelfPermission(
+                            context,
+                            Manifest.permission.ACCESS_FINE_LOCATION
+                        ) != PackageManager.PERMISSION_GRANTED
+                    ) {
+                        Log.w(TAG, "Нет разрешения ACCESS_FINE_LOCATION")
+                        onFail()
+                        return@thread
+                    }
+
+                    val latch = CountDownLatch(1)
+                    val receiver = object : BroadcastReceiver() {
+                        override fun onReceive(ctx: Context?, intent: Intent?) {
+                            val found = intent?.getParcelableExtra<BluetoothDevice>(BluetoothDevice.EXTRA_DEVICE)
+                            if (found?.name?.contains(deviceName, ignoreCase = true) == true) {
+                                device = found
+                                latch.countDown()
+                            }
+                        }
+                    }
+                    context.registerReceiver(receiver, IntentFilter(BluetoothDevice.ACTION_FOUND))
+                    bt.startDiscovery()
+                    // Ждём до 10 секунд появления нужного устройства
+                    latch.await(10, TimeUnit.SECONDS)
+                    bt.cancelDiscovery()
+                    try { context.unregisterReceiver(receiver) } catch (_: IllegalArgumentException) {}
+                    if (device == null) {
+                        onFail()
+                        return@thread
+                    }
                 }
 
                 bt.cancelDiscovery() // останавливаем возможное сканирование
 
-                // Используем стандартный UUID SPP
-                val uuid = device.uuids?.firstOrNull()?.uuid ?: UUID.fromString(SPP_UUID)
+                // Используем заранее известный UUID сервиса
+                val uuid = this.uuid
 
                 // Закрываем предыдущее соединение, если оно было
                 try { socket?.close() } catch (_: IOException) {}
@@ -109,7 +148,8 @@ class Esp32BluetoothClient(
                     return@thread
                 }
                 bt.cancelDiscovery()
-                val uuid = device.uuids?.firstOrNull()?.uuid ?: UUID.fromString(SPP_UUID)
+                // Используем тот же UUID сервиса, что и при автоподключении
+                val uuid = this.uuid
 
                 // Закрываем предыдущее соединение, если оно было
                 try { socket?.close() } catch (_: IOException) {}
