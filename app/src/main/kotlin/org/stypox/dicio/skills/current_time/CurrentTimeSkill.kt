@@ -1,26 +1,39 @@
 package org.stypox.dicio.skills.current_time
 
 import org.dicio.skill.context.SkillContext
+import org.dicio.skill.recognizer.FuzzyRecognizerSkill
+import org.dicio.skill.recognizer.FuzzyRecognizerSkill.Pattern
+import org.dicio.skill.skill.AutoRunnable
 import org.dicio.skill.skill.SkillInfo
 import org.dicio.skill.skill.SkillOutput
-import org.dicio.skill.standard.StandardRecognizerData
-import org.dicio.skill.standard.StandardRecognizerSkill
-import org.dicio.skill.skill.AutoRunnable
-import org.stypox.dicio.sentences.Sentences.CurrentTime
+import org.dicio.skill.skill.Specificity
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
 /**
  * Скилл озвучивает текущее время.
+ * Распознаёт простые запросы вроде "который час" или "сколько времени".
  */
-class CurrentTimeSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognizerData<CurrentTime>)
-    : StandardRecognizerSkill<CurrentTime>(correspondingSkillInfo, data), AutoRunnable {
+class CurrentTimeSkill(correspondingSkillInfo: SkillInfo) :
+    FuzzyRecognizerSkill<Unit>(correspondingSkillInfo, Specificity.LOW), AutoRunnable {
+
+    override val patterns = listOf(
+        Pattern(
+            examples = listOf(
+                "который час",
+                "сколько времени",
+                "который сейчас час",
+                "сколько времени сейчас"
+            ),
+            builder = { _ -> }
+        )
+    )
 
     // Автоматическое обновление раз в минуту
     override val autoUpdateIntervalMillis: Long = 60_000L
 
-    override suspend fun generateOutput(ctx: SkillContext, inputData: CurrentTime): SkillOutput {
+    override suspend fun generateOutput(ctx: SkillContext, inputData: Unit?): SkillOutput {
         return computeOutput(ctx)
     }
 

@@ -4,21 +4,31 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import org.dicio.skill.context.SkillContext
+import org.dicio.skill.recognizer.FuzzyRecognizerSkill
+import org.dicio.skill.recognizer.FuzzyRecognizerSkill.Pattern
 import org.dicio.skill.skill.SkillInfo
 import org.dicio.skill.skill.SkillOutput
-import org.dicio.skill.standard.StandardRecognizerData
-import org.dicio.skill.standard.StandardRecognizerSkill
-import org.stypox.dicio.sentences.Sentences.Telephone
+import org.dicio.skill.skill.Specificity
 
 /** Скилл совершения телефонных звонков по имени контакта. */
-class TelephoneSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognizerData<Telephone>) :
-    StandardRecognizerSkill<Telephone>(correspondingSkillInfo, data) {
+class TelephoneSkill(correspondingSkillInfo: SkillInfo) :
+    FuzzyRecognizerSkill<String>(correspondingSkillInfo, Specificity.LOW) {
 
-    override suspend fun generateOutput(ctx: SkillContext, inputData: Telephone): SkillOutput {
+    override val patterns = listOf(
+        Pattern(
+            examples = listOf(
+                "позвони маме",
+                "набер маму",
+                "сделай звонок маме"
+            ),
+            regex = Regex("(?:позвони|набер[и]?|позвонить|сделай звонок)\\s+(?<who>.+)"),
+            builder = { match -> match!!.groups["who"]!!.value }
+        )
+    )
+
+    override suspend fun generateOutput(ctx: SkillContext, inputData: String?): SkillOutput {
+        val userContactName = inputData?.trim { it <= ' ' } ?: ""
         val contentResolver = ctx.android.contentResolver
-        val userContactName = when (inputData) {
-            is Telephone.Dial -> inputData.who?.trim { it <= ' ' } ?: ""
-        }
         val contacts = Contact.getFilteredSortedContacts(contentResolver, userContactName)
         val validContacts = ArrayList<Pair<String, List<String>>>()
 
@@ -32,11 +42,10 @@ class TelephoneSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognizer
             }
             if (validContacts.isEmpty()
                 && contact.distance < 3
-                && numbers.size == 1 // у контакта только один номер
-                && (contacts.size <= i + 1 // следующий контакт существенно менее похож
+                && numbers.size == 1
+                && (contacts.size <= i + 1
                         || contacts[i + 1].distance - 2 > contact.distance)
             ) {
-                // Очень близкое совпадение — звоним напрямую
                 return ConfirmCallOutput(contact.name, numbers[0])
             }
             validContacts.add(Pair(contact.name, numbers))
@@ -46,12 +55,10 @@ class TelephoneSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognizer
         if (validContacts.size == 1
             && (validContacts[0].second.size == 1 || ctx.parserFormatter == null)
         ) {
-            // Остался единственный кандидат: звоним на его номер
             val contact = validContacts[0]
             return ConfirmCallOutput(contact.first, contact.second[0])
         }
 
-        // Если однозначного контакта нет, возвращаем список для выбора пользователем
         return TelephoneOutput(validContacts)
     }
 

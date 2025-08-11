@@ -59,9 +59,6 @@ camerax-mlkit-vision = { module = "androidx.camera:camera-mlkit-vision", version
 # ML Kit
 mlkit-face-detection = { module = "com.google.mlkit:face-detection", version.ref = "mlkitFaceDetection" }
 mlkit-pose-detection = { module = "com.google.mlkit:pose-detection", version.ref = "mlkitPoseDetection" }
-# update versions for dicio-* libraries in settings.gradle.kts (they are included via git)
-dicio-sentences-compiler = { module = "git.included.build:dicio-sentences-compiler" }
-dicio-sentences-compiler-plugin = { module = "org.stypox.dicio.sentencesCompilerPlugin:sentences-compiler-plugin" }
 exp4j = { module = "net.objecthunter:exp4j", version.ref = "exp4j" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "dagger" }
 hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "dagger" }
@@ -106,4 +103,3 @@ com-google-dagger-hilt-android = { id = "com.google.dagger.hilt.android", versio
 com-google-protobuf = { id = "com.google.protobuf", version.ref = "protobufPlugin" }
 
 # this is a local plugin, so "version" here is completely useless
-dicio-sentences-compiler-plugin = { id = "org.stypox.dicio.sentencesCompilerPlugin", version = "1.0" }

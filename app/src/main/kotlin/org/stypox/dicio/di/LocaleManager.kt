@@ -15,7 +15,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import org.stypox.dicio.sentences.Sentences
 import org.stypox.dicio.settings.datastore.Language
 import org.stypox.dicio.settings.datastore.UserSettings
 import org.stypox.dicio.settings.datastore.UserSettingsModule.Companion.newDataStoreForPreviews
@@ -54,7 +53,7 @@ class LocaleManager @Inject constructor(
             .map { it.language }
             .distinctUntilChangedBlockingFirst()
 
-        val initialResolutionResult = getSentencesLocale(firstLanguage)
+        val initialResolutionResult = resolveLocale(firstLanguage)
         _locale = MutableStateFlow(initialResolutionResult.availableLocale)
         locale = _locale
         _sentencesLanguage = MutableStateFlow(initialResolutionResult.supportedLocaleString)
@@ -62,27 +61,21 @@ class LocaleManager @Inject constructor(
 
         scope.launch {
             nextLanguageFlow.collect { newLanguage ->
-                val resolutionResult = getSentencesLocale(newLanguage)
+                val resolutionResult = resolveLocale(newLanguage)
                 _locale.value = resolutionResult.availableLocale
                 _sentencesLanguage.value = resolutionResult.supportedLocaleString
             }
         }
     }
 
-    private fun getSentencesLocale(language: Language): LocaleUtils.LocaleResolutionResult {
-        return try {
-            LocaleUtils.resolveSupportedLocale(
-                getAvailableLocalesFromLanguage(language),
-                Sentences.languages
-            )
-        } catch (e: LocaleUtils.UnsupportedLocaleException) {
-            Log.w(TAG, "Current locale is not supported, defaulting to English", e)
-            // TODO ask the user to manually choose a locale instead of defaulting to english
-            LocaleUtils.LocaleResolutionResult(
-                availableLocale = Locale.ENGLISH,
-                supportedLocaleString = "en",
-            )
-        }
+    private fun resolveLocale(language: Language): LocaleUtils.LocaleResolutionResult {
+        // Берём первый доступный язык из списка и используем его как текущий
+        val available = getAvailableLocalesFromLanguage(language)
+        val locale = if (available.size() > 0) available[0]!! else Locale.ENGLISH
+        return LocaleUtils.LocaleResolutionResult(
+            availableLocale = locale,
+            supportedLocaleString = locale.language,
+        )
     }
 
     private fun getAvailableLocalesFromLanguage(language: Language): LocaleListCompat {

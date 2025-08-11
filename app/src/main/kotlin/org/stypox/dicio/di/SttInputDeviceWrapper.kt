@@ -133,13 +133,16 @@ class SttInputDeviceWrapperImpl(
             _uiState.emit(null)
         } else {
             uiStateJob = scope.launch {
-                newSttInputDevice.uiState.collect {
-                    _uiState.emit(it)
-                    if (it == SttState.Listening) {
+                newSttInputDevice.uiState.collect { state ->
+                    _uiState.emit(state)
+                    if (state == SttState.Listening) {
                         if (playListeningSoundNextTime) {
                             playSound(R.raw.listening_sound)
                         }
-                        playListeningSoundNextTime = true
+                        // После каждого перехода в режим прослушивания
+                        // сбрасываем флаг, чтобы звук не воспроизводился
+                        // повторно без явного указания при следующем запуске.
+                        playListeningSoundNextTime = false
                     }
                 }
             }
@@ -168,6 +171,10 @@ class SttInputDeviceWrapperImpl(
     // Добавляет к слушателю событие проигрывания звука при отсутствии распознанной речи.
     private fun wrapEventListener(eventListener: (InputEvent) -> Unit): (InputEvent) -> Unit = {
         if (it is InputEvent.None && playNoInputSoundNextTime) {
+            // Звук «ничего не услышано» должен проигрываться только один раз
+            // после старта прослушивания. Сбрасываем флаг сразу, чтобы
+            // последующие паузы не вызывали повторного сигнала.
+            playNoInputSoundNextTime = false
             scope.launch {
                 playSound(R.raw.listening_no_input_sound)
             }

@@ -4,24 +4,33 @@ import android.content.Intent
 import android.net.Uri
 import org.dicio.numbers.unit.Number
 import org.dicio.skill.context.SkillContext
+import org.dicio.skill.recognizer.FuzzyRecognizerSkill
+import org.dicio.skill.recognizer.FuzzyRecognizerSkill.Pattern
 import org.dicio.skill.skill.SkillInfo
 import org.dicio.skill.skill.SkillOutput
-import org.dicio.skill.standard.StandardRecognizerData
-import org.dicio.skill.standard.StandardRecognizerSkill
-import org.stypox.dicio.sentences.Sentences.Navigation
+import org.dicio.skill.skill.Specificity
 import java.util.Locale
 
 /**
  * Скилл навигации: получает адрес от пользователя и открывает карту с построением маршрута.
  */
-class NavigationSkill(correspondingSkillInfo: SkillInfo, data: StandardRecognizerData<Navigation>)
-    : StandardRecognizerSkill<Navigation>(correspondingSkillInfo, data) {
+class NavigationSkill(correspondingSkillInfo: SkillInfo) :
+    FuzzyRecognizerSkill<String>(correspondingSkillInfo, Specificity.LOW) {
 
-    override suspend fun generateOutput(ctx: SkillContext, inputData: Navigation): SkillOutput {
-        // Получаем место назначения из распознанного ввода пользователя
-        val placeToNavigate: String = when (inputData) {
-            is Navigation.Query -> inputData.where ?: return NavigationOutput(null)
-        }
+    override val patterns = listOf(
+        Pattern(
+            examples = listOf(
+                "проложи маршрут до москвы",
+                "построй маршрут к дому",
+                "покажи дорогу до станции"
+            ),
+            regex = Regex("(?:проложи|построй|покажи)\\s+(?:маршрут\\s+)?(?:до|к)\\s+(?<where>.+)"),
+            builder = { match -> match!!.groups["where"]!!.value }
+        )
+    )
+
+    override suspend fun generateOutput(ctx: SkillContext, inputData: String?): SkillOutput {
+        val placeToNavigate = inputData ?: return NavigationOutput(null)
 
         // Парсер чисел может вернуть нам числовые значения из строки адреса
         val npf = ctx.parserFormatter

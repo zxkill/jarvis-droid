@@ -12,7 +12,6 @@ import org.dicio.skill.skill.SkillOutput
 import org.stypox.dicio.R
 import org.stypox.dicio.io.graphical.Body
 import org.stypox.dicio.io.graphical.Headline
-import org.stypox.dicio.sentences.Sentences
 import org.stypox.dicio.util.RecognizeYesNoSkill
 import org.stypox.dicio.util.getString
 
@@ -24,16 +23,18 @@ class ConfirmCallOutput(
         ctx.getString(R.string.skill_telephone_confirm_call, name)
 
     override fun getInteractionPlan(ctx: SkillContext): InteractionPlan {
-        val yesNoSentences = Sentences.UtilYesNo[ctx.sentencesLanguage]!!
-        val confirmYesNoSkill = object : RecognizeYesNoSkill(TelephoneInfo, yesNoSentences) {
-            override suspend fun generateOutput(
+        // Вспомогательный скилл подтверждения звонка, который ждёт ответ «да» или «нет»
+        val confirmYesNoSkill = object : RecognizeYesNoSkill(TelephoneInfo) {
+            override suspend fun onAnswer(
                 ctx: SkillContext,
                 inputData: Boolean
             ): SkillOutput {
                 return if (inputData) {
+                    // Пользователь согласился — совершаем звонок
                     TelephoneSkill.call(ctx.android, number)
                     ConfirmedCallOutput(number)
                 } else {
+                    // Пользователь отказался или ответ не распознан
                     ConfirmedCallOutput(null)
                 }
             }

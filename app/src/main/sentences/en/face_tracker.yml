@@ -1,6 +1,0 @@
-start:
-  - (start|turn on|enable) tracking
-  - (start|turn on|enable) face tracking
-stop:
-  - (stop|turn off|disable) tracking
-  - (stop|turn off|disable) face tracking

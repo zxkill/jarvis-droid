@@ -1,12 +1,12 @@
 package org.stypox.dicio.skills.current_date
 
 import org.dicio.skill.context.SkillContext
+import org.dicio.skill.recognizer.FuzzyRecognizerSkill
+import org.dicio.skill.recognizer.FuzzyRecognizerSkill.Pattern
+import org.dicio.skill.skill.AutoRunnable
 import org.dicio.skill.skill.SkillInfo
 import org.dicio.skill.skill.SkillOutput
-import org.dicio.skill.skill.AutoRunnable
-import org.dicio.skill.standard.StandardRecognizerData
-import org.dicio.skill.standard.StandardRecognizerSkill
-import org.stypox.dicio.sentences.Sentences.CurrentDate
+import org.dicio.skill.skill.Specificity
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -14,39 +14,63 @@ import java.time.format.TextStyle
 
 /**
  * Скилл сообщает текущую дату или её части.
+ * Вместо заранее скомпилированных предложений используется набор простых шаблонов.
  */
-class CurrentDateSkill(
-    correspondingSkillInfo: SkillInfo,
-    data: StandardRecognizerData<CurrentDate>,
-    ) : StandardRecognizerSkill<CurrentDate>(correspondingSkillInfo, data), AutoRunnable {
+class CurrentDateSkill(correspondingSkillInfo: SkillInfo) :
+    FuzzyRecognizerSkill<CurrentDateSkill.Command>(correspondingSkillInfo, Specificity.LOW),
+    AutoRunnable {
+
+    /** Возможные команды пользователя. */
+    sealed class Command {
+        object Day : Command()
+        object Year : Command()
+        object Month : Command()
+    }
+
+    // Список шаблонов распознавания. Явно указываем тип, чтобы все варианты
+    // команды (день, месяц, год) интерпретировались как единый суперкласс
+    // [Command]; иначе Kotlin выводит тип Pattern<*> и переопределение не
+    // совпадает с ожиданиями базового класса.
+    override val patterns: List<Pattern<Command>> = listOf(
+        Pattern(
+            examples = listOf("какое сегодня число", "какая сегодня дата"),
+            builder = { _ -> Command.Day }
+        ),
+        Pattern(
+            examples = listOf("какой сейчас год", "какой год сейчас"),
+            builder = { _ -> Command.Year }
+        ),
+        Pattern(
+            examples = listOf("какой месяц", "какой сейчас месяц"),
+            builder = { _ -> Command.Month }
+        ),
+    )
 
     // Обновляем дату каждую минуту, чтобы смена суток отражалась на экране
     override val autoUpdateIntervalMillis: Long = 60_000L
 
-    override suspend fun generateOutput(ctx: SkillContext, inputData: CurrentDate): SkillOutput {
+    override suspend fun generateOutput(ctx: SkillContext, inputData: Command?): SkillOutput {
         val today = LocalDate.now()
         return when (inputData) {
-            // "Какой сегодня день?"
-            is CurrentDate.Day -> {
+            Command.Day -> {
                 val formatted = formatDay(ctx, today)
                 CurrentDateOutput(CurrentDateOutput.Type.DAY, formatted)
             }
-            // "Какой сейчас год?"
-            is CurrentDate.Year -> {
+            Command.Year -> {
                 val formatted = formatYear(ctx, today)
                 CurrentDateOutput(CurrentDateOutput.Type.YEAR, formatted)
             }
-            // "Какой месяц?"
-            is CurrentDate.Month -> {
+            Command.Month -> {
                 val formatted = formatMonth(ctx, today)
                 CurrentDateOutput(CurrentDateOutput.Type.MONTH, formatted)
             }
+            null -> CurrentDateOutput(CurrentDateOutput.Type.DAY, formatDay(ctx, today))
         }
     }
 
     override suspend fun autoOutput(ctx: SkillContext): SkillOutput {
         val today = LocalDate.now()
-        // Для компактного углового виджета используем числовой формат "09.08.2025"
+        // Для компактного виджета используем числовой формат "09.08.2025"
         val formatted = today.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
         return CurrentDateOutput(CurrentDateOutput.Type.DAY, formatted)
     }
@@ -147,4 +171,3 @@ class CurrentDateSkill(
         )
     }
 }
-
