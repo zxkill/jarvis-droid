@@ -56,14 +56,30 @@ class Esp32BluetoothClient(
 
                 // Используем стандартный UUID SPP
                 val uuid = device.uuids?.firstOrNull()?.uuid ?: UUID.fromString(SPP_UUID)
+
+                // Закрываем предыдущее соединение, если оно было
+                try { socket?.close() } catch (_: IOException) {}
+
                 // Сначала пробуем установить «безопасное» RFCOMM‑соединение.
                 // Если оно не удаётся (например, устройство не спарено),
                 // пробуем «небезопасный» вариант без предварительного паринга.
+                // В крайнем случае используем скрытый метод createRfcommSocket(1).
                 socket = try {
                     device.createRfcommSocketToServiceRecord(uuid).apply { connect() }
                 } catch (e: IOException) {
                     Log.w(TAG, "Secure RFCOMM не удался, пробуем insecure", e)
-                    device.createInsecureRfcommSocketToServiceRecord(uuid).apply { connect() }
+                    try {
+                        device.createInsecureRfcommSocketToServiceRecord(uuid).apply { connect() }
+                    } catch (e2: IOException) {
+                        Log.w(TAG, "Insecure RFCOMM не удался, пробуем порт 1", e2)
+                        try {
+                            val m = device.javaClass.getMethod("createRfcommSocket", Int::class.javaPrimitiveType)
+                            (m.invoke(device, 1) as BluetoothSocket).apply { connect() }
+                        } catch (e3: Exception) {
+                            Log.e(TAG, "Не удалось подключиться к $deviceName", e3)
+                            null
+                        }
+                    }
                 }
             } catch (e: IOException) {
                 Log.e(TAG, "Не удалось подключиться к $deviceName", e)
@@ -87,13 +103,29 @@ class Esp32BluetoothClient(
                 }
                 bt.cancelDiscovery()
                 val uuid = device.uuids?.firstOrNull()?.uuid ?: UUID.fromString(SPP_UUID)
+
+                // Закрываем предыдущее соединение, если оно было
+                try { socket?.close() } catch (_: IOException) {}
+
                 // Аналогично автоматическому подключению пробуем сначала
                 // безопасное соединение, затем небезопасное.
+                // В крайнем случае используем скрытый метод createRfcommSocket(1).
                 socket = try {
                     device.createRfcommSocketToServiceRecord(uuid).apply { connect() }
                 } catch (e: IOException) {
                     Log.w(TAG, "Secure RFCOMM не удался, пробуем insecure", e)
-                    device.createInsecureRfcommSocketToServiceRecord(uuid).apply { connect() }
+                    try {
+                        device.createInsecureRfcommSocketToServiceRecord(uuid).apply { connect() }
+                    } catch (e2: IOException) {
+                        Log.w(TAG, "Insecure RFCOMM не удался, пробуем порт 1", e2)
+                        try {
+                            val m = device.javaClass.getMethod("createRfcommSocket", Int::class.javaPrimitiveType)
+                            (m.invoke(device, 1) as BluetoothSocket).apply { connect() }
+                        } catch (e3: Exception) {
+                            Log.e(TAG, "Не удалось подключиться к ${device.name}", e3)
+                            null
+                        }
+                    }
                 }
             } catch (e: IOException) {
                 Log.e(TAG, "Не удалось подключиться к ${device.name}", e)
