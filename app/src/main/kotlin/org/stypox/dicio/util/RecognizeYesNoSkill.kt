@@ -28,5 +28,19 @@ abstract class RecognizeYesNoSkill(correspondingSkillInfo: SkillInfo) :
         )
     )
 
-    abstract override suspend fun generateOutput(ctx: SkillContext, inputData: Boolean): SkillOutput
+    /**
+     * Метод базового класса [FuzzyRecognizerSkill] требует обработку nullable-значения.
+     * Здесь мы преобразуем его в `Boolean`, считая отсутствие распознанного ответа
+     * отказом пользователя.
+     */
+    final override suspend fun generateOutput(ctx: SkillContext, inputData: Boolean?): SkillOutput {
+        val answer = inputData == true
+        return onAnswer(ctx, answer)
+    }
+
+    /**
+     * Реакция на однозначный ответ пользователя.
+     * @param inputData `true` при подтверждении и `false` при отказе
+     */
+    protected abstract suspend fun onAnswer(ctx: SkillContext, inputData: Boolean): SkillOutput
 }
