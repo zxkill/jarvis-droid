@@ -1,8 +1,12 @@
 package org.stypox.dicio.skills.face_tracker
 
+import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothSocket
+import android.content.Context
+import android.content.pm.PackageManager
 import android.util.Log
+import androidx.core.app.ActivityCompat
 import java.io.IOException
 import java.util.UUID
 import kotlin.concurrent.thread
@@ -13,6 +17,7 @@ import kotlin.concurrent.thread
  * Соединение устанавливается асинхронно при вызове [connect].
  */
 class Esp32BluetoothClient(
+    private val context: Context, // контекст нужен для проверки разрешений
     private val deviceName: String = "M5Stack" // имя целевого устройства
 ) {
     private val adapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
@@ -24,6 +29,16 @@ class Esp32BluetoothClient(
             try {
                 val bt = adapter ?: return@thread
                 if (!bt.isEnabled) return@thread
+
+                // Проверяем, есть ли разрешение BLUETOOTH_CONNECT
+                if (ActivityCompat.checkSelfPermission(
+                        context,
+                        Manifest.permission.BLUETOOTH_CONNECT
+                    ) != PackageManager.PERMISSION_GRANTED
+                ) {
+                    Log.w(TAG, "Нет разрешения BLUETOOTH_CONNECT")
+                    return@thread
+                }
 
                 // Ищем среди уже спаренных устройств подходящее по имени
                 val device = bt.bondedDevices.firstOrNull {
@@ -38,6 +53,9 @@ class Esp32BluetoothClient(
                 socket = device.createRfcommSocketToServiceRecord(uuid).apply { connect() }
             } catch (e: IOException) {
                 Log.e(TAG, "Не удалось подключиться к $deviceName", e)
+            } catch (e: SecurityException) {
+                // На случай, если система всё-таки не дала доступ
+                Log.e(TAG, "Отсутствует разрешение BLUETOOTH_CONNECT", e)
             }
         }
     }

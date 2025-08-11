@@ -1,5 +1,8 @@
 package org.stypox.dicio.skills.face_tracker
 
+import android.Manifest
+import android.app.Activity
+import android.content.pm.PackageManager
 import android.graphics.Rect
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
@@ -21,6 +24,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.app.ActivityCompat
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetectorOptions
@@ -51,12 +55,29 @@ class FaceTrackerOutput : PersistentSkillOutput {
         var imageSize by remember { mutableStateOf<Pair<Int, Int>?>(null) } // ширина/высота кадра
         var offsets by remember { mutableStateOf<Pair<Float, Float>?>(null) } // yaw/pitch
         // Клиент для связи по Bluetooth с ESP32
-        val bluetoothClient = remember { Esp32BluetoothClient() }
+        val bluetoothClient = remember(context) { Esp32BluetoothClient(context) }
 
         // Асинхронно получаем провайдера камеры
         val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
 
         DisposableEffect(Unit) {
+            // Запрашиваем разрешение на Bluetooth при необходимости
+            val activity = context as? Activity
+            if (activity != null && ActivityCompat.checkSelfPermission(
+                    activity,
+                    Manifest.permission.BLUETOOTH_CONNECT
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                ActivityCompat.requestPermissions(
+                    activity,
+                    arrayOf(
+                        Manifest.permission.BLUETOOTH_CONNECT,
+                        Manifest.permission.BLUETOOTH_SCAN
+                    ),
+                    0
+                )
+            }
+
             // Подключаемся к устройству по Bluetooth
             bluetoothClient.connect()
             // Отдельный поток для обработки изображений
