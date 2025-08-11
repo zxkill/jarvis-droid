@@ -2,6 +2,7 @@ package org.stypox.dicio.skills.face_tracker
 
 import android.Manifest
 import android.app.Activity
+import android.bluetooth.BluetoothDevice
 import android.content.pm.PackageManager
 import android.graphics.Rect
 import androidx.camera.core.CameraSelector
@@ -11,9 +12,12 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,6 +58,9 @@ class FaceTrackerOutput : PersistentSkillOutput {
         var faceBox by remember { mutableStateOf<Rect?>(null) } // текущая рамка лица
         var imageSize by remember { mutableStateOf<Pair<Int, Int>?>(null) } // ширина/высота кадра
         var offsets by remember { mutableStateOf<Pair<Float, Float>?>(null) } // yaw/pitch
+        // Список найденных Bluetooth‑устройств и признак показа диалога выбора
+        val devices = remember { mutableStateListOf<BluetoothDevice>() }
+        var showDevicePicker by remember { mutableStateOf(false) }
         // Клиент для связи по Bluetooth с ESP32
         val bluetoothClient = remember(context) { Esp32BluetoothClient(context) }
 
@@ -78,8 +85,8 @@ class FaceTrackerOutput : PersistentSkillOutput {
                 )
             }
 
-            // Подключаемся к устройству по Bluetooth
-            bluetoothClient.connect()
+            // Пытаемся автоматически подключиться к устройству по Bluetooth
+            bluetoothClient.connect(onFail = { showDevicePicker = true })
             // Отдельный поток для обработки изображений
             val executor = Executors.newSingleThreadExecutor()
             // Клиент ML Kit для детекции лиц
@@ -198,6 +205,20 @@ class FaceTrackerOutput : PersistentSkillOutput {
             }
         }
 
+        // Запускаем поиск устройств, если нужно показать диалог выбора
+        LaunchedEffect(showDevicePicker) {
+            if (showDevicePicker) {
+                bluetoothClient.startDiscovery { device ->
+                    if (device.name != null && devices.none { it.address == device.address }) {
+                        devices.add(device)
+                    }
+                }
+            } else {
+                bluetoothClient.cancelDiscovery()
+                devices.clear()
+            }
+        }
+
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             // Само превью камеры
             AndroidView({ previewView }, modifier = Modifier.fillMaxSize())
@@ -227,6 +248,36 @@ class FaceTrackerOutput : PersistentSkillOutput {
                     modifier = Modifier.align(Alignment.TopCenter)
                 )
             }
+        }
+
+        // Диалог выбора Bluetooth‑устройства, если автоподключение не удалось
+        if (showDevicePicker) {
+            AlertDialog(
+                onDismissRequest = {
+                    showDevicePicker = false
+                    bluetoothClient.cancelDiscovery()
+                },
+                title = { Text("Выберите Bluetooth-устройство") },
+                text = {
+                    Column {
+                        devices.forEach { device ->
+                            TextButton(onClick = {
+                                showDevicePicker = false
+                                bluetoothClient.connectTo(device)
+                            }) {
+                                Text(device.name ?: device.address)
+                            }
+                        }
+                    }
+                },
+                confirmButton = {},
+                dismissButton = {
+                    TextButton(onClick = {
+                        showDevicePicker = false
+                        bluetoothClient.cancelDiscovery()
+                    }) { Text("Отмена") }
+                }
+            )
         }
     }
 
