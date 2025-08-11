@@ -25,6 +25,7 @@ import kotlin.concurrent.thread
 class Esp32BluetoothClient(
     private val context: Context, // контекст нужен для проверки разрешений
     private val deviceName: String = "M5Stack", // имя целевого устройства
+    private val devicePin: String = "1234", // PIN‑код, установленный на ESP32
     private val uuid: UUID = UUID.fromString(SPP_UUID) // UUID сервиса SPP
 ) {
     private val adapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
@@ -93,6 +94,13 @@ class Esp32BluetoothClient(
 
                 bt.cancelDiscovery() // останавливаем возможное сканирование
 
+                // Если устройство ещё не спарено — выполняем спаривание с PIN 1234
+                if (!pairDevice(device)) {
+                    Log.e(TAG, "Не удалось спарить устройство $deviceName")
+                    onFail()
+                    return@thread
+                }
+
                 // Используем заранее известный UUID сервиса
                 val uuid = this.uuid
 
@@ -148,6 +156,13 @@ class Esp32BluetoothClient(
                     return@thread
                 }
                 bt.cancelDiscovery()
+
+                // При необходимости спариваем устройство с PIN 1234
+                if (!pairDevice(device)) {
+                    Log.e(TAG, "Не удалось спарить устройство ${device.name}")
+                    return@thread
+                }
+
                 // Используем тот же UUID сервиса, что и при автоподключении
                 val uuid = this.uuid
 
@@ -240,6 +255,75 @@ class Esp32BluetoothClient(
             discoveryReceiver = null
         }
         adapter?.cancelDiscovery()
+    }
+
+    /**
+     * Спаривание с устройством с использованием заранее известного PIN.
+     * Возвращает *true*, если устройство успешно перешло в состояние BOND_BONDED.
+     */
+    private fun pairDevice(device: BluetoothDevice): Boolean {
+        if (device.bondState == BluetoothDevice.BOND_BONDED) return true
+        if (!hasConnectPermission()) return false
+
+        return try {
+            val bondLatch = CountDownLatch(1)
+
+            // Отслеживаем изменение состояния спаривания
+            val bondFilter = IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED)
+            val bondReceiver = object : BroadcastReceiver() {
+                override fun onReceive(ctx: Context?, intent: Intent?) {
+                    val d = intent?.getParcelableExtra<BluetoothDevice>(BluetoothDevice.EXTRA_DEVICE)
+                    val state = intent?.getIntExtra(
+                        BluetoothDevice.EXTRA_BOND_STATE,
+                        BluetoothDevice.ERROR
+                    )
+                    if (d?.address == device.address &&
+                        (state == BluetoothDevice.BOND_BONDED || state == BluetoothDevice.BOND_NONE)
+                    ) {
+                        bondLatch.countDown()
+                    }
+                }
+            }
+            context.registerReceiver(bondReceiver, bondFilter)
+
+            // При запросе PIN автоматически отправляем наш код 1234
+            val pairingFilter = IntentFilter(BluetoothDevice.ACTION_PAIRING_REQUEST).apply {
+                priority = IntentFilter.SYSTEM_HIGH_PRIORITY
+            }
+            val pairingReceiver = object : BroadcastReceiver() {
+                override fun onReceive(ctx: Context?, intent: Intent?) {
+                    val d = intent?.getParcelableExtra<BluetoothDevice>(BluetoothDevice.EXTRA_DEVICE)
+                    if (d?.address == device.address) {
+                        try {
+                            d.javaClass.getMethod("setPin", ByteArray::class.java)
+                                .invoke(d, devicePin.toByteArray())
+                            d.javaClass.getMethod(
+                                "setPairingConfirmation",
+                                Boolean::class.javaPrimitiveType
+                            ).invoke(d, true)
+                            abortBroadcast()
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Не удалось установить PIN", e)
+                        }
+                    }
+                }
+            }
+            context.registerReceiver(pairingReceiver, pairingFilter)
+
+            // Запускаем процесс спаривания
+            device.javaClass.getMethod("createBond").invoke(device)
+
+            // Ждём завершения (максимум 20 секунд)
+            bondLatch.await(20, TimeUnit.SECONDS)
+
+            try { context.unregisterReceiver(pairingReceiver) } catch (_: IllegalArgumentException) {}
+            try { context.unregisterReceiver(bondReceiver) } catch (_: IllegalArgumentException) {}
+
+            device.bondState == BluetoothDevice.BOND_BONDED
+        } catch (e: Exception) {
+            Log.e(TAG, "Ошибка при спаривании", e)
+            false
+        }
     }
 
     /** Отправка рассчитанных углов yaw/pitch в градусах. */
