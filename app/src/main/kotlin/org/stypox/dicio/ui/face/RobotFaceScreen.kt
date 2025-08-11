@@ -16,9 +16,9 @@ import androidx.compose.ui.unit.sp
 import android.content.Context
 import android.os.BatteryManager
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Battery30
-import androidx.compose.material.icons.filled.Battery50
-import androidx.compose.material.icons.filled.Battery80
+import androidx.compose.material.icons.filled.Battery2Bar
+import androidx.compose.material.icons.filled.Battery4Bar
+import androidx.compose.material.icons.filled.Battery6Bar
 import androidx.compose.material.icons.filled.BatteryAlert
 import androidx.compose.material.icons.filled.BatteryFull
 import org.dicio.skill.skill.SkillInfo
@@ -277,9 +277,9 @@ private fun BoxScope.AutoInfoCorner(
     }
     val batteryIcon = when (batteryPercent) {
         in 0..15 -> Icons.Default.BatteryAlert
-        in 16..30 -> Icons.Default.Battery30
-        in 31..50 -> Icons.Default.Battery50
-        in 51..80 -> Icons.Default.Battery80
+        in 16..30 -> Icons.Default.Battery2Bar
+        in 31..50 -> Icons.Default.Battery4Bar
+        in 51..80 -> Icons.Default.Battery6Bar
         else -> Icons.Default.BatteryFull
     }
 
