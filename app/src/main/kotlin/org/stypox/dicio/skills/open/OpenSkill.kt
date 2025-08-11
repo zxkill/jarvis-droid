@@ -20,10 +20,8 @@ import org.stypox.dicio.util.StringUtils
 class OpenSkill(correspondingSkillInfo: SkillInfo) :
     FuzzyRecognizerSkill<OpenSkill.Command>(correspondingSkillInfo, Specificity.LOW) {
 
-    /** Типы команд, которые может распознать данный скилл. */
-    sealed class Command {
-        data class Query(val app: String?) : Command()
-    }
+    /** Данные команды, содержащие название запускаемого приложения. */
+    data class Command(val app: String?)
 
     // Явно указываем тип списка шаблонов, чтобы Kotlin не выводил
     // отдельный подкласс команды и корректно переопределял поле
@@ -33,12 +31,13 @@ class OpenSkill(correspondingSkillInfo: SkillInfo) :
         Pattern(
             example = "запусти приложение",
             regex = Regex("^(?:запусти|открой)\\s+(?<app>.+)$"),
-            // Возвращаем общий тип [Command], а не конкретный подкласс
-            builder = { Command.Query(it.groups["app"]?.value) }
+            // Формируем объект [Command] из названия приложения в совпадении
+            builder = { Command(it.groups["app"]?.value) }
         )
     )
 
     override suspend fun generateOutput(ctx: SkillContext, inputData: Command?): SkillOutput {
+        // После распознавания шаблона данные не могут быть null
         val data = requireNotNull(inputData)
         // Название приложения, которое произнёс пользователь
         val userAppName = data.app?.trim { it <= ' ' }
