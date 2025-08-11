@@ -29,8 +29,12 @@ class OpenSkill(correspondingSkillInfo: SkillInfo) :
     override val patterns: List<Pattern<Command>> = listOf(
         // Поддерживаются конструкции вида "запусти браузер" или "открой телеграм"
         Pattern(
-            example = "запусти приложение",
-            regex = Regex("(?:запусти|открой)\\s+(?<app>.+)"),
+            examples = listOf(
+                "запусти приложение",
+                "открой программу",
+                "стартуй приложение"
+            ),
+            regex = Regex("(?:запусти|открой|стартуй|запускай)\\s+(?<app>.+)"),
             // Формируем объект [Command] из названия приложения в совпадении
             builder = { match -> Command(match?.groups["app"]?.value) }
         )

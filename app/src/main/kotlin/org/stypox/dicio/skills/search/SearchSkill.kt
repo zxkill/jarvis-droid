@@ -23,7 +23,12 @@ class SearchSkill(correspondingSkillInfo: SkillInfo) :
     override val patterns = listOf(
         // Простейший шаблон вида "найди котов" или "поиск погода"
         Pattern(
-            example = "найди погоду",
+            examples = listOf(
+                "найди погоду",
+                "поиск погоды",
+                "посмотри информацию",
+                "ищи новости"
+            ),
             regex = Regex("(?:найди|поиск(?:ай)?|посмотри|ищи)\\s+(?<query>.+)"),
             builder = { match -> match!!.groups["query"]!!.value }
         )

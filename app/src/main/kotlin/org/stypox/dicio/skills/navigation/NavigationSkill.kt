@@ -19,7 +19,11 @@ class NavigationSkill(correspondingSkillInfo: SkillInfo) :
 
     override val patterns = listOf(
         Pattern(
-            example = "проложи маршрут до москвы",
+            examples = listOf(
+                "проложи маршрут до москвы",
+                "построй маршрут к дому",
+                "покажи дорогу до станции"
+            ),
             regex = Regex("(?:проложи|построй|покажи)\\s+(?:маршрут\\s+)?(?:до|к)\\s+(?<where>.+)"),
             builder = { match -> match!!.groups["where"]!!.value }
         )

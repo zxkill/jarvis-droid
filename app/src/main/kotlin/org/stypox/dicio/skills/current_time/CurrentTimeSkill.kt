@@ -20,11 +20,12 @@ class CurrentTimeSkill(correspondingSkillInfo: SkillInfo) :
 
     override val patterns = listOf(
         Pattern(
-            example = "который час",
-            builder = { _ -> }
-        ),
-        Pattern(
-            example = "сколько времени",
+            examples = listOf(
+                "который час",
+                "сколько времени",
+                "который сейчас час",
+                "сколько времени сейчас"
+            ),
             builder = { _ -> }
         )
     )

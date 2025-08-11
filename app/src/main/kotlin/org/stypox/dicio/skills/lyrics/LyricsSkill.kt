@@ -26,7 +26,11 @@ class LyricsSkill(correspondingSkillInfo: SkillInfo) :
     // Используем псевдоним [SkillPattern], чтобы отличать его от java.util.regex.Pattern.
     override val patterns: List<SkillPattern<String>> = listOf(
         SkillPattern(
-            example = "текст песни imagine",
+            examples = listOf(
+                "текст песни imagine",
+                "слова песни imagine",
+                "покажи текст imagine"
+            ),
             regex = Regex("(?:текст (?:песни|песенки)|слова песни)\\s+(?<song>.+)"),
             builder = { match -> match!!.groups["song"]!!.value }
         )

@@ -16,15 +16,16 @@ abstract class RecognizeYesNoSkill(correspondingSkillInfo: SkillInfo) :
 
     override val patterns = listOf(
         // Согласие: перечисляем несколько распространённых вариантов
-        Pattern(example = "да", builder = { _ -> true }),
-        Pattern(example = "ага", builder = { _ -> true }),
-        Pattern(example = "конечно", builder = { _ -> true }),
-        Pattern(example = "yes", builder = { _ -> true }),
+        Pattern(
+            examples = listOf("да", "ага", "конечно", "yes"),
+            builder = { _ -> true }
+        ),
 
         // Отказ
-        Pattern(example = "нет", builder = { _ -> false }),
-        Pattern(example = "неа", builder = { _ -> false }),
-        Pattern(example = "no", builder = { _ -> false }),
+        Pattern(
+            examples = listOf("нет", "неа", "no"),
+            builder = { _ -> false }
+        ),
     )
 
     /**
