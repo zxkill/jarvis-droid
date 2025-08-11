@@ -13,6 +13,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.content.Context
+import android.os.BatteryManager
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Battery2Bar
+import androidx.compose.material.icons.filled.Battery4Bar
+import androidx.compose.material.icons.filled.Battery6Bar
+import androidx.compose.material.icons.filled.BatteryAlert
+import androidx.compose.material.icons.filled.BatteryFull
 import org.dicio.skill.skill.SkillInfo
 import org.dicio.skill.skill.Permission
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -258,6 +266,23 @@ private fun BoxScope.AutoInfoCorner(
     val dateStr = LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
     val timeStr = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))
 
+    val context = LocalContext.current
+    var batteryPercent by remember { mutableStateOf(0) }
+    val batteryManager = context.getSystemService(Context.BATTERY_SERVICE) as BatteryManager
+    LaunchedEffect(Unit) {
+        while (true) {
+            batteryPercent = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
+            delay(60_000)
+        }
+    }
+    val batteryIcon = when (batteryPercent) {
+        in 0..15 -> Icons.Default.BatteryAlert
+        in 16..30 -> Icons.Default.Battery2Bar
+        in 31..50 -> Icons.Default.Battery4Bar
+        in 51..80 -> Icons.Default.Battery6Bar
+        else -> Icons.Default.BatteryFull
+    }
+
     // Получаем структурированный вывод погоды, если он есть
     val weather = outputs["weather"] as? WeatherOutput.Success
     val showDate = outputs.containsKey("current_date")
@@ -305,6 +330,20 @@ private fun BoxScope.AutoInfoCorner(
                 fontSize = 12.sp,
             )
         }
+
+        Spacer(modifier = Modifier.width(8.dp))
+        Icon(
+            imageVector = batteryIcon,
+            contentDescription = null,
+            tint = Color.White,
+            modifier = Modifier.size(16.dp)
+        )
+        Spacer(modifier = Modifier.width(4.dp))
+        Text(
+            text = "$batteryPercent%",
+            color = Color.White,
+            fontSize = 12.sp,
+        )
 
         weather?.let { data ->
             Spacer(modifier = Modifier.width(8.dp))
