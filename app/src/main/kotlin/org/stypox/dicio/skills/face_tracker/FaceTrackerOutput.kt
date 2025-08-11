@@ -68,7 +68,7 @@ class FaceTrackerOutput : PersistentSkillOutput {
         val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
 
         DisposableEffect(Unit) {
-            // Запрашиваем разрешение на Bluetooth при необходимости
+            // Запрашиваем необходимые Bluetooth/локационные разрешения
             val activity = context as? Activity
             if (activity != null && ActivityCompat.checkSelfPermission(
                     activity,
@@ -79,7 +79,8 @@ class FaceTrackerOutput : PersistentSkillOutput {
                     activity,
                     arrayOf(
                         Manifest.permission.BLUETOOTH_CONNECT,
-                        Manifest.permission.BLUETOOTH_SCAN
+                        Manifest.permission.BLUETOOTH_SCAN,
+                        Manifest.permission.ACCESS_FINE_LOCATION
                     ),
                     0
                 )
@@ -208,6 +209,14 @@ class FaceTrackerOutput : PersistentSkillOutput {
         // Запускаем поиск устройств, если нужно показать диалог выбора
         LaunchedEffect(showDevicePicker) {
             if (showDevicePicker) {
+                devices.clear()
+                // Добавляем уже спаренные устройства сразу
+                bluetoothClient.getBondedDevices().forEach { device ->
+                    if (device.name != null && devices.none { it.address == device.address }) {
+                        devices.add(device)
+                    }
+                }
+                // Запускаем поиск новых устройств
                 bluetoothClient.startDiscovery { device ->
                     if (device.name != null && devices.none { it.address == device.address }) {
                         devices.add(device)

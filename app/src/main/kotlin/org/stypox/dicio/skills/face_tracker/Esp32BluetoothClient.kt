@@ -88,12 +88,23 @@ class Esp32BluetoothClient(
         }
     }
 
-    /** Начинаем сканирование устройств и передаём найденные в [onDevice]. */
+    /**
+     * Начинаем сканирование устройств и передаём найденные в [onDevice].
+     * Требуются разрешения BLUETOOTH_SCAN и ACCESS_FINE_LOCATION.
+     */
     fun startDiscovery(onDevice: (BluetoothDevice) -> Unit) {
         val bt = adapter ?: return
         if (!bt.isEnabled) return
         if (!hasScanPermission()) {
             Log.w(TAG, "Нет разрешения BLUETOOTH_SCAN")
+            return
+        }
+        if (ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            Log.w(TAG, "Нет разрешения ACCESS_FINE_LOCATION")
             return
         }
         cancelDiscovery()
@@ -106,6 +117,13 @@ class Esp32BluetoothClient(
         context.registerReceiver(discoveryReceiver, IntentFilter(BluetoothDevice.ACTION_FOUND))
         bt.startDiscovery()
     }
+
+    /**
+     * Возвращает множество уже спаренных устройств.
+     * Список пуст, если нет разрешения BLUETOOTH_CONNECT.
+     */
+    fun getBondedDevices(): Set<BluetoothDevice> =
+        if (hasConnectPermission()) adapter?.bondedDevices ?: emptySet() else emptySet()
 
     /** Останавливаем поиск устройств. */
     fun cancelDiscovery() {
