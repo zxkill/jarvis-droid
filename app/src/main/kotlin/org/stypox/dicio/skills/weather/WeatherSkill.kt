@@ -24,11 +24,19 @@ class WeatherSkill(correspondingSkillInfo: SkillInfo) :
     // что оба шаблона возвращают строку города либо null
     override val patterns: List<Pattern<String?>> = listOf(
         Pattern(
-            example = "какая погода",
+            examples = listOf(
+                "какая погода",
+                "какая сейчас погода",
+                "погода сегодня"
+            ),
             builder = { _ -> null }
         ),
         Pattern(
-            example = "какая погода в москве",
+            examples = listOf(
+                "какая погода в москве",
+                "какая сейчас погода в париже",
+                "погода в лондоне"
+            ),
             // Поддерживаем указание города
             regex = Regex("какая(?:\\s+сейчас)?\\s+погода\\s+в\\s+(?<city>.+)"),
             builder = { match -> match?.groups["city"]?.value }

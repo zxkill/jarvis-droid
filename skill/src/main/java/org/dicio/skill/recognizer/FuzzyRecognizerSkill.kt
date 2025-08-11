@@ -28,15 +28,16 @@ abstract class FuzzyRecognizerSkill<InputData>(
     /**
      * Описание одной возможной команды.
      *
-     * - [example] — строка-пример, с которой будет сравниваться ввод пользователя.
+     * - [examples] — набор примеров, с которыми сравнивается ввод пользователя.
+     *   Можно указать несколько синонимов одной и той же команды.
      * - [regex] — необязательное регулярное выражение для извлечения данных
-     *   (например, названия приложения или города). Если оно `null`, значит
-     *   достаточно лишь оценки схожести с примером.
+     *   (например, названия приложения или города). Если оно `null`, значит,
+     *   что достаточно лишь приблизительного совпадения с одним из примеров.
      * - [builder] — функция, преобразующая результат совпадения (или `null`, если
      *   [regex] отсутствует) в объект данных, передаваемый скиллу.
      */
     data class Pattern<T>(
-        val example: String,
+        val examples: List<String>,
         val regex: Regex? = null,
         val builder: (MatchResult?) -> T,
     )
@@ -50,26 +51,39 @@ abstract class FuzzyRecognizerSkill<InputData>(
         val normalized = preprocess(input)
         var bestPattern: Pattern<InputData>? = null
         var bestScore = -1f
-        // Сначала ищем наиболее похожий пример команды независимо от регулярки
+        var bestMatch: MatchResult? = null
+
         for (pattern in patterns) {
-            val example = preprocess(pattern.example)
-            val distance = levenshteinDistance(normalized, example)
-            val score = 1f - distance / max(example.length, normalized.length).toFloat()
+            val match = pattern.regex?.find(normalized)
+            if (pattern.regex != null && match == null) {
+                // Если регулярное выражение задано, но не совпало,
+                // данный шаблон нам не подходит.
+                continue
+            }
+
+            var score = if (match != null) 1f else -1f
+
+            for (example in pattern.examples) {
+                val normExample = preprocess(example)
+                val distance = levenshteinDistance(normalized, normExample)
+                val exampleScore = 1f - distance / max(normExample.length, normalized.length).toFloat()
+                if (exampleScore > score) {
+                    score = exampleScore
+                }
+            }
+
             if (score > bestScore) {
                 bestScore = score
                 bestPattern = pattern
+                bestMatch = match
             }
         }
 
-        // Если пример найден, дополнительно проверяем регулярное выражение
-        // (если оно задано) и формируем данные для скилла
         bestPattern?.let { pattern ->
-            val match = pattern.regex?.find(normalized)
-            if (pattern.regex == null || match != null) {
-                val data = pattern.builder(match)
-                return Pair(FloatScore(bestScore), data)
-            }
+            val data = pattern.builder(bestMatch)
+            return Pair(FloatScore(bestScore), data)
         }
+
         return Pair(AlwaysWorstScore, null)
     }
 

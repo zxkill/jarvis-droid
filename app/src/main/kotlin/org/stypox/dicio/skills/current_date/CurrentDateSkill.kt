@@ -33,15 +33,15 @@ class CurrentDateSkill(correspondingSkillInfo: SkillInfo) :
     // совпадает с ожиданиями базового класса.
     override val patterns: List<Pattern<Command>> = listOf(
         Pattern(
-            example = "какое сегодня число",
+            examples = listOf("какое сегодня число", "какая сегодня дата"),
             builder = { _ -> Command.Day }
         ),
         Pattern(
-            example = "какой сейчас год",
+            examples = listOf("какой сейчас год", "какой год сейчас"),
             builder = { _ -> Command.Year }
         ),
         Pattern(
-            example = "какой месяц",
+            examples = listOf("какой месяц", "какой сейчас месяц"),
             builder = { _ -> Command.Month }
         ),
     )
