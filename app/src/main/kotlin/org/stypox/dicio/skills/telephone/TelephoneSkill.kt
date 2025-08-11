@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import org.dicio.skill.context.SkillContext
 import org.dicio.skill.recognizer.FuzzyRecognizerSkill
+import org.dicio.skill.recognizer.FuzzyRecognizerSkill.Pattern
 import org.dicio.skill.skill.SkillInfo
 import org.dicio.skill.skill.SkillOutput
 import org.dicio.skill.skill.Specificity
@@ -17,7 +18,7 @@ class TelephoneSkill(correspondingSkillInfo: SkillInfo) :
         Pattern(
             example = "позвони маме",
             regex = Regex("(?:позвони|набер[и]?|позвонить)\\s+(?<who>.+)"),
-            builder = { it.groups["who"]!!.value }
+            builder = { match -> match!!.groups["who"]!!.value }
         )
     )
 
