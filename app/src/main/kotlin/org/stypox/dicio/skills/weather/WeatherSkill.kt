@@ -4,6 +4,7 @@ import android.util.Log
 import kotlinx.coroutines.flow.first
 import org.dicio.skill.context.SkillContext
 import org.dicio.skill.recognizer.FuzzyRecognizerSkill
+import org.dicio.skill.recognizer.FuzzyRecognizerSkill.Pattern
 import org.dicio.skill.skill.AutoRunnable
 import org.dicio.skill.skill.SkillInfo
 import org.dicio.skill.skill.SkillOutput
@@ -19,11 +20,13 @@ import kotlin.math.roundToInt
 class WeatherSkill(correspondingSkillInfo: SkillInfo) :
     FuzzyRecognizerSkill<String?>(correspondingSkillInfo, Specificity.LOW), AutoRunnable {
 
-    override val patterns = listOf(
+    // Явно указываем тип списка, чтобы Kotlin понимал,
+    // что оба шаблона возвращают строку города либо null
+    override val patterns: List<Pattern<String?>> = listOf(
         Pattern(
             example = "какая погода",
             regex = Regex("какая(?:\\s+сейчас)?\\s+погода"),
-            builder = { null }
+            builder = { _ -> null }
         ),
         Pattern(
             example = "какая погода в москве",
