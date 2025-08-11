@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import org.dicio.skill.context.SkillContext
 import org.dicio.skill.recognizer.FuzzyRecognizerSkill
+import org.dicio.skill.recognizer.FuzzyRecognizerSkill.Pattern
 import org.dicio.skill.skill.SkillInfo
 import org.dicio.skill.skill.SkillOutput
 import org.dicio.skill.skill.Specificity
@@ -24,11 +25,15 @@ class OpenSkill(correspondingSkillInfo: SkillInfo) :
         data class Query(val app: String?) : Command()
     }
 
-    override val patterns = listOf(
+    // Явно указываем тип списка шаблонов, чтобы Kotlin не выводил
+    // отдельный подкласс команды и корректно переопределял поле
+    // [patterns] из базового скилла
+    override val patterns: List<Pattern<Command>> = listOf(
         // Поддерживаются конструкции вида "запусти браузер" или "открой телеграм"
         Pattern(
             example = "запусти приложение",
             regex = Regex("^(?:запусти|открой)\\s+(?<app>.+)$"),
+            // Возвращаем общий тип [Command], а не конкретный подкласс
             builder = { Command.Query(it.groups["app"]?.value) }
         )
     )
