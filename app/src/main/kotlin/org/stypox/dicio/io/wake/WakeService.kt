@@ -28,6 +28,7 @@ import org.stypox.dicio.R
 import org.stypox.dicio.di.SttInputDeviceWrapper
 import org.stypox.dicio.eval.SkillEvaluator
 import org.stypox.dicio.io.input.InputEvent
+import org.stypox.dicio.io.input.SttState
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
@@ -178,11 +179,23 @@ class WakeService : Service() {
         }
     }
 
+    /**
+     * Перезапускает прослушивание после обработки очередной фразы.
+     *
+     * Если устройство уже находится в состоянии прослушивания, мы не
+     * останавливаем и не запускаем его заново, чтобы не пропустить
+     * начало следующей команды.
+     */
     private fun restartListening(playSound: Boolean = true) {
         if (listening.get()) {
             handler.removeCallbacks(releaseSttResourcesRunnable)
             handler.postDelayed(releaseSttResourcesRunnable, RELEASE_STT_RESOURCES_MILLIS)
-            sttInputDevice.tryLoad(::onInputEvent, playSound)
+
+            // Запускаем устройство заново только если оно не слушает
+            val state = sttInputDevice.uiState.value
+            if (state != SttState.Listening) {
+                sttInputDevice.tryLoad(::onInputEvent, playSound)
+            }
         }
     }
 
