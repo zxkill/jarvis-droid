@@ -28,7 +28,7 @@ class LyricsSkill(correspondingSkillInfo: SkillInfo) :
         SkillPattern(
             example = "текст песни imagine",
             regex = Regex("(?:текст (?:песни|песенки)|слова песни)\\s+(?<song>.+)"),
-            builder = { it.groups["song"]!!.value }
+            builder = { match -> match!!.groups["song"]!!.value }
         )
     )
 

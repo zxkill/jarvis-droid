@@ -4,6 +4,7 @@ import androidx.core.net.toUri
 import androidx.core.os.LocaleListCompat
 import org.dicio.skill.context.SkillContext
 import org.dicio.skill.recognizer.FuzzyRecognizerSkill
+import org.dicio.skill.recognizer.FuzzyRecognizerSkill.Pattern
 import org.dicio.skill.skill.SkillInfo
 import org.dicio.skill.skill.SkillOutput
 import org.dicio.skill.skill.Specificity
@@ -24,7 +25,7 @@ class SearchSkill(correspondingSkillInfo: SkillInfo) :
         Pattern(
             example = "найди погоду",
             regex = Regex("(?:найди|поиск(?:ай)?|посмотри|ищи)\\s+(?<query>.+)"),
-            builder = { it.groups["query"]!!.value }
+            builder = { match -> match!!.groups["query"]!!.value }
         )
     )
 

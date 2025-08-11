@@ -2,6 +2,7 @@ package org.stypox.dicio.util
 
 import org.dicio.skill.context.SkillContext
 import org.dicio.skill.recognizer.FuzzyRecognizerSkill
+import org.dicio.skill.recognizer.FuzzyRecognizerSkill.Pattern
 import org.dicio.skill.skill.SkillInfo
 import org.dicio.skill.skill.SkillOutput
 import org.dicio.skill.skill.Specificity
@@ -14,18 +15,16 @@ abstract class RecognizeYesNoSkill(correspondingSkillInfo: SkillInfo) :
     FuzzyRecognizerSkill<Boolean>(correspondingSkillInfo, Specificity.LOW) {
 
     override val patterns = listOf(
-        // Несколько вариантов согласия
-        Pattern(
-            example = "да",
-            regex = Regex("(?:да|ага|конечно|yes)"),
-            builder = { true }
-        ),
-        // И варианты отказа
-        Pattern(
-            example = "нет",
-            regex = Regex("(?:нет|неа|no)"),
-            builder = { false }
-        )
+        // Согласие: перечисляем несколько распространённых вариантов
+        Pattern(example = "да", builder = { _ -> true }),
+        Pattern(example = "ага", builder = { _ -> true }),
+        Pattern(example = "конечно", builder = { _ -> true }),
+        Pattern(example = "yes", builder = { _ -> true }),
+
+        // Отказ
+        Pattern(example = "нет", builder = { _ -> false }),
+        Pattern(example = "неа", builder = { _ -> false }),
+        Pattern(example = "no", builder = { _ -> false }),
     )
 
     /**

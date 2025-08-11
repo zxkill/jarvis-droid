@@ -5,6 +5,7 @@ import android.net.Uri
 import org.dicio.numbers.unit.Number
 import org.dicio.skill.context.SkillContext
 import org.dicio.skill.recognizer.FuzzyRecognizerSkill
+import org.dicio.skill.recognizer.FuzzyRecognizerSkill.Pattern
 import org.dicio.skill.skill.SkillInfo
 import org.dicio.skill.skill.SkillOutput
 import org.dicio.skill.skill.Specificity
@@ -20,7 +21,7 @@ class NavigationSkill(correspondingSkillInfo: SkillInfo) :
         Pattern(
             example = "проложи маршрут до москвы",
             regex = Regex("(?:проложи|построй|покажи)\\s+(?:маршрут\\s+)?(?:до|к)\\s+(?<where>.+)"),
-            builder = { it.groups["where"]!!.value }
+            builder = { match -> match!!.groups["where"]!!.value }
         )
     )
 

@@ -32,7 +32,7 @@ class OpenSkill(correspondingSkillInfo: SkillInfo) :
             example = "запусти приложение",
             regex = Regex("(?:запусти|открой)\\s+(?<app>.+)"),
             // Формируем объект [Command] из названия приложения в совпадении
-            builder = { Command(it.groups["app"]?.value) }
+            builder = { match -> Command(match?.groups["app"]?.value) }
         )
     )
 

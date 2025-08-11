@@ -29,12 +29,12 @@ class FaceTrackerSkill(
         Pattern(
             example = "запусти трекинг лица",
             regex = Regex("(?:запусти|включи)\\s+(?:трек.*лица|слежени[ея] лица|трекер лица|распознавание лица)"),
-            builder = { Command.Start }
+            builder = { _ -> Command.Start }
         ),
         Pattern(
             example = "останови трекинг лица",
             regex = Regex("(?:останови|выключи|прекрати)\\s+(?:трек.*лица|слежени[ея] лица|трекер лица|распознавание лица)"),
-            builder = { Command.Stop }
+            builder = { _ -> Command.Stop }
         ),
     )
 

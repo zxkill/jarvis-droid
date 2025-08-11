@@ -12,9 +12,9 @@ import kotlin.math.max
 
 /**
  * Базовый класс для скиллов, использующих нечёткое совпадение
- * пользовательского ввода с набором регулярных выражений.
- * Каждое выражение задаёт пример команды и функцию, извлекающую
- * данные из совпавших групп.
+ * пользовательского ввода с набором примеров фраз.
+ * Для каждого примера можно дополнительно указать регулярное
+ * выражение, чтобы извлечь параметры из введённого текста.
  */
 abstract class FuzzyRecognizerSkill<InputData>(
     correspondingSkillInfo: SkillInfo,
@@ -27,14 +27,18 @@ abstract class FuzzyRecognizerSkill<InputData>(
 
     /**
      * Описание одной возможной команды.
-     * @param example строка-пример, с которой будет сравниваться ввод
-     * @param regex регулярное выражение, проверяющее совпадение
-     * @param builder функция, формирующая выходные данные из результата совпадения
+     *
+     * - [example] — строка-пример, с которой будет сравниваться ввод пользователя.
+     * - [regex] — необязательное регулярное выражение для извлечения данных
+     *   (например, названия приложения или города). Если оно `null`, значит
+     *   достаточно лишь оценки схожести с примером.
+     * - [builder] — функция, преобразующая результат совпадения (или `null`, если
+     *   [regex] отсутствует) в объект данных, передаваемый скиллу.
      */
     data class Pattern<T>(
         val example: String,
-        val regex: Regex,
-        val builder: (MatchResult) -> T,
+        val regex: Regex? = null,
+        val builder: (MatchResult?) -> T,
     )
 
     /** Список поддерживаемых шаблонов команд. */
@@ -44,23 +48,29 @@ abstract class FuzzyRecognizerSkill<InputData>(
         // Предварительно нормализуем ввод: приводим к нижнему регистру,
         // удаляем знаки пунктуации и лишние пробелы, а также вырезаем диакритику.
         val normalized = preprocess(input)
-        var bestData: InputData? = null
+        var bestPattern: Pattern<InputData>? = null
         var bestScore = -1f
+        // Сначала ищем наиболее похожий пример команды независимо от регулярки
         for (pattern in patterns) {
-            val match = pattern.regex.find(normalized) ?: continue
             val example = preprocess(pattern.example)
             val distance = levenshteinDistance(normalized, example)
             val score = 1f - distance / max(example.length, normalized.length).toFloat()
             if (score > bestScore) {
                 bestScore = score
-                bestData = pattern.builder(match)
+                bestPattern = pattern
             }
         }
-        return if (bestData != null) {
-            Pair(FloatScore(bestScore), bestData)
-        } else {
-            Pair(AlwaysWorstScore, null)
+
+        // Если пример найден, дополнительно проверяем регулярное выражение
+        // (если оно задано) и формируем данные для скилла
+        bestPattern?.let { pattern ->
+            val match = pattern.regex?.find(normalized)
+            if (pattern.regex == null || match != null) {
+                val data = pattern.builder(match)
+                return Pair(FloatScore(bestScore), data)
+            }
         }
+        return Pair(AlwaysWorstScore, null)
     }
 
     /**

@@ -2,6 +2,7 @@ package org.stypox.dicio.skills.current_time
 
 import org.dicio.skill.context.SkillContext
 import org.dicio.skill.recognizer.FuzzyRecognizerSkill
+import org.dicio.skill.recognizer.FuzzyRecognizerSkill.Pattern
 import org.dicio.skill.skill.AutoRunnable
 import org.dicio.skill.skill.SkillInfo
 import org.dicio.skill.skill.SkillOutput
@@ -20,13 +21,11 @@ class CurrentTimeSkill(correspondingSkillInfo: SkillInfo) :
     override val patterns = listOf(
         Pattern(
             example = "который час",
-            regex = Regex("который\\s+час"),
-            builder = { }
+            builder = { _ -> }
         ),
         Pattern(
             example = "сколько времени",
-            regex = Regex("(?:сколько|какое)(?:\\s+сейчас)?\\s+врем.*"),
-            builder = { }
+            builder = { _ -> }
         )
     )
 
