@@ -50,11 +50,15 @@ class FaceTrackerOutput : PersistentSkillOutput {
         var faceBox by remember { mutableStateOf<Rect?>(null) } // текущая рамка лица
         var imageSize by remember { mutableStateOf<Pair<Int, Int>?>(null) } // ширина/высота кадра
         var offsets by remember { mutableStateOf<Pair<Float, Float>?>(null) } // yaw/pitch
+        // Клиент для связи по Bluetooth с ESP32
+        val bluetoothClient = remember { Esp32BluetoothClient() }
 
         // Асинхронно получаем провайдера камеры
         val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
 
         DisposableEffect(Unit) {
+            // Подключаемся к устройству по Bluetooth
+            bluetoothClient.connect()
             // Отдельный поток для обработки изображений
             val executor = Executors.newSingleThreadExecutor()
             // Клиент ML Kit для детекции лиц
@@ -102,6 +106,8 @@ class FaceTrackerOutput : PersistentSkillOutput {
                                 val yaw = (cx - px / 2f) / px * FOV_DEG_X
                                 val pitch = -(cy - py / 2f) / py * FOV_DEG_Y
                                 offsets = Pair(yaw, pitch)
+                                // Отправляем вычисленные углы на ESP32
+                                bluetoothClient.sendAngles(yaw, pitch)
                                 imageProxy.close()
                             } else {
                                 poseDetector.process(image)
@@ -134,6 +140,8 @@ class FaceTrackerOutput : PersistentSkillOutput {
                                             val yaw = (cx - px / 2f) / px * FOV_DEG_X
                                             val pitch = -(cy - py / 2f) / py * FOV_DEG_Y
                                             offsets = Pair(yaw, pitch)
+                                            // Отправляем углы даже при оценке по позе
+                                            bluetoothClient.sendAngles(yaw, pitch)
                                         } else {
                                             faceBox = null
                                             offsets = null
@@ -164,6 +172,8 @@ class FaceTrackerOutput : PersistentSkillOutput {
                 detector.close()
                 poseDetector.close()
                 executor.shutdown()
+                // При выходе закрываем Bluetooth-соединение
+                bluetoothClient.close()
             }
         }
 
