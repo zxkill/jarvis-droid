@@ -7,6 +7,7 @@ import org.dicio.skill.skill.Score
 import org.dicio.skill.skill.Skill
 import org.dicio.skill.skill.SkillInfo
 import org.dicio.skill.skill.Specificity
+import org.dicio.skill.util.nfkdNormalizeWord
 import kotlin.math.max
 
 /**
@@ -19,6 +20,10 @@ abstract class FuzzyRecognizerSkill<InputData>(
     correspondingSkillInfo: SkillInfo,
     specificity: Specificity,
 ) : Skill<InputData?>(correspondingSkillInfo, specificity) {
+
+    /** Регулярные выражения для удаления пунктуации и уплотнения пробелов. */
+    private val PUNCT_REGEX = "\\p{Punct}+".toRegex()
+    private val WHITESPACE_REGEX = "\\s+".toRegex()
 
     /**
      * Описание одной возможной команды.
@@ -36,13 +41,16 @@ abstract class FuzzyRecognizerSkill<InputData>(
     protected abstract val patterns: List<Pattern<InputData>>
 
     override fun score(ctx: SkillContext, input: String): Pair<Score, InputData?> {
-        val normalized = input.lowercase()
+        // Предварительно нормализуем ввод: приводим к нижнему регистру,
+        // удаляем знаки пунктуации и лишние пробелы, а также вырезаем диакритику.
+        val normalized = preprocess(input)
         var bestData: InputData? = null
         var bestScore = -1f
         for (pattern in patterns) {
             val match = pattern.regex.find(normalized) ?: continue
-            val distance = levenshteinDistance(normalized, pattern.example.lowercase())
-            val score = 1f - distance / max(pattern.example.length, normalized.length).toFloat()
+            val example = preprocess(pattern.example)
+            val distance = levenshteinDistance(normalized, example)
+            val score = 1f - distance / max(example.length, normalized.length).toFloat()
             if (score > bestScore) {
                 bestScore = score
                 bestData = pattern.builder(match)
@@ -53,6 +61,17 @@ abstract class FuzzyRecognizerSkill<InputData>(
         } else {
             Pair(AlwaysWorstScore, null)
         }
+    }
+
+    /**
+     * Приводит строку к виду, удобному для сравнения: нижний регистр,
+     * отсутствие пунктуации и диакритики, одиночные пробелы.
+     */
+    private fun preprocess(s: String): String {
+        return nfkdNormalizeWord(s.lowercase())
+            .replace(PUNCT_REGEX, " ")
+            .replace(WHITESPACE_REGEX, " ")
+            .trim()
     }
 
     /**

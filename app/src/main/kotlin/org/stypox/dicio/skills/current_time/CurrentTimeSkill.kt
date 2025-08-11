@@ -20,7 +20,12 @@ class CurrentTimeSkill(correspondingSkillInfo: SkillInfo) :
     override val patterns = listOf(
         Pattern(
             example = "который час",
-            regex = Regex("^(?:который|сколько)(?: сейчас)? (?:час|врем.*)$"),
+            regex = Regex("который\\s+час"),
+            builder = { }
+        ),
+        Pattern(
+            example = "сколько времени",
+            regex = Regex("(?:сколько|какое)(?:\\s+сейчас)?\\s+врем.*"),
             builder = { }
         )
     )

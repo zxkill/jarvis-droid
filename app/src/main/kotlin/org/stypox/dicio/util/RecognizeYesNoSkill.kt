@@ -17,13 +17,13 @@ abstract class RecognizeYesNoSkill(correspondingSkillInfo: SkillInfo) :
         // Несколько вариантов согласия
         Pattern(
             example = "да",
-            regex = Regex("^(?:да|ага|конечно|yes)$"),
+            regex = Regex("(?:да|ага|конечно|yes)"),
             builder = { true }
         ),
         // И варианты отказа
         Pattern(
             example = "нет",
-            regex = Regex("^(?:нет|неа|no)$"),
+            regex = Regex("(?:нет|неа|no)"),
             builder = { false }
         )
     )

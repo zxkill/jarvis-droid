@@ -21,8 +21,14 @@ class WeatherSkill(correspondingSkillInfo: SkillInfo) :
 
     override val patterns = listOf(
         Pattern(
+            example = "какая погода",
+            regex = Regex("какая(?:\\s+сейчас)?\\s+погода"),
+            builder = { null }
+        ),
+        Pattern(
             example = "какая погода в москве",
-            regex = Regex("^какая погода(?: в (?<city>.+))?$"),
+            // Поддерживаем указание города
+            regex = Regex("какая(?:\\s+сейчас)?\\s+погода\\s+в\\s+(?<city>.+)"),
             builder = { it.groups["city"]?.value }
         )
     )

@@ -30,7 +30,7 @@ class OpenSkill(correspondingSkillInfo: SkillInfo) :
         // Поддерживаются конструкции вида "запусти браузер" или "открой телеграм"
         Pattern(
             example = "запусти приложение",
-            regex = Regex("^(?:запусти|открой)\\s+(?<app>.+)$"),
+            regex = Regex("(?:запусти|открой)\\s+(?<app>.+)"),
             // Формируем объект [Command] из названия приложения в совпадении
             builder = { Command(it.groups["app"]?.value) }
         )

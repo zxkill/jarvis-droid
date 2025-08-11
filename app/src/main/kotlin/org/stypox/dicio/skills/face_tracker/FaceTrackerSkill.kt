@@ -28,12 +28,12 @@ class FaceTrackerSkill(
     override val patterns: List<Pattern<Command>> = listOf(
         Pattern(
             example = "запусти трекинг лица",
-            regex = Regex("^(?:запусти|включи)\\s+(?:трек.*лица|слежение лица)$"),
+            regex = Regex("(?:запусти|включи)\\s+(?:трек.*лица|слежени[ея] лица|трекер лица|распознавание лица)"),
             builder = { Command.Start }
         ),
         Pattern(
             example = "останови трекинг лица",
-            regex = Regex("^(?:останови|выключи)\\s+(?:трек.*лица|слежение лица)$"),
+            regex = Regex("(?:останови|выключи|прекрати)\\s+(?:трек.*лица|слежени[ея] лица|трекер лица|распознавание лица)"),
             builder = { Command.Stop }
         ),
     )

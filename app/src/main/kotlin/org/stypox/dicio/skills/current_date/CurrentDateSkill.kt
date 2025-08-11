@@ -34,17 +34,17 @@ class CurrentDateSkill(correspondingSkillInfo: SkillInfo) :
     override val patterns: List<Pattern<Command>> = listOf(
         Pattern(
             example = "какое сегодня число",
-            regex = Regex("^(?:какое|какой)\\s+(?:сегодня\\s+)?(?:число|день)$"),
+            regex = Regex("(?:какое|какой)\\s+(?:сегодня\\s+)?(?:число|день)"),
             builder = { Command.Day }
         ),
         Pattern(
             example = "какой сейчас год",
-            regex = Regex("^какой(?: сейчас)? год$"),
+            regex = Regex("какой(?:\\s+сейчас)?\\s+год"),
             builder = { Command.Year }
         ),
         Pattern(
             example = "какой месяц",
-            regex = Regex("^какой(?: сейчас)? месяц$"),
+            regex = Regex("какой(?:\\s+сейчас)?\\s+месяц"),
             builder = { Command.Month }
         ),
     )
