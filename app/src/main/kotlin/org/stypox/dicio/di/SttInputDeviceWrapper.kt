@@ -171,6 +171,10 @@ class SttInputDeviceWrapperImpl(
     // Добавляет к слушателю событие проигрывания звука при отсутствии распознанной речи.
     private fun wrapEventListener(eventListener: (InputEvent) -> Unit): (InputEvent) -> Unit = {
         if (it is InputEvent.None && playNoInputSoundNextTime) {
+            // Звук «ничего не услышано» должен проигрываться только один раз
+            // после старта прослушивания. Сбрасываем флаг сразу, чтобы
+            // последующие паузы не вызывали повторного сигнала.
+            playNoInputSoundNextTime = false
             scope.launch {
                 playSound(R.raw.listening_no_input_sound)
             }
