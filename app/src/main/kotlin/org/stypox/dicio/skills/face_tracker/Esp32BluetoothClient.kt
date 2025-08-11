@@ -56,7 +56,15 @@ class Esp32BluetoothClient(
 
                 // Используем стандартный UUID SPP
                 val uuid = device.uuids?.firstOrNull()?.uuid ?: UUID.fromString(SPP_UUID)
-                socket = device.createRfcommSocketToServiceRecord(uuid).apply { connect() }
+                // Сначала пробуем установить «безопасное» RFCOMM‑соединение.
+                // Если оно не удаётся (например, устройство не спарено),
+                // пробуем «небезопасный» вариант без предварительного паринга.
+                socket = try {
+                    device.createRfcommSocketToServiceRecord(uuid).apply { connect() }
+                } catch (e: IOException) {
+                    Log.w(TAG, "Secure RFCOMM не удался, пробуем insecure", e)
+                    device.createInsecureRfcommSocketToServiceRecord(uuid).apply { connect() }
+                }
             } catch (e: IOException) {
                 Log.e(TAG, "Не удалось подключиться к $deviceName", e)
                 onFail()
@@ -79,7 +87,14 @@ class Esp32BluetoothClient(
                 }
                 bt.cancelDiscovery()
                 val uuid = device.uuids?.firstOrNull()?.uuid ?: UUID.fromString(SPP_UUID)
-                socket = device.createRfcommSocketToServiceRecord(uuid).apply { connect() }
+                // Аналогично автоматическому подключению пробуем сначала
+                // безопасное соединение, затем небезопасное.
+                socket = try {
+                    device.createRfcommSocketToServiceRecord(uuid).apply { connect() }
+                } catch (e: IOException) {
+                    Log.w(TAG, "Secure RFCOMM не удался, пробуем insecure", e)
+                    device.createInsecureRfcommSocketToServiceRecord(uuid).apply { connect() }
+                }
             } catch (e: IOException) {
                 Log.e(TAG, "Не удалось подключиться к ${device.name}", e)
             } catch (e: SecurityException) {
@@ -90,7 +105,9 @@ class Esp32BluetoothClient(
 
     /**
      * Начинаем сканирование устройств и передаём найденные в [onDevice].
-     * Требуются разрешения BLUETOOTH_SCAN и ACCESS_FINE_LOCATION.
+     * Требуется разрешение BLUETOOTH_SCAN. Разрешение геолокации
+     * (ACCESS_FINE_LOCATION) нужно только на Android до 11 включительно,
+     * поскольку на Android 12+ мы объявляем флаг neverForLocation.
      */
     fun startDiscovery(onDevice: (BluetoothDevice) -> Unit) {
         val bt = adapter ?: return
@@ -99,7 +116,8 @@ class Esp32BluetoothClient(
             Log.w(TAG, "Нет разрешения BLUETOOTH_SCAN")
             return
         }
-        if (ActivityCompat.checkSelfPermission(
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.S &&
+            ActivityCompat.checkSelfPermission(
                 context,
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED

@@ -70,20 +70,23 @@ class FaceTrackerOutput : PersistentSkillOutput {
         DisposableEffect(Unit) {
             // Запрашиваем необходимые Bluetooth/локационные разрешения
             val activity = context as? Activity
-            if (activity != null && ActivityCompat.checkSelfPermission(
-                    activity,
-                    Manifest.permission.BLUETOOTH_CONNECT
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                ActivityCompat.requestPermissions(
-                    activity,
-                    arrayOf(
-                        Manifest.permission.BLUETOOTH_CONNECT,
-                        Manifest.permission.BLUETOOTH_SCAN,
-                        Manifest.permission.ACCESS_FINE_LOCATION
-                    ),
-                    0
-                )
+            // Проверяем наличие всех необходимых разрешений:
+            // BLUETOOTH_CONNECT, BLUETOOTH_SCAN и (на Android <= 11) ACCESS_FINE_LOCATION.
+            val needsLocation = android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.S
+            val missingPermissions = mutableListOf<String>()
+            if (activity != null) {
+                if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                    missingPermissions += Manifest.permission.BLUETOOTH_CONNECT
+                }
+                if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+                    missingPermissions += Manifest.permission.BLUETOOTH_SCAN
+                }
+                if (needsLocation && ActivityCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    missingPermissions += Manifest.permission.ACCESS_FINE_LOCATION
+                }
+                if (missingPermissions.isNotEmpty()) {
+                    ActivityCompat.requestPermissions(activity, missingPermissions.toTypedArray(), 0)
+                }
             }
 
             // Пытаемся автоматически подключиться к устройству по Bluetooth
