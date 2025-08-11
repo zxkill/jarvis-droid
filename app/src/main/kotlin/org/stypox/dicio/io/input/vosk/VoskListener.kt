@@ -62,14 +62,16 @@ internal class VoskListener(
     }
 
     /**
-     * Срабатывает после паузы в речи
+     * Срабатывает после паузы в речи.
+     *
+     * Ранее здесь останавливалось прослушивание, что приводило к
+     * кратковременным «провалам» и потере начала следующей команды.
+     * Теперь мы лишь передаём распознанный результат наружу,
+     * оставляя [SpeechService] активным.
      */
     @Suppress("ktlint:Style:NestedBlockDepth")
     override fun onResult(s: String) {
         Log.d(TAG, "onResult called with s = $s")
-
-        // Ограничиваемся одной фразой за сессию
-        voskInputDevice.stopListening(speechService, eventListener, false)
 
         // Собираем все возможные варианты, которые предложил движок STT
         val inputs = try {
@@ -83,6 +85,8 @@ internal class VoskListener(
 
         // Отправляем итоговое событие
         if (inputs.isEmpty()) {
+            // Пустой результат означает тишину или шум — просто уведомим слушателя,
+            // но не будем перезапускать прослушивание.
             eventListener(InputEvent.None)
         } else {
             eventListener(InputEvent.Final(inputs))
