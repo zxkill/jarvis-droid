@@ -48,8 +48,8 @@ android {
     compileOptions {
         // Flag to enable support for the new language APIs
         isCoreLibraryDesugaringEnabled = true
-
         sourceCompatibility = JavaVersion.toVersion(libs.versions.java.get())
+
         targetCompatibility = JavaVersion.toVersion(libs.versions.java.get())
     }
 

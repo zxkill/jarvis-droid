@@ -76,7 +76,7 @@ class WeatherSkill(correspondingSkillInfo: SkillInfo) :
                 }
             }
         } catch (_: FileNotFoundException) {
-            Log.w(TAG, "Не удалось найти город", _)
+            Log.w(TAG, "Не удалось найти город")
             return WeatherOutput.Failed(city = city ?: "")
         }
 
