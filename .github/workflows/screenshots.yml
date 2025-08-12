@@ -24,7 +24,7 @@ jobs:
         run: python -m pip install flask
 
       - name: Start screenshot server
-        run: python ./app/src/androidTest/kotlin/org/stypox/dicio/screenshot/screenshot_server.py &
+        run: python ./app/src/androidTest/kotlin/org/zxkill/nori/screenshot/screenshot_server.py &
 
       - name: Enable KVM
         run: |
@@ -39,7 +39,7 @@ jobs:
           target: default
           arch: x86_64
           profile: Nexus 5X
-          script: ./gradlew connectedCheck -P android.testInstrumentationRunnerArguments.class=org.stypox.dicio.screenshot.ScreenshotTakerTest
+          script: ./gradlew connectedCheck -P android.testInstrumentationRunnerArguments.class=org.zxkill.nori.screenshot.ScreenshotTakerTest
 
       - name: Print git status
         run: git status

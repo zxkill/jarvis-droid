@@ -7,7 +7,7 @@
         android:shortcutLongLabel="@string/stt_popup">
         <intent
             android:action="android.intent.action.VIEW"
-            android:targetPackage="org.stypox.dicio"
-            android:targetClass="org.stypox.dicio.io.input.stt_popup.SttPopupActivity" />
+            android:targetPackage="org.zxkill.nori"
+            android:targetClass="org.zxkill.nori.io.input.stt_popup.SttPopupActivity" />
     </shortcut>
 </shortcuts>

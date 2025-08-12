@@ -25,8 +25,8 @@
     <string name="error_sorry">Maaf, terjadi kesalahan</string>
     <string name="pref_theme_dark">Gelap</string>
     <string name="pref_language_system">Gunakan bahasa sistem</string>
-    <string name="error_report_notification_title">Dicio mengalami kesalahan, ketuk untuk melaporkan</string>
-    <string name="pref_language_summary">Bahasa apa yang harus Dicio gunakan untuk mendengarkan Anda dan memberikan jawaban?</string>
+    <string name="error_report_notification_title">Nori mengalami kesalahan, ketuk untuk melaporkan</string>
+    <string name="pref_language_summary">Bahasa apa yang harus Nori gunakan untuk mendengarkan Anda dan memberikan jawaban?</string>
     <string name="pref_input_method_vosk">Pengenalan ucapan luring Vosk</string>
     <string name="pref_speech_output_method_android">Mesin teks ke suara (text to speech) Android</string>
     <string name="error_report_channel_description">Notifikasi untuk melaporkan kesalahan</string>
@@ -47,7 +47,7 @@
     <string name="drawer_close">Tutup laci navigasi</string>
     <string name="microphone_error">Tidak dapat mengakses mikrofon, mungkin mikrofon sudah digunakan atau izin tidak diberikan.</string>
     <string name="pref_theme">Tema</string>
-    <string name="pref_input_method_summary">Pilih layanan yang digunakan untuk berbicara ke Dicio</string>
+    <string name="pref_input_method_summary">Pilih layanan yang digunakan untuk berbicara ke Nori</string>
     <string name="vosk_model_notification_title">Model Vosk</string>
     <string name="vosk_model_notification_description">Bahasa: %1$s</string>
     <string name="vosk_model_extracting">Mengekstrak model Vosk…</string>
@@ -65,7 +65,7 @@
     <string name="pref_skills_title">Keterampilan</string>
     <string name="pref_theme_summary">Pilih set warna aplikasi</string>
     <string name="pref_theme_light">Cerah</string>
-    <string name="pref_speech_output_method_summary">Pilih layanan yang harus Dicio gunakan untuk berbicara ke Anda</string>
+    <string name="pref_speech_output_method_summary">Pilih layanan yang harus Nori gunakan untuk berbicara ke Anda</string>
     <string name="pref_speech_output_method_toast">Toast (pesan popup)</string>
     <string name="pref_speech_output_method_snackbar">Snackbar (pesan di bawah)</string>
     <string name="pref_speech_output_method_nothing">Tidak ada</string>
@@ -74,7 +74,7 @@
     <string name="eval_missing_permissions">Keterampilan \"%1$s\" membutuhkan izin ini untuk bekerja: %2$s</string>
     <string name="eval_fatal_error">Tidak dapat mengevaluasi permintaan Anda</string>
     <string name="eval_network_error">Kesalahan jaringan</string>
-    <string name="eval_network_error_description">Dicio tidak dapat menjangkau internet. Harap periksa koneksi Anda dan coba lagi.</string>
+    <string name="eval_network_error_description">Nori tidak dapat menjangkau internet. Harap periksa koneksi Anda dan coba lagi.</string>
     <string name="eval_no_match">Saya tidak mengerti, bisa Anda ulang?</string>
     <string name="skill_name_search">Penelusuran</string>
     <string name="skill_sentence_example_search">Telusuri bagaimana cara memberi makan kucing</string>
@@ -104,7 +104,7 @@
     <string name="pref_io">Metode masukan dan keluaran</string>
     <string name="pref_input_method">Metode masukan</string>
     <string name="pref_speech_output_method">Metode keluaran ucapan</string>
-    <string name="pref_skill_number_library_not_available">Pustaka penguraian dan pemformatan <i>dicio-numbers</i> belum diterjemahkan ke bahasa Anda, yang berarti seluruh keterampilan yang berkaitan dengan angka, durasi, dan tanggal tidak tersedia. <b>Silakan berkontribusi</b> dengan mengetuk di sini!</string>
+    <string name="pref_skill_number_library_not_available">Pustaka penguraian dan pemformatan <i>nori-numbers</i> belum diterjemahkan ke bahasa Anda, yang berarti seluruh keterampilan yang berkaitan dengan angka, durasi, dan tanggal tidak tersedia. <b>Silakan berkontribusi</b> dengan mengetuk di sini!</string>
     <string name="pref_weather_default_city">Kota bawaan</string>
     <string name="skill_weather_in_city_there_is_description">Saat ini di %1$s ada %2$s</string>
     <string name="pref_stt_auto_finish_title">Kirim langsung hasil ucapan ke layanan teks</string>

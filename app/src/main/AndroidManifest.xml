@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    package="org.zxkill.nori"
     android:installLocation="auto"> <!-- Allow installing also on external storage -->
 
     <uses-permission android:name="android.permission.INTERNET" />
@@ -31,7 +32,7 @@
 
     <!-- allowBackup=false because of a critical nasty bug: https://medium.com/p/924c91bafcac -->
     <application
-        android:name=".App"
+        android:name="org.zxkill.nori.App"
         android:allowBackup="false"
         android:fullBackupContent="@xml/full_backup_content"
         android:icon="@mipmap/ic_launcher"

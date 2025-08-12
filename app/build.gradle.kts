@@ -13,16 +13,16 @@ plugins {
 }
 
 android {
-    namespace = "org.stypox.dicio"
+    namespace = "org.zxkill.nori"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "org.stypox.dicio"
+        applicationId = "org.zxkill.nori"
         minSdk = 21
         targetSdk = 36
         versionCode = 16
         versionName = "3.2"
-        testInstrumentationRunner = "org.stypox.dicio.CustomTestRunner"
+        testInstrumentationRunner = "org.zxkill.nori.CustomTestRunner"
 
         vectorDrawables.useSupportLibrary = true
 
@@ -37,7 +37,7 @@ android {
             //applicationIdSuffix = ".$normalizedGitBranch"
             //versionNameSuffix = "-$normalizedGitBranch"
 
-            resValue("string", "app_name", "Dicio-${gitBranch()}")
+            resValue("string", "app_name", "Nori-${gitBranch()}")
         }
         release {
             isMinifyEnabled = false
@@ -48,8 +48,8 @@ android {
     compileOptions {
         // Flag to enable support for the new language APIs
         isCoreLibraryDesugaringEnabled = true
-
         sourceCompatibility = JavaVersion.toVersion(libs.versions.java.get())
+
         targetCompatibility = JavaVersion.toVersion(libs.versions.java.get())
     }
 
@@ -105,7 +105,7 @@ dependencies {
     // Desugaring
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 
-    // Dicio own libraries
+    // Nori own libraries
     implementation(project(":skill"))
 
     // Android

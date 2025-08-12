@@ -2,7 +2,7 @@
 <resources>
     <string name="permission_denied">Engedély megtagadva</string>
     <string name="drawer_header_subtitle">Hogyan segíthetek?</string>
-    <string name="all_skills_disabled_description">Kérlek kapcsolj be funkciókat, különben a Dicio nem tehet semmit</string>
+    <string name="all_skills_disabled_description">Kérlek kapcsolj be funkciókat, különben a Nori nem tehet semmit</string>
     <string name="open_with">Megnyitás...</string>
     <string name="pref_io">Bevitel és kimenet módszerek</string>
     <string name="drawer_close">Oldalsáv bezárása</string>
@@ -53,7 +53,7 @@
     <string name="vosk_model_downloading">Vosk modell letöltése…</string>
     <string name="android_tts_unsupported_language">Az adott nyelv nem támogatott az Android TTS eszközében</string>
     <string name="android_tts_error">Hiba merült fel az Android TTS eszközében</string>
-    <string name="error_report_notification_title">A Dicio hibát észlelt, kattintson ide</string>
+    <string name="error_report_notification_title">A Nori hibát észlelt, kattintson ide</string>
     <string name="drawer_open">Oldalsáv megnyitása</string>
     <string name="error_loading">Hiba a betöltés során</string>
     <string name="error_unzipping">Hiba kicsomagolás során</string>
