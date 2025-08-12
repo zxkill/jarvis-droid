@@ -29,7 +29,7 @@ afterEvaluate {
             create<MavenPublication>("release") {
                 from(components["release"])
 
-                groupId = "com.github.Stypox"
+                groupId = "com.github.ZxKill"
                 artifactId = "nori-skill"
             }
         }
