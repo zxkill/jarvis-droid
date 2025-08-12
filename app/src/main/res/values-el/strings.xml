@@ -22,7 +22,7 @@
     <string name="pref_language">Γλώσσα</string>
     <string name="pref_language_system">Χρήση γλώσσας συστήματος</string>
     <string name="pref_input_method">Μέθοδος εισαγωγής</string>
-    <string name="pref_input_method_summary">Επιλογή υπηρεσίας για επικοινωνία με το Dicio</string>
+    <string name="pref_input_method_summary">Επιλογή υπηρεσίας για επικοινωνία με το Nori</string>
     <string name="pref_input_method_text">Πλαίσιο κειμένου</string>
     <string name="pref_input_method_vosk">Vosk αναγνώριση ομιλίας εκτός σύνδεσης</string>
     <string name="pref_speech_output_method">Μέθοδος επικοινωνίας μετά από ομιλία</string>
@@ -33,7 +33,7 @@
     <string name="pref_weather_default_city">Προκαθορισμένη πόλη</string>
     <string name="eval_fatal_error">Δεν ήταν δυνατή η αξιολόγηση του αιτήματός σας</string>
     <string name="eval_network_error">Σφάλμα δικτύου</string>
-    <string name="eval_network_error_description">Το Dicio δεν μπόρεσε να συνδεθεί στο διαδίκτυο. Ελέγξτε τη σύνδεσή σας και ξαναδοκιμάστε.</string>
+    <string name="eval_network_error_description">Το Nori δεν μπόρεσε να συνδεθεί στο διαδίκτυο. Ελέγξτε τη σύνδεσή σας και ξαναδοκιμάστε.</string>
     <string name="skill_name_search">Αναζήτηση</string>
     <string name="skill_name_weather">Καιρός</string>
     <string name="skill_sentence_example_weather">Πως είναι ο καιρός στη Ρώμη;</string>
@@ -59,12 +59,12 @@
     <string name="vosk_model_ready">Το μοντέλο Vosk είναι έτοιμο</string>
     <string name="android_tts_unsupported_language">Η συγκεκριμένη γλώσσα δεν υποστηρίζεται από τη μηχανή μετατροπής κειμένου σε ομιλία του Android</string>
     <string name="settings">Ρυθμίσεις</string>
-    <string name="pref_language_summary">Ποιά γλώσσα θα έπρεπε να χρησιμοποιεί το Dicio για να σας ακούει και να σας δίνει απαντήσεις;</string>
+    <string name="pref_language_summary">Ποιά γλώσσα θα έπρεπε να χρησιμοποιεί το Nori για να σας ακούει και να σας δίνει απαντήσεις;</string>
     <string name="pref_io">Μεθόδοι εισόδου και εξόδου</string>
     <string name="pref_appearance">Εμφάνιση</string>
     <string name="pref_speech_output_method_toast">Toast (αναδυόμενο μήνυμα)</string>
     <string name="eval_no_match">Δεν σας κατάλαβα, μπορείτε να επαναλάβετε;</string>
-    <string name="pref_speech_output_method_summary">Επιλογή υπηρεσίας επικοινωνίας από το Dicio</string>
+    <string name="pref_speech_output_method_summary">Επιλογή υπηρεσίας επικοινωνίας από το Nori</string>
     <string name="pref_skill_not_available">Αυτή η δεξιότητα δεν είναι ακόμα διαθέσιμη στη γλώσσα σας. Οι συνεισφορές είναι ευπρόσδεκτες!</string>
     <string name="skill_sentence_example_lyrics">Ποιό είναι το τραγούδι που λέει we will we will rock you;</string>
     <string name="pref_weather_default_city_using_ip_info">Επιλογή της πόλης που θα χρησιμοποιείται για τον καιρό στην περίπτωση που δεν αναφέρετε μια. Η τρέχουσα συμπεριφορά είναι να αναγνωρίζεται η τοποθεσία μέσω πληροφοριών IP.</string>

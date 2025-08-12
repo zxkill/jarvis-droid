@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "org.dicio.skill"
+    namespace = "org.nori.skill"
     compileSdk = 35
     defaultConfig {
         minSdk = 21
@@ -30,7 +30,7 @@ afterEvaluate {
                 from(components["release"])
 
                 groupId = "com.github.Stypox"
-                artifactId = "dicio-skill"
+                artifactId = "nori-skill"
             }
         }
     }

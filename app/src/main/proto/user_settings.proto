@@ -7,7 +7,7 @@ import "speech_output_device.proto";
 import "wake_device.proto";
 import "stt_play_sound.proto";
 
-option java_package = "org.stypox.dicio.settings.datastore";
+option java_package = "org.zxkill.nori.settings.datastore";
 option java_multiple_files = true;
 
 message UserSettings {

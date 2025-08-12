@@ -9,7 +9,7 @@
     <string name="eval_missing_permissions">De vaardigheid \"%1$s\" heeft deze toelatingen nodig om te werken: %2$s</string>
     <string name="eval_fatal_error">Je verzoek kon niet worden verwerkt</string>
     <string name="eval_network_error">Netwerkfout</string>
-    <string name="eval_network_error_description">Dicio kan niet verbinden met het internet. Controleer je netwerkverbinding en probeer opnieuw.</string>
+    <string name="eval_network_error_description">Nori kan niet verbinden met het internet. Controleer je netwerkverbinding en probeer opnieuw.</string>
     <string name="eval_no_match">Ik heb je niet verstaan, kan je dat herhalen?</string>
     <string name="stt_say_something">Zeg iets…</string>
     <string name="stt_did_not_understand">Ik heb je niet begrepen, probeer opnieuw</string>
@@ -51,7 +51,7 @@
     <string name="error_github_notice">Controleer aub of er nog geen ticket bestaat over uw crash. Wanneer dubbele tickets worden aangemaakt, wordt er tijd verspild die anders zou kunnen besteed worden aan het oplossen van de bug.</string>
     <string name="error_copy_formatted">Kopieer opgestelde rapport</string>
     <string name="error_report_github">Rapporteer op GitHub</string>
-    <string name="error_report_notification_title">Dicio is een fout tegengekomen, tik om te rapporteren</string>
+    <string name="error_report_notification_title">Nori is een fout tegengekomen, tik om te rapporteren</string>
     <string name="error_report_notification_toast">Er is een fout opgetreden, zie melding</string>
     <string name="error_report_channel_name">Melding foutrapport</string>
     <string name="error_report_channel_description">Meldingen om fouten te rapporteren</string>
@@ -62,14 +62,14 @@
     <string name="pref_theme_light">Licht</string>
     <string name="pref_theme_dark">Donker</string>
     <string name="pref_language">Taal</string>
-    <string name="pref_language_summary">Welke taal moet Dicio gebruiken om naar jou te luisteren en te reageren\?</string>
+    <string name="pref_language_summary">Welke taal moet Nori gebruiken om naar jou te luisteren en te reageren\?</string>
     <string name="pref_language_system">Gebruik systeemtaal</string>
     <string name="pref_input_method">Invoermethode</string>
-    <string name="pref_input_method_summary">Kies de service die je wilt gebruiken om met Dicio te praten</string>
+    <string name="pref_input_method_summary">Kies de service die je wilt gebruiken om met Nori te praten</string>
     <string name="pref_input_method_text">Tekstvak</string>
     <string name="pref_input_method_vosk">Vosk offline spraakherkenning</string>
     <string name="pref_speech_output_method">Spraakuitvoermethode</string>
-    <string name="pref_speech_output_method_summary">Kies de service die Dicio gebruikt om met u te praten</string>
+    <string name="pref_speech_output_method_summary">Kies de service die Nori gebruikt om met u te praten</string>
     <string name="pref_speech_output_method_android">Android tekst-naar-spraak toepassing</string>
     <string name="pref_speech_output_method_toast">Toast (pop-up bericht)</string>
     <string name="pref_speech_output_method_snackbar">Snackbar (bericht onderaan)</string>
@@ -77,7 +77,7 @@
     <string name="pref_skill_not_available">Deze vaardigheid is nog niet beschikbaar voor jouw taal. Bijdragen zijn welkom!</string>
     <string name="pref_skill_missing_permissions">Vereist deze toelatingen: %1$s</string>
     <string name="pref_skill_grant_permissions">Toelaten</string>
-    <string name="pref_skill_number_library_not_available">De bibliotheek om getallen te ontleden en op te maken <i>dicio-numbers</i> Is nog niet naar jouw taal vertaald, waardoor vaardigheden die getallen gebruiken niet beschikbaar zijn.<b>Draag bij</b> indien mogelijk door hier te tikken!</string>
+    <string name="pref_skill_number_library_not_available">De bibliotheek om getallen te ontleden en op te maken <i>nori-numbers</i> Is nog niet naar jouw taal vertaald, waardoor vaardigheden die getallen gebruiken niet beschikbaar zijn.<b>Draag bij</b> indien mogelijk door hier te tikken!</string>
     <string name="pref_search_engine">Zoekmachine</string>
     <string name="pref_weather_default_city">Standaard Stad</string>
     <string name="pref_stt_auto_finish_summary_off">Wacht op manuele bevestiging voordat de spraakresultaten naar de vragende app worden gestuurd</string>
