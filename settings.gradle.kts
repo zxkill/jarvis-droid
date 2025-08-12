@@ -1,4 +1,4 @@
-rootProject.name = "Dicio"
+rootProject.name = "Nori"
 include(":app")
 include(":skill")
 
