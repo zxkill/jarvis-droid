@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+import "theme.proto";
+import "language.proto";
+import "input_device.proto";
+import "speech_output_device.proto";
+import "wake_device.proto";
+import "stt_play_sound.proto";
+
+option java_package = "org.zxkill.nori.settings.datastore";
+option java_multiple_files = true;
+
+message UserSettings {
+    Theme theme = 1;
+    bool dynamic_colors = 2;
+    Language language = 3;
+    InputDevice input_device = 4;
+    SpeechOutputDevice speech_output_device = 5;
+    bool auto_finish_stt_popup = 6;
+    map<string, bool> enabled_skills = 7;
+    WakeDevice wake_device = 8;
+    SttPlaySound stt_play_sound = 9;
+    // Время отображения результата скилла на экране в секундах
+    int32 skill_output_display_seconds = 10;
+}

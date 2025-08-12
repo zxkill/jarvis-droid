@@ -1,0 +1,17 @@
+*.iml
+.gradle
+/local.properties
+/.idea
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+/models
+/aars/build
+/checkouts
+.kotlin
+
+# Fastlane
+fastlane/report.xml
+fastlane/README.md
+fastlane_config.txt

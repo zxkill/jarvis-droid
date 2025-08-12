@@ -1,0 +1,13 @@
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="stt_popup"
+        android:enabled="true"
+        android:icon="@mipmap/ic_stt_popup"
+        android:shortcutShortLabel="@string/stt_popup"
+        android:shortcutLongLabel="@string/stt_popup">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="org.zxkill.nori"
+            android:targetClass="org.zxkill.nori.io.input.stt_popup.SttPopupActivity" />
+    </shortcut>
+</shortcuts>
